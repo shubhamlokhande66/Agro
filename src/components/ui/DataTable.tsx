@@ -16,7 +16,7 @@ export function Table({
   children: React.ReactNode;
 }) {
   return (
-    <table className={clsx("w-full border-collapse text-xs", className)}>
+    <table className={clsx("w-full border-collapse text-[12.5px]", className)}>
       {children}
     </table>
   );
@@ -34,7 +34,7 @@ export function Th({
   return (
     <th
       className={clsx(
-        "num border-b border-line px-2.5 py-2 text-[10px] font-medium uppercase tracking-wide text-ink-faint",
+        "sticky top-0 z-[1] border-b border-line bg-surface px-2.5 py-2 text-[10px] font-semibold uppercase tracking-wide text-ink-faint",
         align === "right" && "text-right",
         align === "center" && "text-center",
         className,
@@ -59,7 +59,7 @@ export function Td({
   return (
     <td
       className={clsx(
-        "border-b border-line px-2.5 py-2 text-ink",
+        "border-b border-line/70 px-2.5 py-2 text-ink",
         mono && "num",
         align === "right" && "text-right",
         align === "center" && "text-center",
@@ -68,5 +68,27 @@ export function Td({
     >
       {children}
     </td>
+  );
+}
+
+export function Tr({
+  children,
+  className,
+  highlight,
+}: {
+  children: React.ReactNode;
+  className?: string;
+  highlight?: boolean;
+}) {
+  return (
+    <tr
+      className={clsx(
+        "transition-colors hover:bg-surface-2/60",
+        highlight && "bg-surface-2/50 font-semibold",
+        className,
+      )}
+    >
+      {children}
+    </tr>
   );
 }

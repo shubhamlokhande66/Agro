@@ -1,13 +1,21 @@
 import clsx from "clsx";
+import Sparkline from "@/components/charts/Sparkline";
 
 type Accent = "green" | "amber" | "blue" | "red" | "violet";
 
-const BAR: Record<Accent, string> = {
-  green: "bg-brand-green",
+const DOT: Record<Accent, string> = {
+  green: "bg-accent",
   amber: "bg-warn",
   blue: "bg-info",
   red: "bg-neg",
-  violet: "bg-[#8b5cf6]",
+  violet: "bg-violet",
+};
+const SPARK: Record<Accent, string | undefined> = {
+  green: undefined,
+  amber: "#e0902f",
+  blue: "#2f7fe0",
+  red: "#e0605a",
+  violet: "#8b6cf0",
 };
 
 export function Kpi({
@@ -16,28 +24,33 @@ export function Kpi({
   unit,
   accent = "green",
   foot,
+  spark,
 }: {
   label: string;
   value: React.ReactNode;
   unit?: React.ReactNode;
   accent?: Accent;
   foot?: React.ReactNode;
+  spark?: (number | null)[];
 }) {
   return (
-    <div className="relative overflow-hidden rounded-card border border-line bg-surface p-3.5">
-      <span
-        className={clsx("absolute inset-x-0 top-0 h-[3px]", BAR[accent])}
-      />
-      <div className="text-[9.5px] font-bold uppercase tracking-wider text-ink-faint">
-        {label}
+    <div className="panel panel-hover relative overflow-hidden p-3.5 sm:p-4">
+      <div className="flex items-center gap-1.5">
+        <span className={clsx("h-1.5 w-1.5 rounded-full", DOT[accent])} />
+        <span className="eyebrow text-[9.5px]">{label}</span>
       </div>
-      <div className="num mt-1 text-lg font-bold leading-none text-ink sm:text-xl">
+      <div className="num mt-2 text-[19px] font-semibold leading-none tracking-tight text-ink sm:text-[22px]">
         {value}
       </div>
       {unit ? (
-        <div className="num mt-1 text-[10px] text-ink-faint">{unit}</div>
+        <div className="num mt-1.5 text-[10.5px] text-ink-faint">{unit}</div>
       ) : null}
-      {foot ? <div className="mt-1.5">{foot}</div> : null}
+      {spark && spark.length > 1 ? (
+        <div className="mt-2.5 -mb-1">
+          <Sparkline data={spark} color={SPARK[accent]} height={30} />
+        </div>
+      ) : null}
+      {foot ? <div className="mt-2">{foot}</div> : null}
     </div>
   );
 }

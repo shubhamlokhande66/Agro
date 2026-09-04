@@ -30,7 +30,7 @@ export default function CciPage() {
   return (
     <div>
       <PageHeader
-        title="🏛️ CCI Updates"
+        title="CCI Updates" icon="🏛"
         sub="Cotton Corporation of India — MSP procurement, OMSS sales & prices"
       />
 

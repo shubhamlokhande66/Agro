@@ -1,88 +1,103 @@
 import type { ChartOptions, ScriptableContext } from "chart.js";
 import { smartAxisLabel } from "@/lib/format";
+import type { ChartTheme } from "./useChartTheme";
 
-export const TEAL = "#0d9e77";
-export const TEAL_FILL = "rgba(13,158,119,0.14)";
-export const AMBER = "#f59e0b";
-export const NAVY = "#1a4f8a";
-
-/** categorical series palette (kept close to the legacy dashboard) */
+/** categorical series palette — works on both light and dark grounds */
 export const SERIES = [
-  "#0d9e77",
-  "#2563eb",
-  "#f59e0b",
-  "#e84393",
-  "#8b5cf6",
-  "#10b981",
-  "#ef4444",
-  "#64748b",
-  "#0ea5e9",
+  "#12a277",
+  "#2f7fe0",
+  "#e0902f",
+  "#d94f9c",
+  "#8b6cf0",
+  "#12b3a0",
+  "#e0605a",
+  "#7c8896",
+  "#3aa0e6",
 ];
 
-const TOOLTIP = {
-  backgroundColor: "#1a1a18",
-  titleColor: "#cfcfca",
-  bodyColor: "#ffffff",
-  bodyFont: { size: 12 },
-  titleFont: { size: 11 },
-  padding: 10,
-  cornerRadius: 8,
-  displayColors: true,
-  boxPadding: 4,
-} as const;
+export function hexToRgba(hex: string, a: number) {
+  const h = hex.replace("#", "");
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r},${g},${b},${a})`;
+}
 
 type BaseOpts = {
+  t: ChartTheme;
   yFmt?: (v: number) => string;
   yMin?: number;
   yMax?: number;
   xTicks?: number;
   legend?: boolean;
-  tooltipLabel?: (ctx: { parsed: { x: number; y: number }; dataset: { label?: string }; label: string }) => string;
-  indexAxis?: "x" | "y";
   smartX?: boolean;
+  tooltipLabel?: (ctx: {
+    parsed: { x: number; y: number };
+    dataset: { label?: string };
+    label: string;
+  }) => string;
 };
 
-export function lineOptions(o: BaseOpts = {}): ChartOptions<"line"> {
+function tooltip(t: ChartTheme, cb?: BaseOpts["tooltipLabel"]) {
+  return {
+    backgroundColor: t.tooltipBg,
+    titleColor: t.tooltipTitle,
+    bodyColor: t.tooltipText,
+    bodyFont: { size: 12 },
+    titleFont: { size: 11 },
+    padding: 11,
+    cornerRadius: 10,
+    displayColors: true,
+    boxPadding: 4,
+    borderColor: "rgba(255,255,255,0.06)",
+    borderWidth: 1,
+    callbacks: cb ? { label: (c: any) => cb(c) } : {},
+  };
+}
+
+function legendBlock(t: ChartTheme, show?: boolean) {
+  return show
+    ? {
+        display: true,
+        position: "top" as const,
+        align: "start" as const,
+        labels: {
+          color: t.tick,
+          font: { size: 11 },
+          boxWidth: 8,
+          boxHeight: 8,
+          padding: 14,
+          usePointStyle: true,
+          pointStyle: "circle" as const,
+        },
+      }
+    : { display: false };
+}
+
+export function lineOptions(o: BaseOpts): ChartOptions<"line"> {
+  const { t } = o;
   const smart = o.smartX ?? true;
   return {
     responsive: true,
     maintainAspectRatio: false,
     interaction: { mode: "index", intersect: false },
     plugins: {
-      legend: o.legend
-        ? {
-            display: true,
-            position: "top",
-            align: "start",
-            labels: {
-              font: { size: 11 },
-              boxWidth: 9,
-              boxHeight: 9,
-              padding: 12,
-              usePointStyle: true,
-              pointStyle: "circle",
-            },
-          }
-        : { display: false },
-      tooltip: {
-        ...TOOLTIP,
-        callbacks: o.tooltipLabel
-          ? { label: (c: any) => o.tooltipLabel!(c) }
-          : o.yFmt
-            ? { label: (c: any) => o.yFmt!(c.parsed.y) }
-            : {},
-      },
+      legend: legendBlock(t, o.legend),
+      tooltip: tooltip(
+        t,
+        o.tooltipLabel ?? (o.yFmt ? (c) => o.yFmt!(c.parsed.y) : undefined),
+      ),
     },
     scales: {
       x: {
         ticks: {
           font: { size: 10 },
-          color: "#a3a39c",
+          color: t.tick,
           maxTicksLimit: o.xTicks ?? 8,
           maxRotation: 0,
           autoSkip: true,
           callback(value: any) {
-            const raw = this.getLabelForValue(value as number);
+            const raw = (this as any).getLabelForValue(value);
             return smart ? smartAxisLabel(String(raw)) : raw;
           },
         },
@@ -94,31 +109,28 @@ export function lineOptions(o: BaseOpts = {}): ChartOptions<"line"> {
         max: o.yMax,
         ticks: {
           font: { size: 10 },
-          color: "#a3a39c",
+          color: t.tick,
           maxTicksLimit: 6,
           callback: (v: any) => (o.yFmt ? o.yFmt(Number(v)) : v),
         },
-        grid: { color: "rgba(0,0,0,0.05)", drawTicks: false },
+        grid: { color: t.grid, drawTicks: false },
         border: { display: false },
       },
     },
   };
 }
 
-export function barOptions(o: BaseOpts = {}): ChartOptions<"bar"> {
-  const base = lineOptions(o) as unknown as ChartOptions<"bar">;
-  return { ...base, indexAxis: o.indexAxis ?? "x" };
-}
-
 /** vertical gradient fill for area charts */
-export function areaFill(color: string) {
+export function areaFill(colorHex: string) {
   return (ctx: ScriptableContext<"line">) => {
     const { chart } = ctx;
     const { ctx: c, chartArea } = chart;
-    if (!chartArea) return color;
+    if (!chartArea) return hexToRgba(colorHex, 0.15);
     const g = c.createLinearGradient(0, chartArea.top, 0, chartArea.bottom);
-    g.addColorStop(0, color.replace("RGBA", "rgba").replace(/[\d.]+\)$/, "0.28)"));
-    g.addColorStop(1, color.replace(/[\d.]+\)$/, "0.02)"));
+    g.addColorStop(0, hexToRgba(colorHex, 0.32));
+    g.addColorStop(1, hexToRgba(colorHex, 0.01));
     return g;
   };
 }
+
+export { tooltip as tooltipBlock, legendBlock };

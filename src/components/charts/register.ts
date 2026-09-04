@@ -29,7 +29,7 @@ export function ensureChartsRegistered() {
     Legend,
   );
   ChartJS.defaults.font.family =
-    "var(--font-sans), 'IBM Plex Sans', system-ui, sans-serif";
-  ChartJS.defaults.color = "#9a9a92";
+    "var(--font-sans), ui-sans-serif, system-ui, sans-serif";
+  ChartJS.defaults.color = "#8f9389";
   done = true;
 }

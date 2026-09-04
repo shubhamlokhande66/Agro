@@ -18,7 +18,6 @@ export function UploadPanel({
   storeKey: string;
   title?: string;
   hint?: string;
-  /** return the parsed override object + a short summary, or throw */
   parse: (wb: WorkBook) => { data: unknown; summary: string };
 }) {
   const { canUpload } = useAuth();
@@ -60,68 +59,58 @@ export function UploadPanel({
         handle(e.dataTransfer.files?.[0]);
       }}
       className={clsx(
-        "card p-4 transition-colors",
-        drag && "border-brand-green bg-[#f0fdf4]",
+        "panel flex flex-wrap items-center gap-3 border-dashed p-3.5 transition-colors",
+        drag ? "border-accent bg-accent-soft" : "border-line-strong",
       )}
     >
-      <div className="flex flex-wrap items-center gap-3">
-        <div className="min-w-0">
-          <div className="text-[13px] font-semibold text-ink">{title}</div>
-          {hint ? (
-            <div className="mt-0.5 text-[11px] text-ink-faint">{hint}</div>
-          ) : null}
-        </div>
-        <div className="ml-auto flex flex-wrap items-center gap-2">
-          <input
-            ref={inputRef}
-            type="file"
-            accept=".xlsx,.xls"
-            className="hidden"
-            onChange={(e) => handle(e.target.files?.[0])}
-          />
-          <button
-            type="button"
-            onClick={() => inputRef.current?.click()}
-            className="inline-flex items-center gap-1.5 rounded-lg border-[1.5px] border-dashed border-info bg-info-bg px-3.5 py-2 text-[12px] font-semibold text-info transition-colors hover:bg-[#d0e4f7]"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12" />
-            </svg>
-            Choose Excel file
-          </button>
-          {meta ? (
-            <button
-              type="button"
-              onClick={() => {
-                clearOverride(storeKey);
-                setStatus({ kind: "idle", msg: "" });
-              }}
-              className="rounded-lg border border-line px-3 py-2 text-[12px] font-medium text-ink-soft hover:bg-surface2"
-            >
-              Reset to default
-            </button>
-          ) : null}
+      <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-accent-soft text-base">
+        📄
+      </span>
+      <div className="min-w-0">
+        <div className="text-[13px] font-semibold text-ink">{title}</div>
+        <div className="text-[11px] text-ink-faint">
+          {status.kind === "error" ? (
+            <span className="text-neg">{status.msg}</span>
+          ) : status.kind === "ok" || meta ? (
+            <span className="text-pos">
+              ✓ {meta?.fileName ?? "loaded"}
+              {status.msg ? ` — ${status.msg}` : meta?.note ? ` — ${meta.note}` : ""}
+            </span>
+          ) : status.kind === "loading" ? (
+            <span>{status.msg}</span>
+          ) : (
+            hint ?? "Drop an .xlsx file or choose one — admin only"
+          )}
         </div>
       </div>
-
-      {status.kind !== "idle" ? (
-        <div
-          className={clsx(
-            "num mt-3 text-[12px]",
-            status.kind === "ok" && "text-pos",
-            status.kind === "error" && "text-neg",
-            status.kind === "loading" && "text-ink-soft",
-          )}
+      <div className="ml-auto flex flex-wrap items-center gap-2">
+        <input
+          ref={inputRef}
+          type="file"
+          accept=".xlsx,.xls"
+          className="hidden"
+          onChange={(e) => handle(e.target.files?.[0])}
+        />
+        <button
+          type="button"
+          onClick={() => inputRef.current?.click()}
+          className="focusable rounded-xl bg-accent px-3.5 py-2 text-[12px] font-semibold text-accent-contrast transition-colors hover:bg-accent-strong"
         >
-          {status.kind === "ok" ? "✓ " : status.kind === "error" ? "✕ " : ""}
-          {status.msg}
-        </div>
-      ) : meta ? (
-        <div className="num mt-3 text-[12px] text-pos">
-          ✓ Using {meta.fileName}
-          {meta.note ? ` — ${meta.note}` : ""}
-        </div>
-      ) : null}
+          Choose file
+        </button>
+        {meta ? (
+          <button
+            type="button"
+            onClick={() => {
+              clearOverride(storeKey);
+              setStatus({ kind: "idle", msg: "" });
+            }}
+            className="focusable rounded-xl border border-line px-3 py-2 text-[12px] font-medium text-ink-soft hover:bg-surface-2"
+          >
+            Reset
+          </button>
+        ) : null}
+      </div>
     </div>
   );
 }

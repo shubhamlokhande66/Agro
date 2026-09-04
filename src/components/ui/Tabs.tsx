@@ -16,20 +16,18 @@ export function Tabs<T extends string>({
   size?: "sm" | "md";
 }) {
   return (
-    <div className="flex flex-wrap gap-1">
+    <div className="inline-flex flex-wrap gap-1 rounded-xl bg-surface-2 p-1">
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
           className={clsx(
-            "rounded-md border font-medium transition-colors",
-            size === "sm"
-              ? "px-2.5 py-1 text-[11px]"
-              : "px-3.5 py-1.5 text-xs",
+            "focusable rounded-lg font-medium transition-colors",
+            size === "sm" ? "px-2.5 py-1 text-[11.5px]" : "px-3.5 py-1.5 text-[12.5px]",
             value === o.value
-              ? "border-brand-green bg-brand-green text-white"
-              : "border-line bg-transparent text-ink-soft hover:bg-surface2",
+              ? "bg-surface text-ink shadow-sm ring-1 ring-line"
+              : "text-ink-faint hover:text-ink",
           )}
         >
           {o.label}
@@ -39,7 +37,7 @@ export function Tabs<T extends string>({
   );
 }
 
-/** pill segmented control (used for the big Domestic / International switch) */
+/** pill segmented control (large — used for the Domestic / International switch) */
 export function SegmentedTabs<T extends string>({
   options,
   value,
@@ -50,17 +48,17 @@ export function SegmentedTabs<T extends string>({
   onChange: (v: T) => void;
 }) {
   return (
-    <div className="inline-flex flex-wrap gap-1 rounded-card border border-line bg-surface p-1.5">
+    <div className="inline-flex flex-wrap gap-1 rounded-xl border border-line bg-surface p-1">
       {options.map((o) => (
         <button
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
           className={clsx(
-            "rounded-lg px-4 py-2 text-[13px] font-medium transition-all",
+            "focusable rounded-lg px-4 py-2 text-[12.5px] font-semibold transition-all",
             value === o.value
-              ? "bg-brand-green text-white shadow-[0_2px_8px_rgba(13,158,119,0.3)]"
-              : "text-ink-soft hover:text-ink",
+              ? "bg-accent text-accent-contrast shadow-[0_4px_14px_-4px_var(--accent)]"
+              : "text-ink-soft hover:bg-surface-2 hover:text-ink",
           )}
         >
           {o.label}
@@ -68,4 +66,12 @@ export function SegmentedTabs<T extends string>({
       ))}
     </div>
   );
+}
+
+export function Segmented<T extends string>(props: {
+  options: Opt<T>[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return <SegmentedTabs {...props} />;
 }

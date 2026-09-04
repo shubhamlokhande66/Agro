@@ -53,7 +53,7 @@ export default function ProductionPage() {
   return (
     <div>
       <PageHeader
-        title="🌿 Domestic Cotton Production"
+        title="Domestic Cotton Production" icon="▤"
         sub="Area · Yield · Production · state-wise · Source: GOI / CAB / state govts"
       />
 
@@ -160,7 +160,7 @@ function SeasonSelect({
     <select
       value={value}
       onChange={(e) => onChange(e.target.value)}
-      className="rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[12px] outline-none focus:border-brand-navy"
+      className="rounded-lg border border-line bg-surface px-2.5 py-1.5 text-[12px] outline-none focus:border-accent"
     >
       {DP_SEASONS.map((s) => (
         <option key={s} value={s}>

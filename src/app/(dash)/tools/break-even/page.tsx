@@ -32,7 +32,7 @@ export default function BreakEvenPage() {
 
   return (
     <div>
-      <PageHeader title="⚖️ Break-Even Calculator" />
+      <PageHeader title="Break-Even Calculator" icon="◇" />
       <Card className="max-w-xl">
         <CardHeader title="Find your break-even selling price" />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">

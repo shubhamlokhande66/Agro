@@ -59,7 +59,7 @@ export default function WeatherPage() {
   return (
     <div>
       <PageHeader
-        title="🌦️ Weather & Rainfall — Cotton Belt"
+        title="Weather & Rainfall" icon="☂"
         sub="IMD subdivision rainfall · May–Dec cotton season · 2012–2025"
       />
 
@@ -69,8 +69,8 @@ export default function WeatherPage() {
           onClick={() => setStateName("_composite")}
           className={`rounded-lg border px-3 py-1.5 text-[12px] font-medium ${
             isComposite
-              ? "border-brand-green bg-brand-green text-white"
-              : "border-line bg-surface text-ink-soft hover:border-brand-green"
+              ? "border-accent bg-accent text-accent-contrast"
+              : "border-line bg-surface text-ink-soft hover:border-accent"
           }`}
         >
           🇮🇳 Composite
@@ -85,8 +85,8 @@ export default function WeatherPage() {
             }}
             className={`rounded-lg border px-3 py-1.5 text-[12px] font-medium ${
               stateName === s
-                ? "border-brand-green bg-brand-green text-white"
-                : "border-line bg-surface text-ink-soft hover:border-brand-green"
+                ? "border-accent bg-accent text-accent-contrast"
+                : "border-line bg-surface text-ink-soft hover:border-accent"
             }`}
           >
             {s}

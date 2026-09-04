@@ -44,7 +44,7 @@ export default function BalanceSheetPage() {
   return (
     <div>
       <PageHeader
-        title="⚖️ Cotton Balance Sheet"
+        title="Cotton Balance Sheet" icon="⚖"
         sub="India supply & demand · lakh bales · Source: CAB / trade estimates"
       />
 

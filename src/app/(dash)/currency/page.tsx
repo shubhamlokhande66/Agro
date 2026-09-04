@@ -53,7 +53,7 @@ export default function CurrencyPage() {
 
   return (
     <div>
-      <PageHeader title="💱 Currency" />
+      <PageHeader title="Currency" icon="$" />
 
       <Card className="max-w-lg">
         <CardHeader title="USD ↔ INR · ICE price converter" />

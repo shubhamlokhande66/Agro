@@ -71,7 +71,7 @@ export default function TradePage() {
   return (
     <div>
       <PageHeader
-        title="🌐 India Cotton — Imports & Exports"
+        title="Imports & Exports" icon="⇄"
         sub="Monthly 2007-08 → 2026-27 · cotton year Oct–Sep · actuals to Jan 2026"
       />
 

@@ -2,13 +2,17 @@ import clsx from "clsx";
 
 export function Card({
   className,
+  hover,
   children,
 }: {
   className?: string;
+  hover?: boolean;
   children: React.ReactNode;
 }) {
   return (
-    <div className={clsx("card p-4 sm:p-5", className)}>{children}</div>
+    <div className={clsx("panel p-4 sm:p-5", hover && "panel-hover", className)}>
+      {children}
+    </div>
   );
 }
 
@@ -22,9 +26,11 @@ export function CardHeader({
   right?: React.ReactNode;
 }) {
   return (
-    <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
+    <div className="mb-4 flex flex-wrap items-start justify-between gap-3">
       <div className="min-w-0">
-        <div className="text-[13px] font-semibold text-ink">{title}</div>
+        <div className="text-[13.5px] font-semibold tracking-tight text-ink">
+          {title}
+        </div>
         {sub ? (
           <div className="mt-0.5 text-[11px] text-ink-faint">{sub}</div>
         ) : null}
@@ -35,5 +41,11 @@ export function CardHeader({
 }
 
 export function SectionLabel({ children }: { children: React.ReactNode }) {
-  return <div className="section-label">{children}</div>;
+  return (
+    <div className="mb-3 mt-8 flex items-center gap-3 first:mt-0">
+      <span className="h-4 w-1 rounded-full bg-accent" />
+      <span className="eyebrow">{children}</span>
+      <span className="h-px flex-1 bg-line" />
+    </div>
+  );
 }

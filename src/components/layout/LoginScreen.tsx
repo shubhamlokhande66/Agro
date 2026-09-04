@@ -11,43 +11,44 @@ export function LoginScreen() {
 
   function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (login(user, pass)) {
-      setError(false);
-    } else {
+    if (login(user, pass)) setError(false);
+    else {
       setError(true);
       setPass("");
     }
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-[linear-gradient(135deg,#0d2414_0%,#1a3a1a_50%,#0d2414_100%)] p-4">
+    <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#07100c] p-4">
+      <div className="pointer-events-none absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-[#0f9d63]/20 blur-3xl" />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[520px] w-[520px] rounded-full bg-[#0b7d4e]/20 blur-3xl" />
+
       <form
         onSubmit={submit}
-        className="w-full max-w-[420px] rounded-[18px] bg-white px-7 py-9 text-center shadow-[0_28px_70px_rgba(0,0,0,0.4)] sm:px-10"
+        className="relative w-full max-w-[420px] rounded-3xl border border-white/10 bg-white/[0.03] p-7 text-center backdrop-blur-xl sm:p-9"
+        style={{ boxShadow: "0 40px 120px -20px rgba(0,0,0,0.6)" }}
       >
-        <div className="mx-auto mb-3.5 flex h-[60px] w-[60px] items-center justify-center rounded-[15px] bg-[linear-gradient(135deg,#0d9e77,#1a7a5e)] text-[28px] shadow-[0_8px_20px_rgba(13,158,119,0.4)]">
+        <div className="mx-auto mb-4 grid h-14 w-14 place-items-center rounded-2xl bg-gradient-to-br from-[#2dd08a] to-[#0b7d4e] text-2xl shadow-[0_10px_30px_-8px_rgba(45,208,138,0.6)]">
           🌿
         </div>
-        <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[2.5px] text-brand-green">
+        <div className="mb-1.5 text-[10px] font-bold uppercase tracking-[0.24em] text-[#2dd08a]">
           Agrolityx Research
         </div>
-        <h2 className="mb-1 text-xl font-bold text-ink">Cotton Dashboard</h2>
-        <p className="mb-7 text-[13px] text-ink-faint">
-          Sign in to access your dashboard
-        </p>
+        <h2 className="text-xl font-semibold tracking-tight text-white">Cotton Terminal</h2>
+        <p className="mb-7 mt-1 text-[13px] text-white/45">Sign in to your workspace</p>
 
-        <label className="mb-1.5 block text-left text-[11px] font-bold uppercase tracking-wide text-ink-soft">
+        <label className="mb-1.5 block text-left text-[11px] font-semibold uppercase tracking-wide text-white/50">
           Username
         </label>
         <input
           value={user}
           onChange={(e) => setUser(e.target.value)}
           autoComplete="username"
-          placeholder="Enter your username"
-          className="mb-3.5 w-full rounded-[9px] border-2 border-[#e8e8e8] px-3.5 py-3 text-sm outline-none transition-colors focus:border-brand-green"
+          placeholder="admin"
+          className="mb-3.5 w-full rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-[#2dd08a] focus:bg-white/[0.06]"
         />
 
-        <label className="mb-1.5 block text-left text-[11px] font-bold uppercase tracking-wide text-ink-soft">
+        <label className="mb-1.5 block text-left text-[11px] font-semibold uppercase tracking-wide text-white/50">
           Password
         </label>
         <input
@@ -55,24 +56,24 @@ export function LoginScreen() {
           value={pass}
           onChange={(e) => setPass(e.target.value)}
           autoComplete="current-password"
-          placeholder="Enter your password"
-          className="mb-4 w-full rounded-[9px] border-2 border-[#e8e8e8] px-3.5 py-3 text-sm outline-none transition-colors focus:border-brand-green"
+          placeholder="••••••••"
+          className="mb-4 w-full rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-[#2dd08a] focus:bg-white/[0.06]"
         />
 
         {error ? (
-          <div className="mb-3.5 rounded-lg border border-[#f5b8b8] bg-[#fff2f2] px-3.5 py-2.5 text-left text-xs font-semibold text-neg">
-            ❌ Incorrect username or password. Please try again.
+          <div className="mb-3.5 rounded-xl border border-[#ff7a6b]/30 bg-[#ff7a6b]/10 px-3.5 py-2.5 text-left text-xs font-medium text-[#ff9c90]">
+            Incorrect username or password.
           </div>
         ) : null}
 
         <button
           type="submit"
-          className="w-full rounded-[10px] bg-[linear-gradient(135deg,#0d9e77,#1a7a5e)] py-3.5 text-[15px] font-bold tracking-wide text-white shadow-[0_5px_16px_rgba(13,158,119,0.45)] transition-opacity hover:opacity-90"
+          className="w-full rounded-xl bg-gradient-to-r from-[#2dd08a] to-[#0b7d4e] py-3.5 text-[15px] font-semibold text-[#05221a] shadow-[0_10px_30px_-8px_rgba(45,208,138,0.55)] transition-opacity hover:opacity-95"
         >
-          Sign In →
+          Sign in →
         </button>
 
-        <p className="mt-5 text-[11px] text-ink-faint">
+        <p className="mt-6 text-[11px] text-white/25">
           🔒 Protected · Agrolityx Research © 2025
         </p>
       </form>

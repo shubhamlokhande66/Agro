@@ -3,6 +3,7 @@
 import { Line } from "react-chartjs-2";
 import { ensureChartsRegistered } from "./register";
 import { lineOptions, SERIES } from "./theme";
+import { useChartTheme } from "./useChartTheme";
 
 ensureChartsRegistered();
 
@@ -45,15 +46,8 @@ export default function LineChart({
   height = 240,
   tooltipLabel,
 }: Props) {
-  const options = lineOptions({
-    yFmt,
-    yMin,
-    yMax,
-    xTicks,
-    legend,
-    smartX,
-    tooltipLabel,
-  });
+  const t = useChartTheme();
+  const options = lineOptions({ t, yFmt, yMin, yMax, xTicks, legend, smartX, tooltipLabel });
 
   return (
     <div style={{ height }} className="relative">

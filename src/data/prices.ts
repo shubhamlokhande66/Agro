@@ -114,16 +114,36 @@ export const DOM_PERIOD_OPTS: { value: DomPeriod; label: string }[] = [
   { value: "all", label: "All" },
 ];
 
+export type PriceOverride = {
+  years: string[];
+  series: Partial<Record<PriceKey, number[]>>;
+};
+
+/** apply an uploaded override on top of the bundled variety list */
+export function applyPriceOverride(base: Variety[], ov?: PriceOverride): Variety[] {
+  if (!ov) return base;
+  return base.map((v) => {
+    const col = ov.series[v.key];
+    return col && col.length ? { ...v, annual: col } : v;
+  });
+}
+
+export const PRICES_STORE_KEY = "prices";
+
 /** slice an annual series (or the daily set) for the chosen period */
-export function sliceVariety(v: Variety, period: DomPeriod) {
+export function sliceVariety(
+  v: Variety,
+  period: DomPeriod,
+  years: string[] = DOM_YEARS,
+) {
   if (period === "monthly") {
     return { labels: DOM_DAY_LABELS as (string | number)[], data: v.daily };
   }
-  const n = DOM_YEARS.length;
+  const n = years.length;
   const start =
     period === "1y" ? Math.max(0, n - 2) : period === "3y" ? Math.max(0, n - 7) : 0;
   return {
-    labels: DOM_YEARS.slice(start) as (string | number)[],
+    labels: years.slice(start) as (string | number)[],
     data: v.annual.slice(start),
   };
 }

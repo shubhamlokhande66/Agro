@@ -2,7 +2,8 @@
 
 import { Line } from "react-chartjs-2";
 import { ensureChartsRegistered } from "./register";
-import { lineOptions } from "./theme";
+import { hexToRgba, lineOptions } from "./theme";
+import { useChartTheme } from "./useChartTheme";
 
 ensureChartsRegistered();
 
@@ -21,7 +22,6 @@ type Props = {
   xTicks?: number;
 };
 
-/** dual-axis line chart (e.g. ICE cotton vs Brent crude) */
 export default function ComboChart({
   labels,
   left,
@@ -29,7 +29,8 @@ export default function ComboChart({
   height = 220,
   xTicks = 12,
 }: Props) {
-  const base = lineOptions({ legend: true, xTicks });
+  const t = useChartTheme();
+  const base = lineOptions({ t, legend: true, xTicks });
 
   return (
     <div style={{ height }} className="relative">
@@ -73,18 +74,18 @@ export default function ComboChart({
               position: "left",
               ticks: {
                 font: { size: 10 },
-                color: "#a3a39c",
+                color: t.tick,
                 maxTicksLimit: 6,
                 callback: (v: any) => left.fmt(Number(v)),
               },
-              grid: { color: "rgba(0,0,0,0.05)", drawTicks: false },
+              grid: { color: t.grid, drawTicks: false },
               border: { display: false },
             },
             y2: {
               position: "right",
               ticks: {
                 font: { size: 10 },
-                color: "#a3a39c",
+                color: t.tick,
                 maxTicksLimit: 6,
                 callback: (v: any) => right.fmt(Number(v)),
               },
@@ -96,9 +97,4 @@ export default function ComboChart({
       />
     </div>
   );
-}
-
-function hexToRgba(hex: string, a: number) {
-  const h = hex.replace("#", "");
-  return `rgba(${parseInt(h.slice(0, 2), 16)},${parseInt(h.slice(2, 4), 16)},${parseInt(h.slice(4, 6), 16)},${a})`;
 }

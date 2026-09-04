@@ -3,7 +3,8 @@
 import { useMemo } from "react";
 import { Line } from "react-chartjs-2";
 import { ensureChartsRegistered } from "./register";
-import { areaFill, lineOptions, TEAL } from "./theme";
+import { areaFill, hexToRgba, lineOptions } from "./theme";
+import { useChartTheme } from "./useChartTheme";
 
 ensureChartsRegistered();
 
@@ -23,7 +24,7 @@ type Props = {
 export default function AreaChart({
   labels,
   data,
-  color = TEAL,
+  color,
   yFmt,
   yMin,
   yMax,
@@ -32,24 +33,26 @@ export default function AreaChart({
   smartX = true,
   height = 180,
 }: Props) {
-  const { auto } = useMemo(() => {
+  const t = useChartTheme();
+  const line = color ?? t.accent;
+
+  const auto = useMemo(() => {
     const valid = data.filter((v): v is number => v != null);
-    if (!valid.length) return { auto: {} as { min?: number; max?: number } };
+    if (!valid.length) return {} as { min?: number; max?: number };
     const mn = Math.min(...valid);
     const mx = Math.max(...valid);
     const pad = (mx - mn) * 0.12 || mx * 0.1 || 1;
-    return { auto: { min: Math.max(0, mn - pad), max: mx + pad } };
+    return { min: Math.max(0, mn - pad), max: mx + pad };
   }, [data]);
 
   const options = lineOptions({
+    t,
     yFmt,
     yMin: yMin ?? auto.min,
     yMax: yMax ?? auto.max,
     xTicks,
     smartX,
-    tooltipLabel: tooltipLabel
-      ? (c) => tooltipLabel(c.parsed.y)
-      : undefined,
+    tooltipLabel: tooltipLabel ? (c) => tooltipLabel(c.parsed.y) : undefined,
   });
 
   return (
@@ -61,15 +64,15 @@ export default function AreaChart({
           datasets: [
             {
               data: data as number[],
-              borderColor: color,
-              backgroundColor: areaFill(
-                color.startsWith("#") ? hexToRgba(color, 0.2) : color,
-              ),
+              borderColor: line,
+              backgroundColor: line.startsWith("#")
+                ? areaFill(line)
+                : hexToRgba("#12a277", 0.15),
               borderWidth: 2,
               pointRadius: 0,
               pointHoverRadius: 5,
-              pointHoverBackgroundColor: color,
-              pointHoverBorderColor: "#fff",
+              pointHoverBackgroundColor: line,
+              pointHoverBorderColor: "var(--surface)",
               pointHoverBorderWidth: 2,
               fill: true,
               tension: 0.35,
@@ -80,12 +83,4 @@ export default function AreaChart({
       />
     </div>
   );
-}
-
-function hexToRgba(hex: string, a: number) {
-  const h = hex.replace("#", "");
-  const r = parseInt(h.slice(0, 2), 16);
-  const g = parseInt(h.slice(2, 4), 16);
-  const b = parseInt(h.slice(4, 6), 16);
-  return `rgba(${r},${g},${b},${a})`;
 }

@@ -28,7 +28,7 @@ export default function MarginPage() {
 
   return (
     <div>
-      <PageHeader title="💰 Margin Calculator" />
+      <PageHeader title="Margin Calculator" icon="∑" />
       <Card className="max-w-xl">
         <CardHeader title="Calculate trading margin & profit" />
         <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
