@@ -1,0 +1,70 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --bg: #f5f4f0;
+  --surface: #ffffff;
+  --surface2: #efefeb;
+  --border: rgba(0, 0, 0, 0.09);
+  --text: #1a1a18;
+  --text2: #5a5a55;
+  --text3: #9a9a92;
+
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, monospace;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* thin, unobtrusive scrollbars */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(0, 0, 0, 0.18) transparent;
+}
+*::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+*::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.16);
+  border-radius: 8px;
+}
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+@layer components {
+  .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+  .card {
+    @apply rounded-card border border-line bg-surface shadow-card;
+  }
+  .section-label {
+    @apply mb-3 mt-7 flex items-center gap-3 text-[11px] font-semibold uppercase tracking-[0.12em] text-ink-faint;
+  }
+  .section-label::after {
+    content: "";
+    @apply h-px flex-1 bg-line;
+  }
+}
