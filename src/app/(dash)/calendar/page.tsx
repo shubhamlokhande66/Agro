@@ -9,9 +9,8 @@ import {
   currentMonthIdx,
 } from "@/data/calendar";
 
-const N = CAL_MONTHS.length;
-
 export default function CalendarPage() {
+  const N = CAL_MONTHS.length;
   const cur = currentMonthIdx();
 
   return (

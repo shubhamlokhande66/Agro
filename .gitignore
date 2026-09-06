@@ -13,3 +13,8 @@ npm-debug.log*
 *.log
 build.log
 dev.log
+
+
+# database
+local.db
+*.sqlite

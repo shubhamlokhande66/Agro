@@ -1,0 +1,34 @@
+{
+  "items": [
+    {
+      "tag": "INDIA",
+      "tone": "accent",
+      "text": "India 2025-26 crop revised to 288.7 lakh bales — down ~6.5% YoY. Maharashtra and Gujarat see the largest production declines.",
+      "meta": "Mar 2026 · CAI"
+    },
+    {
+      "tag": "TRADE",
+      "tone": "info",
+      "text": "Cotton imports surge to ~49 lakh bales in 2025-26, up sharply YoY, as the domestic shortfall drives mill buying from Australia, the US and Brazil.",
+      "meta": "Mar 2026 · CAI"
+    },
+    {
+      "tag": "PRICE",
+      "tone": "warn",
+      "text": "Guj-29 domestic rates near ₹54,300/Candy. Prices under pressure from higher imports and sluggish spinning-mill demand.",
+      "meta": "Mar 2026 · Market"
+    },
+    {
+      "tag": "GLOBAL",
+      "tone": "violet",
+      "text": "USDA January WASDE nudges world ending stocks higher; China production revised up, US exports steady.",
+      "meta": "Jan 2026 · USDA"
+    },
+    {
+      "tag": "CCI",
+      "tone": "accent",
+      "text": "CCI 2025-26 MSP procurement running above 100 lakh bales; OMSS sales tracking near 107 lakh bales for the season.",
+      "meta": "Feb 2026 · CCI"
+    }
+  ]
+}

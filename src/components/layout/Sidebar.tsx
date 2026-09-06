@@ -27,7 +27,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
       </div>
 
       <nav className="flex-1 space-y-4 overflow-y-auto px-2.5 pb-4">
-        {NAV.map((group, gi) => (
+        {NAV.filter((g) => !g.adminOnly || role === "admin").map((group, gi) => (
           <div key={gi}>
             {group.heading ? (
               <div className="mb-1 px-2 text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-faint/80">

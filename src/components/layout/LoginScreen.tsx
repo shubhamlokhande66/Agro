@@ -9,9 +9,14 @@ export function LoginScreen() {
   const [pass, setPass] = useState("");
   const [error, setError] = useState(false);
 
-  function submit(e: React.FormEvent) {
+  const [busy, setBusy] = useState(false);
+
+  async function submit(e: React.FormEvent) {
     e.preventDefault();
-    if (login(user, pass)) setError(false);
+    setBusy(true);
+    const ok = await login(user, pass);
+    setBusy(false);
+    if (ok) setError(false);
     else {
       setError(true);
       setPass("");
@@ -68,9 +73,10 @@ export function LoginScreen() {
 
         <button
           type="submit"
-          className="w-full rounded-xl bg-gradient-to-r from-[#2dd08a] to-[#0b7d4e] py-3.5 text-[15px] font-semibold text-[#05221a] shadow-[0_10px_30px_-8px_rgba(45,208,138,0.55)] transition-opacity hover:opacity-95"
+          disabled={busy}
+          className="w-full rounded-xl bg-gradient-to-r from-[#2dd08a] to-[#0b7d4e] py-3.5 text-[15px] font-semibold text-[#05221a] shadow-[0_10px_30px_-8px_rgba(45,208,138,0.55)] transition-opacity hover:opacity-95 disabled:opacity-60"
         >
-          Sign in →
+          {busy ? "Signing in…" : "Sign in →"}
         </button>
 
         <p className="mt-6 text-[11px] text-white/25">

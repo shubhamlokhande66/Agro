@@ -1,43 +1,36 @@
-/** USD/INR and USD/CNY FX series — ported from the legacy dashboard (x-rates.com / FRED EXCHUS). */
+/** USD/INR and USD/CNY FX series — loaded from the database at runtime. */
 
-const MONTHS_2020_2026 = [
-  "Jan-20", "Feb-20", "Mar-20", "Apr-20", "May-20", "Jun-20", "Jul-20", "Aug-20", "Sep-20", "Oct-20", "Nov-20", "Dec-20",
-  "Jan-21", "Feb-21", "Mar-21", "Apr-21", "May-21", "Jun-21", "Jul-21", "Aug-21", "Sep-21", "Oct-21", "Nov-21", "Dec-21",
-  "Jan-22", "Feb-22", "Mar-22", "Apr-22", "May-22", "Jun-22", "Jul-22", "Aug-22", "Sep-22", "Oct-22", "Nov-22", "Dec-22",
-  "Jan-23", "Feb-23", "Mar-23", "Apr-23", "May-23", "Jun-23", "Jul-23", "Aug-23", "Sep-23", "Oct-23", "Nov-23", "Dec-23",
-  "Jan-24", "Feb-24", "Mar-24", "Apr-24", "May-24", "Jun-24", "Jul-24", "Aug-24", "Sep-24", "Oct-24", "Nov-24", "Dec-24",
-  "Jan-25", "Feb-25", "Mar-25", "Apr-25", "May-25", "Jun-25", "Jul-25", "Aug-25", "Sep-25", "Oct-25", "Nov-25", "Dec-25",
-  "Jan-26", "Feb-26", "Mar-26",
-];
+export type CurrencyBlob = {
+  monthsL: string[];
+  usdinrM: number[]; usdcnyM: number[];
+  usdinr1yL: string[]; usdinr1yV: number[]; usdcny1yV: number[];
+  usdinr5yL: string[]; usdinr5yV: number[]; usdcny5yV: number[];
+};
 
-export const USDINR_M_L = MONTHS_2020_2026;
-export const USDINR_M_V = [
-  71.19, 71.47, 74.16, 76.38, 75.75, 75.66, 74.97, 74.75, 73.57, 73.67, 74.14, 73.5,
-  72.99, 72.44, 73.18, 74.64, 73.63, 73.53, 74.41, 74.33, 73.65, 75.11, 74.42, 75.26,
-  75.56, 76.3, 76.17, 76.11, 77.05, 78.12, 79.37, 79.81, 81.35, 82.72, 81.77, 82.8,
-  81.83, 82.51, 82.16, 82.03, 82.23, 82.26, 82.12, 82.87, 83.17, 83.22, 83.34, 83.22,
-  83.11, 82.97, 83.04, 83.41, 83.35, 83.48, 83.59, 83.88, 83.8, 84.03, 84.38, 84.97,
-  86.23, 86.96, 86.62, 85.6, 85.2, 85.93, 86.07, 87.52, 88.27, 88.37, 88.88, 90.0,
-  91.55, 92.74, 93.88,
-];
+export let USDINR_M_L: string[] = [];
+export let USDCNY_M_L: string[] = [];
+export let USDINR_M_V: number[] = [];
+export let USDCNY_M_V: number[] = [];
+export let USDINR_1Y_L: string[] = [];
+export let USDCNY_1Y_L: string[] = [];
+export let USDINR_1Y_V: number[] = [];
+export let USDCNY_1Y_V: number[] = [];
+export let USDINR_5Y_L: string[] = [];
+export let USDCNY_5Y_L: string[] = [];
+export let USDINR_5Y_V: number[] = [];
+export let USDCNY_5Y_V: number[] = [];
 
-export const USDCNY_M_L = MONTHS_2020_2026;
-export const USDCNY_M_V = [
-  6.9268, 7.0155, 7.0819, 7.0727, 7.1363, 7.0792, 6.9793, 6.911, 6.8133, 6.7575, 6.5809, 6.5347,
-  6.4762, 6.4491, 6.5043, 6.5484, 6.4358, 6.3942, 6.4775, 6.4666, 6.4552, 6.3872, 6.3813, 6.3726,
-  6.359, 6.3298, 6.3561, 6.4168, 6.6768, 6.7004, 6.7474, 6.848, 7.0415, 7.1591, 7.0991, 6.9776,
-  6.7553, 6.8311, 6.8793, 6.9119, 7.029, 7.2258, 7.1775, 7.2855, 7.2932, 7.3163, 7.2766, 7.132,
-  7.1853, 7.1976, 7.2285, 7.2399, 7.2434, 7.2502, 7.2629, 7.1721, 7.1118, 7.1388, 7.2395, 7.28,
-  7.3011, 7.2691, 7.251, 7.2912, 7.22, 7.1826, 7.1718, 7.1761, 7.1252, 7.1206, 7.1045, 7.0432,
-  6.9692, 6.9064, 6.891,
-];
-
-export const USDINR_1Y_L = ["Mar-25", "Apr-25", "May-25", "Jun-25", "Jul-25", "Aug-25", "Sep-25", "Oct-25", "Nov-25", "Dec-25", "Jan-26", "Feb-26", "Mar-26"];
-export const USDINR_1Y_V = [86.62, 85.6, 85.2, 85.93, 86.07, 87.52, 88.27, 88.37, 88.88, 90.0, 91.55, 92.74, 93.88];
-export const USDCNY_1Y_L = USDINR_1Y_L;
-export const USDCNY_1Y_V = [7.251, 7.2912, 7.22, 7.1826, 7.1718, 7.1761, 7.1252, 7.1206, 7.1045, 7.0432, 6.9692, 6.9064, 6.891];
-
-export const USDINR_5Y_L = ["Jan-21", "Apr-21", "Jul-21", "Oct-21", "Jan-22", "Apr-22", "Jul-22", "Oct-22", "Jan-23", "Apr-23", "Jul-23", "Oct-23", "Jan-24", "Apr-24", "Jul-24", "Oct-24", "Jan-25", "Apr-25", "Jul-25", "Oct-25", "Jan-26", "Mar-26"];
-export const USDINR_5Y_V = [72.99, 74.64, 74.41, 75.11, 75.56, 76.11, 79.37, 82.72, 81.83, 82.03, 82.12, 83.22, 83.11, 83.41, 83.59, 84.03, 86.23, 85.6, 86.07, 88.37, 91.55, 93.88];
-export const USDCNY_5Y_L = USDINR_5Y_L;
-export const USDCNY_5Y_V = [6.4762, 6.5484, 6.4775, 6.3872, 6.359, 6.4168, 6.7474, 7.1591, 6.7553, 6.9119, 7.1775, 7.3163, 7.1853, 7.2399, 7.2629, 7.1388, 7.3011, 7.2912, 7.1718, 7.1206, 6.9692, 6.891];
+export function __hydrateCurrency(b: CurrencyBlob) {
+  USDINR_M_L = b.monthsL ?? [];
+  USDCNY_M_L = b.monthsL ?? [];
+  USDINR_M_V = b.usdinrM ?? [];
+  USDCNY_M_V = b.usdcnyM ?? [];
+  USDINR_1Y_L = b.usdinr1yL ?? [];
+  USDCNY_1Y_L = b.usdinr1yL ?? [];
+  USDINR_1Y_V = b.usdinr1yV ?? [];
+  USDCNY_1Y_V = b.usdcny1yV ?? [];
+  USDINR_5Y_L = b.usdinr5yL ?? [];
+  USDCNY_5Y_L = b.usdinr5yL ?? [];
+  USDINR_5Y_V = b.usdinr5yV ?? [];
+  USDCNY_5Y_V = b.usdcny5yV ?? [];
+}

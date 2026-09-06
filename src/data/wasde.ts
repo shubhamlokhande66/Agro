@@ -1,13 +1,23 @@
-/** USDA WASDE world cotton balance (1000 MT / KMT) — legacy WD object. */
-
-export const WD = {"meta":{"latest_report":"January 2026","latest_date":"2026-01-10","next_report":"2026-02-10","release_dates_2026":["2026-01-10","2026-02-10","2026-03-10","2026-04-09","2026-05-12","2026-06-11","2026-07-10","2026-08-12","2026-09-11","2026-10-09","2026-11-10","2026-12-10"],"unit":"1000 MT (KMT)","marketing_year":"August-July","note":"1 US 480-lb bale = 0.21772 MT | 1 Indian bale = 170 kg = 0.17 MT | 1 KMT = 5882 Indian bales (approx)"},"years":["2021/22","2022/23","2023/24","2024/25","2025/26 Dec","2025/26 Jan"],"production":{"China":[5813,6695,5955,6967,7294,7512],"India":[5291,5726,5530,5051,5225,5117],"Brazil":[2356,2552,3172,3701,4082,4082],"United States":[3815,3150,2627,3138,3107,3030],"Pakistan":[1306,849,1524,1089,1089,1089],"Australia":[1274,1263,1089,1219,980,980],"Turkey":[827,1067,695,860,697,653],"Other":[4211,3937,3913,3770,3608,3541],"World":[24894,25239,24505,25796,26081,26004]},"mill_use":{"China":[7272,8208,8470,8491,8382,8491],"India":[5443,5334,5552,5443,5443,5443],"Pakistan":[2330,1894,2112,2351,2373,2373],"Bangladesh":[1916,1676,1687,1785,1764,1764],"Vietnam":[1459,1404,1437,1742,1764,1764],"Turkey":[1872,1633,1437,1546,1502,1481],"Brazil":[694,695,733,738,740,740],"Other":[4207,3692,3607,3798,3855,3835],"World":[25193,24538,25035,25896,25823,25891]},"imports":{"Vietnam":[1444,1409,1434,1737,1764,1764],"Bangladesh":[1840,1524,1649,1753,1742,1742],"Pakistan":[980,980,697,1328,1285,1285],"China":[1694,1357,3259,1129,1176,1176],"Turkey":[1203,912,776,971,1023,1002],"India":[218,376,193,662,610,653],"Indonesia":[561,362,402,431,435,435],"Other":[1405,1297,1180,1359,1488,1471],"World":[9344,8217,9590,9370,9522,9527]},"exports":{"Brazil":[1682,1449,2680,2835,3157,3157],"United States":[3059,2711,2558,2591,2656,2656],"Australia":[778,1347,1255,1138,1110,1154],"India":[815,239,503,288,283,305],"Benin":[388,239,229,250,250,250],"Greece":[310,290,212,234,207,207],"Mali":[283,163,256,223,196,196],"Other":[1975,1520,1957,1670,1664,1605],"World":[9290,7959,9650,9230,9524,9530]},"ending_stocks":{"China":[7439,7262,7993,7585,7656,7765],"India":[1828,2357,2025,2006,2289,2028],"Brazil":[446,855,615,744,930,930],"United States":[1002,1012,686,871,980,914],"Australia":[1088,1047,919,1042,946,903],"Argentina":[339,400,475,529,578,550],"Pakistan":[419,332,403,457,446,446],"Other":[2939,3251,2855,2826,2716,2680],"World":[15500,16517,15971,16060,16541,16217]}} as unknown as WdData;
+/** USDA WASDE world cotton balance (1000 MT / KMT) — loaded from the database. */
 
 type WdCat = Record<string, number[]>;
-type WdData = {
+export type WdData = {
   meta: Record<string, unknown>;
   years: string[];
   production: WdCat; mill_use: WdCat; imports: WdCat; exports: WdCat; ending_stocks: WdCat;
 };
+
+const EMPTY: WdData = {
+  meta: {}, years: [],
+  production: {}, mill_use: {}, imports: {}, exports: {}, ending_stocks: {},
+};
+
+export let WD: WdData = EMPTY;
+
+export function __hydrateWasde(b: WdData) {
+  WD = { ...EMPTY, ...b };
+}
+
 export const WD_CATEGORIES = [
   { key: "production", label: "Production" },
   { key: "mill_use", label: "Mill use" },

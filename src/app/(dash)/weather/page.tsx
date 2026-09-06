@@ -24,19 +24,27 @@ const YEARS = ["2021", "2022", "2023", "2024", "2025", "all"] as const;
 type Year = (typeof YEARS)[number];
 
 export default function WeatherPage() {
-  const [stateName, setStateName] = useState<string>("Maharashtra");
+  const [stateName, setStateName] = useState<string>(RF_STATES[0] ?? "Maharashtra");
   const isComposite = stateName === "_composite";
-  const subs = isComposite ? [] : Object.keys(RFH[stateName]);
+  const subs = useMemo(
+    () => (isComposite ? [] : Object.keys(RFH[stateName] ?? {})),
+    [isComposite, stateName],
+  );
   const [sub, setSub] = useState<string>("_state");
   const [year, setYear] = useState<Year>("2025");
 
   const series = useMemo(() => {
-    if (isComposite) return { label: "All cotton states (weighted)", normal: RF_COMPOSITE_T.normal, ...RF_COMPOSITE_T };
-    const s = RFH[stateName][subs.includes(sub) ? sub : "_state"];
-    return s;
+    if (isComposite)
+      return {
+        label: "All cotton states (weighted)",
+        normal: RF_COMPOSITE_T.normal ?? [],
+        ...RF_COMPOSITE_T,
+      };
+    const block = RFH[stateName] ?? {};
+    return block[subs.includes(sub) ? sub : "_state"] ?? { label: stateName, normal: [] };
   }, [isComposite, stateName, sub, subs]);
 
-  const normal = series.normal;
+  const normal = series.normal ?? [];
   const yv = (y: string): number[] | undefined =>
     isComposite
       ? RF_COMPOSITE_T["y" + y]

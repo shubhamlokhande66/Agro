@@ -7,6 +7,7 @@ export type NavItem = {
 
 export type NavGroup = {
   heading?: string;
+  adminOnly?: boolean;
   items: NavItem[];
 };
 
@@ -54,6 +55,11 @@ export const NAV: NavGroup[] = [
       { href: "/tools/margin", label: "Margin Calculator", icon: "∑" },
       { href: "/tools/break-even", label: "Break-Even Calc", icon: "◇" },
     ],
+  },
+  {
+    heading: "Admin",
+    adminOnly: true,
+    items: [{ href: "/admin", label: "Manage Datasets", icon: "⚙" }],
   },
 ];
 

@@ -1,0 +1,477 @@
+{
+  "months": [
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+    "Jan",
+    "Feb"
+  ],
+  "phaseMeta": {
+    "land": {
+      "label": "Land Preparation",
+      "color": "#78716c"
+    },
+    "sow": {
+      "label": "Sowing",
+      "color": "#16a34a"
+    },
+    "veg": {
+      "label": "Vegetative Growth",
+      "color": "#047857"
+    },
+    "sq": {
+      "label": "Squaring",
+      "color": "#7c3aed"
+    },
+    "boll": {
+      "label": "Boll Development",
+      "color": "#d97706"
+    },
+    "harv": {
+      "label": "Harvesting",
+      "color": "#dc2626"
+    },
+    "2nd": {
+      "label": "2nd Picking",
+      "color": "#7f1d1d"
+    },
+    "msp": {
+      "label": "MSP / Market Sales",
+      "color": "#0369a1"
+    }
+  },
+  "states": [
+    {
+      "name": "Gujarat",
+      "flag": "🌿",
+      "color": "#0369a1",
+      "area": "~28 Lakh Ha",
+      "variety": "Bt Cotton Hybrid",
+      "season": "May–Feb",
+      "sowPeak": "Jun–Jul",
+      "harvPeak": "Nov–Jan",
+      "notes": "Largest cotton producing state. Drip irrigation prevalent. Saurashtra & N. Gujarat key zones.",
+      "phases": [
+        {
+          "key": "land",
+          "start": 0,
+          "end": 0.5
+        },
+        {
+          "key": "sow",
+          "start": 0.5,
+          "end": 2
+        },
+        {
+          "key": "veg",
+          "start": 2,
+          "end": 4
+        },
+        {
+          "key": "sq",
+          "start": 4,
+          "end": 5.5
+        },
+        {
+          "key": "boll",
+          "start": 5.5,
+          "end": 7
+        },
+        {
+          "key": "harv",
+          "start": 7,
+          "end": 9
+        },
+        {
+          "key": "msp",
+          "start": 6,
+          "end": 9
+        }
+      ]
+    },
+    {
+      "name": "Maharashtra",
+      "flag": "🏔️",
+      "color": "#7c3aed",
+      "area": "~42 Lakh Ha",
+      "variety": "Bt Cotton Hybrid",
+      "season": "Jun–Feb",
+      "sowPeak": "Jun–Jul",
+      "harvPeak": "Oct–Jan",
+      "notes": "Largest area under cotton. Vidarbha & Marathwada key zones. Rain-fed dominant.",
+      "phases": [
+        {
+          "key": "land",
+          "start": 0.5,
+          "end": 1
+        },
+        {
+          "key": "sow",
+          "start": 1,
+          "end": 2.5
+        },
+        {
+          "key": "veg",
+          "start": 2.5,
+          "end": 4.5
+        },
+        {
+          "key": "sq",
+          "start": 4.5,
+          "end": 6
+        },
+        {
+          "key": "boll",
+          "start": 6,
+          "end": 7.5
+        },
+        {
+          "key": "harv",
+          "start": 5,
+          "end": 9
+        },
+        {
+          "key": "2nd",
+          "start": 7,
+          "end": 9
+        }
+      ]
+    },
+    {
+      "name": "Telangana",
+      "flag": "🌾",
+      "color": "#059669",
+      "area": "~18 Lakh Ha",
+      "variety": "Bt Cotton Hybrid",
+      "season": "Jun–Jan",
+      "sowPeak": "Jun–Jul",
+      "harvPeak": "Oct–Dec",
+      "notes": "Andhra & Telangana cotton belt. Krishna & Godavari delta zones. High-yield varieties.",
+      "phases": [
+        {
+          "key": "land",
+          "start": 0.5,
+          "end": 1
+        },
+        {
+          "key": "sow",
+          "start": 1,
+          "end": 2
+        },
+        {
+          "key": "veg",
+          "start": 2,
+          "end": 4
+        },
+        {
+          "key": "sq",
+          "start": 4,
+          "end": 5
+        },
+        {
+          "key": "boll",
+          "start": 5,
+          "end": 6.5
+        },
+        {
+          "key": "harv",
+          "start": 5,
+          "end": 8
+        },
+        {
+          "key": "msp",
+          "start": 5,
+          "end": 8
+        }
+      ]
+    },
+    {
+      "name": "Madhya Pradesh",
+      "flag": "🌱",
+      "color": "#d97706",
+      "area": "~6 Lakh Ha",
+      "variety": "Bt Cotton Hybrid",
+      "season": "May–Jan",
+      "sowPeak": "May–Jun",
+      "harvPeak": "Oct–Dec",
+      "notes": "Malwa plateau key zone. Early sowing due to semi-arid climate. Nimad belt prominent.",
+      "phases": [
+        {
+          "key": "land",
+          "start": 0,
+          "end": 0.5
+        },
+        {
+          "key": "sow",
+          "start": 0.5,
+          "end": 1.5
+        },
+        {
+          "key": "veg",
+          "start": 1.5,
+          "end": 3.5
+        },
+        {
+          "key": "sq",
+          "start": 3.5,
+          "end": 5
+        },
+        {
+          "key": "boll",
+          "start": 5,
+          "end": 6.5
+        },
+        {
+          "key": "harv",
+          "start": 5,
+          "end": 8
+        }
+      ]
+    },
+    {
+      "name": "Karnataka",
+      "flag": "🏞️",
+      "color": "#0891b2",
+      "area": "~5 Lakh Ha",
+      "variety": "Bt Cotton Hybrid",
+      "season": "Jun–Feb",
+      "sowPeak": "Jun–Jul",
+      "harvPeak": "Nov–Jan",
+      "notes": "Northern Karnataka — Dharwad, Haveri, Gadag districts. Long-duration varieties.",
+      "phases": [
+        {
+          "key": "land",
+          "start": 0.5,
+          "end": 1
+        },
+        {
+          "key": "sow",
+          "start": 1,
+          "end": 2.5
+        },
+        {
+          "key": "veg",
+          "start": 2.5,
+          "end": 5
+        },
+        {
+          "key": "sq",
+          "start": 5,
+          "end": 6.5
+        },
+        {
+          "key": "boll",
+          "start": 6.5,
+          "end": 7.5
+        },
+        {
+          "key": "harv",
+          "start": 6,
+          "end": 9
+        },
+        {
+          "key": "2nd",
+          "start": 7.5,
+          "end": 9
+        }
+      ]
+    },
+    {
+      "name": "Rajasthan",
+      "flag": "🏜️",
+      "color": "#dc2626",
+      "area": "~4 Lakh Ha",
+      "variety": "Desi + Bt Hybrid",
+      "season": "May–Dec",
+      "sowPeak": "May–Jun",
+      "harvPeak": "Sep–Nov",
+      "notes": "Sriganganagar & Hanumangarh districts. Irrigated belt. Early sowing, early harvest.",
+      "phases": [
+        {
+          "key": "land",
+          "start": 0,
+          "end": 0.5
+        },
+        {
+          "key": "sow",
+          "start": 0.5,
+          "end": 1.5
+        },
+        {
+          "key": "veg",
+          "start": 1.5,
+          "end": 3
+        },
+        {
+          "key": "sq",
+          "start": 3,
+          "end": 4
+        },
+        {
+          "key": "boll",
+          "start": 4,
+          "end": 5
+        },
+        {
+          "key": "harv",
+          "start": 4,
+          "end": 7
+        },
+        {
+          "key": "msp",
+          "start": 5,
+          "end": 7
+        }
+      ]
+    },
+    {
+      "name": "Punjab",
+      "flag": "🌻",
+      "color": "#9333ea",
+      "area": "~3 Lakh Ha",
+      "variety": "Desi + Bt Hybrid",
+      "season": "May–Nov",
+      "sowPeak": "May–Jun",
+      "harvPeak": "Sep–Oct",
+      "notes": "Malwa region. Canal-irrigated. Among the highest yields in India. Early-medium varieties.",
+      "phases": [
+        {
+          "key": "land",
+          "start": 0,
+          "end": 0.5
+        },
+        {
+          "key": "sow",
+          "start": 0.5,
+          "end": 1.5
+        },
+        {
+          "key": "veg",
+          "start": 1.5,
+          "end": 3
+        },
+        {
+          "key": "sq",
+          "start": 3,
+          "end": 4
+        },
+        {
+          "key": "boll",
+          "start": 4,
+          "end": 5.5
+        },
+        {
+          "key": "harv",
+          "start": 4,
+          "end": 6
+        },
+        {
+          "key": "msp",
+          "start": 4.5,
+          "end": 6.5
+        }
+      ]
+    },
+    {
+      "name": "Haryana",
+      "flag": "🌿",
+      "color": "#065f46",
+      "area": "~7 Lakh Ha",
+      "variety": "Desi + Bt Hybrid",
+      "season": "May–Nov",
+      "sowPeak": "May–Jun",
+      "harvPeak": "Sep–Oct",
+      "notes": "Sirsa, Hisar, Fatehabad districts. Canal irrigation. Parallel to Punjab cropping pattern.",
+      "phases": [
+        {
+          "key": "land",
+          "start": 0,
+          "end": 0.5
+        },
+        {
+          "key": "sow",
+          "start": 0.5,
+          "end": 1.5
+        },
+        {
+          "key": "veg",
+          "start": 1.5,
+          "end": 3
+        },
+        {
+          "key": "sq",
+          "start": 3,
+          "end": 4
+        },
+        {
+          "key": "boll",
+          "start": 4,
+          "end": 5.5
+        },
+        {
+          "key": "harv",
+          "start": 4,
+          "end": 6
+        },
+        {
+          "key": "msp",
+          "start": 4.5,
+          "end": 6.5
+        }
+      ]
+    },
+    {
+      "name": "Andhra Pradesh",
+      "flag": "🌊",
+      "color": "#0e7490",
+      "area": "~6 Lakh Ha",
+      "variety": "Bt Cotton Hybrid",
+      "season": "Jun–Jan",
+      "sowPeak": "Jun–Jul",
+      "harvPeak": "Oct–Dec",
+      "notes": "Guntur, Kurnool, Krishna districts. Krishna delta cotton. High-density planting.",
+      "phases": [
+        {
+          "key": "land",
+          "start": 0.5,
+          "end": 1
+        },
+        {
+          "key": "sow",
+          "start": 1,
+          "end": 2
+        },
+        {
+          "key": "veg",
+          "start": 2,
+          "end": 4
+        },
+        {
+          "key": "sq",
+          "start": 4,
+          "end": 5
+        },
+        {
+          "key": "boll",
+          "start": 5,
+          "end": 6.5
+        },
+        {
+          "key": "harv",
+          "start": 5,
+          "end": 8
+        },
+        {
+          "key": "msp",
+          "start": 5,
+          "end": 7.5
+        }
+      ]
+    }
+  ]
+}

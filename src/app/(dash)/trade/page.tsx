@@ -15,16 +15,15 @@ import { num, pctChange } from "@/lib/format";
 type Flow = "import" | "export";
 type Unit = "lb" | "kmt";
 
-const MONTH_ORDER = IE.months;
-
 function ytdTotal(flow: Flow, season: string, throughMonth: string): number | null {
   const block = IE[flow][season];
   if (!block) return null;
-  const end = MONTH_ORDER.indexOf(throughMonth);
+  const months = IE.months;
+  const end = months.indexOf(throughMonth);
   let sum = 0;
   let any = false;
   for (let i = 0; i <= end; i++) {
-    const v = block[MONTH_ORDER[i]];
+    const v = block[months[i]];
     if (typeof v === "number") {
       sum += v;
       any = true;
@@ -40,6 +39,7 @@ export default function TradePage() {
   const [tab, setTab] = useState<"import" | "export" | "overview">("import");
   const [unit, setUnit] = useState<Unit>("lb");
   const seasons = IE.seasons;
+  const MONTH_ORDER = IE.months;
   const [season, setSeason] = useState(IE.actual_cutoff.season);
   const [through, setThrough] = useState(IE.actual_cutoff.month);
 
@@ -63,9 +63,8 @@ export default function TradePage() {
   );
 
   const monthlySeries = useMemo(
-    () =>
-      MONTH_ORDER.map((mn) => conv(IE[flow][season]?.[mn] ?? null, unit)),
-    [flow, season, unit],
+    () => MONTH_ORDER.map((mn) => conv(IE[flow][season]?.[mn] ?? null, unit)),
+    [MONTH_ORDER, flow, season, unit],
   );
 
   return (

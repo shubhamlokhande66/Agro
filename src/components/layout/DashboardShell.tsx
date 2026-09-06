@@ -5,26 +5,47 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useAuth } from "@/lib/auth";
+import { DatasetProvider } from "@/lib/datasets/provider";
+import { useDataState } from "@/lib/datasets/store";
 import { LoginScreen } from "./LoginScreen";
 import { Sidebar } from "./Sidebar";
 import { Topbar } from "./Topbar";
 import { MarketTicker } from "./MarketTicker";
 import { QUICK_NAV } from "@/lib/nav";
 
-export function DashboardShell({ children }: { children: React.ReactNode }) {
-  const { ready, authed } = useAuth();
+function Splash({ label }: { label: string }) {
+  return (
+    <div className="grid min-h-screen place-items-center bg-bg text-sm text-ink-faint">
+      <span className="animate-pulse">{label}</span>
+    </div>
+  );
+}
+
+function Inner({ children }: { children: React.ReactNode }) {
+  const dataReady = useDataState((s) => s.ready);
+  const dataError = useDataState((s) => s.error);
+  const version = useDataState((s) => s.version);
   const [drawer, setDrawer] = useState(false);
   const pathname = usePathname();
 
-  if (!ready) {
+  if (dataError) {
     return (
-      <div className="grid min-h-screen place-items-center bg-bg text-sm text-ink-faint">
-        <span className="animate-pulse">Loading terminal…</span>
+      <div className="grid min-h-screen place-items-center bg-bg p-6 text-center">
+        <div>
+          <div className="text-sm font-semibold text-neg">Couldn’t load data</div>
+          <p className="mt-1 max-w-sm text-[12px] text-ink-faint">{dataError}</p>
+          <button
+            type="button"
+            onClick={() => location.reload()}
+            className="mt-4 rounded-xl bg-accent px-4 py-2 text-xs font-semibold text-accent-contrast"
+          >
+            Retry
+          </button>
+        </div>
       </div>
     );
   }
-
-  if (!authed) return <LoginScreen />;
+  if (!dataReady) return <Splash label="Loading market data…" />;
 
   return (
     <div className="flex min-h-screen">
@@ -51,12 +72,11 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         <MarketTicker />
 
         <main className="flex-1 px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-16">
-          <div key={pathname} className="mx-auto max-w-[1280px] animate-rise">
+          <div key={`${pathname}:${version}`} className="mx-auto max-w-[1280px] animate-rise">
             {children}
           </div>
         </main>
 
-        {/* mobile bottom quick-nav */}
         <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-[var(--topbar-bg)] backdrop-blur-md lg:hidden">
           {QUICK_NAV.map((item) => {
             const active =
@@ -78,5 +98,18 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
         </nav>
       </div>
     </div>
+  );
+}
+
+export function DashboardShell({ children }: { children: React.ReactNode }) {
+  const { ready, authed } = useAuth();
+
+  if (!ready) return <Splash label="Loading terminal…" />;
+  if (!authed) return <LoginScreen />;
+
+  return (
+    <DatasetProvider>
+      <Inner>{children}</Inner>
+    </DatasetProvider>
   );
 }

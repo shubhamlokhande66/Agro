@@ -1,84 +1,96 @@
-# Agrolityx · Cotton Terminal — Next.js
+# Agrolityx · Cotton Terminal
 
-A Next.js 14 (App Router) + TypeScript + Tailwind CSS rebuild of the Agrolityx
-Research cotton dashboard, converted from a single static HTML file into a
-componentised, responsive application with a premium "commodity terminal" UI.
+Next.js 14 (App Router) + TypeScript + Tailwind. Every dashboard dataset lives in
+**MongoDB** and is edited from an in-app admin panel — there is no hardcoded
+market data and no Excel-upload step in the running app.
 
 ## Stack
 
-- **Next.js 14** (App Router) · **React 18** · **TypeScript**
-- **Tailwind CSS 3** with a token-based design system (light + dark themes)
+- **Next.js 14** · **React 18** · **TypeScript** · **Tailwind CSS 3** (light + dark)
 - **Chart.js 4** via `react-chartjs-2` (theme-aware)
-- **Zustand** for the admin Excel-upload store
-- **SheetJS (xlsx)** for spreadsheet parsing
-- Client-side auth (session storage) with `admin` / `client` roles
+- **MongoDB** (Atlas) via the official `mongodb` driver
+- Session auth (signed httpOnly cookie via `jose`), `admin` / `client` roles
 
-## Getting started
+## Setup
 
 ```bash
 npm install
-npm run dev      # http://localhost:3000
-npm run build
-npm start
+cp .env.example .env.local        # then set DATABASE_URL to your MongoDB URI
+npm run db:seed                    # loads seed data into the `datasets` collection
+npm run dev                        # http://localhost:3000
 ```
 
-## Design
+`.env.local`:
 
-- **Two themes** — a warm "paper" light theme and a deep-charcoal "terminal"
-  dark theme. Toggle in the top bar; choice is remembered and the initial theme
-  follows the OS preference with no flash.
-- **Layout** — grouped sidebar (desktop) that becomes a slide-in drawer on
-  mobile, a sticky glass top bar, a live market-pulse ticker, and a bottom
-  quick-nav on small screens.
-- Every view is fluid: grids reflow, tables scroll horizontally, KPI rows go
-  2-up on phones.
+```
+DATABASE_URL="mongodb+srv://USER:PASS@cluster0.xxxx.mongodb.net/agro?retryWrites=true&w=majority"
+MONGODB_DB="agro"
+AUTH_SECRET="a-long-random-string"
+# optional: ADMIN_PASSWORD, CLIENT_PASSWORD
+```
+
+> **Atlas note:** add your IP (or `0.0.0.0/0` for development) under
+> **Network Access** in the Atlas dashboard, or connections fail with a TLS
+> alert before `db:seed` can run.
+
+`npm run db:seed` reads `seed/*.json` and, for **arrivals / sowing / production**,
+the operator workbooks in `data/*.xlsx` (these override the seed JSON). Re-run it
+any time to reset a dataset to seed.
+
+## How data works
+
+| Layer | Detail |
+| --- | --- |
+| Storage | one document per dataset in the `datasets` collection: `{ _id: key, kind, label, data, updatedAt, updatedBy }` — `data` matches the TS type in `src/data/*` |
+| Read | `DatasetProvider` calls `GET /api/datasets` once on load and hydrates the `src/data` modules; the shell shows a loader until data arrives |
+| Write | admins edit at `/admin` → `PUT /api/datasets/:key` (server-checked admin session) → provider refetches → UI updates live |
+| Seed | `seed/*.json` + `data/*.xlsx` populate an empty database only |
+
+Datasets: prices, international, currency, cci, news, arrivals, sowing,
+production, balanceSheet, trade, cop, calendar, rainfall, wasde.
+
+## Admin panel
+
+`/admin` (admin role only). Each dataset opens an editor:
+
+- **arrivals / sowing** — a spreadsheet-style grid: edit any cell, add/rename/delete rows (weeks) and columns (seasons / series)
+- **everything else** — a structured form editor (add/remove array rows, add object keys, colour pickers) with a raw-JSON mode as a fallback
+
+Saving writes to MongoDB and is live for everyone immediately.
 
 ## Login
 
-Ported 1:1 from the legacy dashboard (`src/lib/auth.tsx`):
+| Username | Password | Role |
+| --- | --- | --- |
+| `admin` | `Agro@Admin2025` (or `ADMIN_PASSWORD`) | admin |
+| `client01`–`client10` | `Cotton@C01`–`Cotton@C10` (or `CLIENT_PASSWORD`) | client |
 
-| Username   | Password         | Role   |
-| ---------- | ---------------- | ------ |
-| `admin`    | `Agro@Admin2025` | admin  |
-| `client01` … `client10` | `Cotton@C01` … `Cotton@C10` | client |
+## Deploy on Vercel
 
-Admin sees the Excel upload panels; clients get a read-only dashboard.
+1. In Vercel project settings add env vars: `DATABASE_URL` (Atlas URI),
+   `MONGODB_DB`, `AUTH_SECRET`, optionally `ADMIN_PASSWORD` / `CLIENT_PASSWORD`.
+2. Add `0.0.0.0/0` to Atlas **Network Access** (Vercel functions have dynamic IPs).
+3. Seed the database once from your machine:
+   `DATABASE_URL="mongodb+srv://…" npm run db:seed`
+4. Deploy.
 
-## Sections
+## Notes
 
-**Market Overview** — snapshot dashboard (hero price, ICE trend, fundamentals KPIs, balance-sheet card).
-
-| Group | Sections |
-| --- | --- |
-| Markets | Prices (Domestic + International), Currency, Cotton Basis, CCI Updates, Market News |
-| Fundamentals | Cotton Arrivals, Cotton Sowing, Domestic Production, Balance Sheet, Import & Export, COP & ROI, Crop Calendar |
-| Global | Weather & Rainfall, WASDE |
-| Tools | Margin Calculator, Break-Even Calculator |
-
-"Coming soon" placeholders (as in the original): CFTC, USDA Export Sales,
-Benchmarks, India Cotton Maps.
-
-## Excel upload
-
-Admin users get an upload panel on **Prices** — a workbook with a Year column
-and variety columns (`GUJ29`, `MMAK29`, `PHR28`, …) replaces the bundled annual
-series for the session. Other sections currently show their bundled data; the
-`UploadPanel` component + parsers in `src/lib/xlsx.ts` are the extension point.
+- `next build` skips ESLint + `tsc` (they race with antivirus on this Windows
+  box). Run `npm run typecheck` to validate types.
 
 ## Project layout
 
 ```
 src/
-  app/(dash)/…          route per section, wrapped by the auth-gated shell
-  components/
-    layout/             Topbar, Sidebar, DashboardShell, MarketTicker, LoginScreen
-    charts/             theme-aware Chart.js wrappers (Area / Line / Bar / Combo / Sparkline)
-    ui/                 Card, Tabs, Kpi, DataTable, ChangeBadge, Field, UploadPanel…
-    sections/           composed pieces (PriceCard, InternationalPrices)
-  data/                 typed datasets ported from the legacy embedded constants
-  lib/                  auth, theme, format helpers, xlsx parsing, zustand store, nav
+  app/(dash)/…          dashboard routes + /admin panel, behind the auth shell
+  app/api/…             auth + datasets REST endpoints
+  db/                   cached MongoClient
+  lib/server/           users, session, dataset data-access
+  lib/datasets/         registry, hydrate map, DatasetProvider, store
+  data/                 dataset TYPES + live bindings (no values — filled from the DB)
+  components/admin/     GridEditor, JsonEditor
+scripts/                extract-seed, parse-excel, seed
+seed/                   JSON seed blobs
+data/                   operator Excel workbooks
 ```
-
-## Deploy on Vercel
-
-Import the repo — Next.js is auto-detected. No environment variables required.
