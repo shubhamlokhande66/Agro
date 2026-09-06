@@ -8,24 +8,28 @@ import { Table, TableWrap, Td, Th } from "@/components/ui/DataTable";
 import AreaChart from "@/components/charts/AreaChart";
 import BarChart from "@/components/charts/BarChart";
 import { CCI } from "@/data/cci";
+import { DataMissing } from "@/components/ui/DataGuard";
 import { inr, int, num } from "@/lib/format";
 
 export default function CciPage() {
-  const procSeasons = Object.keys(CCI.proc_annual);
-  const latestKey = procSeasons.at(-1)!;
-  const prevKey = procSeasons.at(-2)!;
-
-  const priceSeries = CCI.datewise.filter((r) => r.p != null);
-  const lastPrice = priceSeries.at(-1);
-
-  const stateEntries = Object.entries(CCI.statewise).sort((a, b) => b[1] - a[1]);
-
-  const sellSeasons = Object.keys(CCI.monthly_sell);
-  const [season, setSeason] = useState(sellSeasons.at(-1)!);
+  const sellSeasons = Object.keys(CCI.monthly_sell ?? {});
+  const [season, setSeason] = useState(sellSeasons.at(-1) ?? "");
   const monthlySell = useMemo(
-    () => Object.entries(CCI.monthly_sell[season] ?? {}),
+    () => Object.entries(CCI.monthly_sell?.[season] ?? {}),
     [season],
   );
+
+  const procSeasons = Object.keys(CCI.proc_annual ?? {});
+  if (!procSeasons.length) {
+    return <DataMissing title="CCI Updates" icon="🏛" dataset="cci" />;
+  }
+  const latestKey = procSeasons.at(-1)!;
+  const prevKey = procSeasons.at(-2) ?? latestKey;
+
+  const priceSeries = (CCI.datewise ?? []).filter((r) => r.p != null);
+  const lastPrice = priceSeries.at(-1);
+
+  const stateEntries = Object.entries(CCI.statewise ?? {}).sort((a, b) => b[1] - a[1]);
 
   return (
     <div>

@@ -10,14 +10,18 @@ import { Delta } from "@/components/ui/ChangeBadge";
 import BarChart from "@/components/charts/BarChart";
 import LineChart from "@/components/charts/LineChart";
 import { WD, WD_CATEGORIES } from "@/data/wasde";
+import { DataMissing } from "@/components/ui/DataGuard";
 import { int, pctChange } from "@/lib/format";
 
 type CatKey = (typeof WD_CATEGORIES)[number]["key"];
 
 export default function WasdePage() {
   const [cat, setCat] = useState<CatKey>("production");
-  const yrs = WD.years;
+  const yrs = WD.years ?? [];
   const li = yrs.length - 1;
+  if (!yrs.length || !WD.production || !Object.keys(WD.production).length) {
+    return <DataMissing title="WASDE — World Cotton Balance" icon="🌐" dataset="wasde" />;
+  }
   const block = WD[cat] as Record<string, number[]>;
 
   const countries = Object.keys(block).filter((k) => k !== "World");

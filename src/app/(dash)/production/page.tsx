@@ -18,6 +18,7 @@ import {
   dpValue,
   type DpMetric,
 } from "@/data/production";
+import { DataMissing } from "@/components/ui/DataGuard";
 import { num, pctChange } from "@/lib/format";
 
 const METRICS: { value: DpMetric; label: string; unit: string; digits: number }[] = [
@@ -29,9 +30,10 @@ const METRICS: { value: DpMetric; label: string; unit: string; digits: number }[
 const ORDER = [...DP_REGIONS.NORTH, ...DP_REGIONS.WEST, ...DP_REGIONS.SOUTH, ...DP_REGIONS.OTHER];
 
 export default function ProductionPage() {
+  const seasons = DP_SEASONS ?? [];
   const [metric, setMetric] = useState<DpMetric>("prod");
-  const [sB, setSB] = useState(DP_SEASONS.at(-2)!); // 2025/26 (Estimated)
-  const [sA, setSA] = useState(DP_SEASONS.at(-3)!); // 2024/25
+  const [sB, setSB] = useState(seasons.at(-1) ?? "");
+  const [sA, setSA] = useState(seasons.at(-2) ?? "");
 
   const m = METRICS.find((x) => x.value === metric)!;
 
@@ -44,6 +46,10 @@ export default function ProductionPage() {
       }),
     [metric, sA, sB],
   );
+
+  if (!seasons.length) {
+    return <DataMissing title="Domestic Cotton Production" icon="▤" dataset="production" />;
+  }
 
   const totA = dpValue(metric, sA, "ALL_INDIA");
   const totB = dpValue(metric, sB, "ALL_INDIA");

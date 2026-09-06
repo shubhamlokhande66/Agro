@@ -17,7 +17,9 @@ export function PriceCard({ v, years = DOM_YEARS }: { v: Variety; years?: string
   const [period, setPeriod] = useState<DomPeriod>("monthly");
   const sliced = sliceVariety(v, period, years);
 
-  const annualValid = v.annual.filter((x): x is number => x != null && !Number.isNaN(x));
+  const annualValid = (v.annual ?? []).filter(
+    (x): x is number => x != null && !Number.isNaN(x),
+  );
   const latest = annualValid.at(-1) ?? null;
   const n = annualValid.length;
   const wk = pctChange(latest, annualValid[n - 2] ?? null);

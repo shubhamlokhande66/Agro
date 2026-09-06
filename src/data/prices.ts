@@ -50,14 +50,16 @@ export function sliceVariety(
   period: DomPeriod,
   years: string[] = DOM_YEARS,
 ) {
+  const annual = v.annual ?? [];
+  const daily = v.daily ?? [];
   if (period === "monthly") {
-    return { labels: DOM_DAY_LABELS as (string | number)[], data: v.daily };
+    return { labels: DOM_DAY_LABELS as (string | number)[], data: daily };
   }
   const n = years.length;
   const start =
     period === "1y" ? Math.max(0, n - 2) : period === "3y" ? Math.max(0, n - 7) : 0;
   return {
     labels: years.slice(start) as (string | number)[],
-    data: v.annual.slice(start),
+    data: annual.slice(start),
   };
 }

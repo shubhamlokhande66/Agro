@@ -7,10 +7,15 @@ import { SectionLabel } from "@/components/ui/Card";
 import { PriceCard } from "@/components/sections/PriceCard";
 import { InternationalPrices } from "@/components/sections/InternationalPrices";
 import { AdminHint } from "@/components/ui/AdminHint";
+import { DataMissing } from "@/components/ui/DataGuard";
 import { VARIETIES, VARIETY_GROUPS, DOM_YEARS } from "@/data/prices";
 
 export default function PricesPage() {
   const [tab, setTab] = useState<"domestic" | "international">("domestic");
+  const groups =
+    VARIETY_GROUPS.length > 0
+      ? VARIETY_GROUPS
+      : Array.from(new Set(VARIETIES.map((v) => v.group)));
 
   return (
     <div>
@@ -30,19 +35,23 @@ export default function PricesPage() {
       />
 
       {tab === "domestic" ? (
-        <div>
-          <AdminHint dataset="prices" />
-          {VARIETY_GROUPS.map((group) => (
-            <div key={group}>
-              <SectionLabel>{group} · ₹ / Candy</SectionLabel>
-              <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3">
-                {VARIETIES.filter((v) => v.group === group).map((v) => (
-                  <PriceCard key={v.key} v={v} years={DOM_YEARS} />
-                ))}
+        VARIETIES.length === 0 ? (
+          <DataMissing title="Prices" icon="₹" dataset="prices" />
+        ) : (
+          <div>
+            <AdminHint dataset="prices" />
+            {groups.map((group) => (
+              <div key={group}>
+                <SectionLabel>{group} · ₹ / Candy</SectionLabel>
+                <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3">
+                  {VARIETIES.filter((v) => v.group === group).map((v) => (
+                    <PriceCard key={v.key} v={v} years={DOM_YEARS} />
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-        </div>
+            ))}
+          </div>
+        )
       ) : (
         <InternationalPrices />
       )}

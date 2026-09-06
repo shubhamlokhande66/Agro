@@ -10,6 +10,7 @@ import { Delta } from "@/components/ui/ChangeBadge";
 import LineChart from "@/components/charts/LineChart";
 import BarChart from "@/components/charts/BarChart";
 import { SND } from "@/data/balanceSheet";
+import { DataMissing } from "@/components/ui/DataGuard";
 import { num, pctChange } from "@/lib/format";
 
 const ROWS: { key: keyof (typeof SND.annual)[string]; label: string; group: "supply" | "demand" | "close" }[] = [
@@ -25,21 +26,23 @@ const ROWS: { key: keyof (typeof SND.annual)[string]; label: string; group: "sup
 
 export default function BalanceSheetPage() {
   const [view, setView] = useState<"annual" | "monthly">("annual");
-  const annualSeasons = SND.annual_seasons; // newest first
-  const chrono = [...annualSeasons].reverse();
+  const annualSeasons = SND.annual_seasons ?? []; // newest first
+  const [season, setSeason] = useState((SND.seasons ?? []).at(-1) ?? "");
+  const monthRows = useMemo(() => {
+    const block = SND.monthly?.[season] ?? {};
+    return (SND.months_order ?? []).map((mn) => ({ mn, ...(block[mn] ?? {}) }));
+  }, [season]);
 
+  if (!annualSeasons.length || !SND.annual?.[annualSeasons[0]]) {
+    return <DataMissing title="Cotton Balance Sheet" icon="⚖" dataset="balanceSheet" />;
+  }
+
+  const chrono = [...annualSeasons].reverse();
   const latest = annualSeasons[0];
   const prev = annualSeasons[1];
   const a = SND.annual[latest];
-  const p = SND.annual[prev];
-
-  const stu = a.closing_stocks / a.total_demand * 100;
-
-  const [season, setSeason] = useState(SND.seasons.at(-1)!);
-  const monthRows = useMemo(() => {
-    const block = SND.monthly[season] ?? {};
-    return SND.months_order.map((mn) => ({ mn, ...(block[mn] ?? {}) }));
-  }, [season]);
+  const p = SND.annual[prev] ?? a;
+  const stu = a.total_demand ? (a.closing_stocks / a.total_demand) * 100 : 0;
 
   return (
     <div>

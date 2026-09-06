@@ -5,53 +5,59 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Kpi, KpiRow } from "@/components/ui/Kpi";
 import { Tabs } from "@/components/ui/Tabs";
+import { DataMissing } from "@/components/ui/DataGuard";
 import LineChart, { type LineSeries } from "@/components/charts/LineChart";
-import {
-  ARRIVALS,
-  ARRIVAL_SEASONS,
-  ARRIVAL_WEEKS,
-} from "@/data/arrivals";
+import { ARRIVALS, ARRIVAL_SEASONS, ARRIVAL_WEEKS } from "@/data/arrivals";
 import { num, pctChange, signedPct } from "@/lib/format";
 
-const PALETTE = ["#cbd5e1", "#94a3b8", "#64748b", "#0ea5e9", "#2563eb", "#f59e0b", "#0d9e77"];
+const PALETTE = ["#cbd5e1", "#94a3b8", "#64748b", "#0ea5e9", "#2563eb", "#f59e0b", "#0d9e77", "#8b6cf0"];
 
 export default function ArrivalsPage() {
   const [mode, setMode] = useState<"all" | "compare">("all");
+  const seasons = ARRIVAL_SEASONS ?? [];
+
+  const latestKey = seasons.at(-1);
+  const prevKey = seasons.at(-2);
 
   const series = useMemo<LineSeries[]>(() => {
-    if (mode === "compare") {
-      return [
-        { label: "24-25", data: ARRIVALS["24-25"], color: "#2563eb", width: 2 },
-        { label: "25-26", data: ARRIVALS["25-26"], color: "#ef4444", width: 2.5, dashed: true },
-      ];
-    }
-    return ARRIVAL_SEASONS.map((s, i) => ({
+    const list = mode === "compare" ? seasons.slice(-2) : seasons;
+    return list.map((s, i) => ({
       label: s,
-      data: ARRIVALS[s],
-      color: PALETTE[i % PALETTE.length],
-      width: s === "25-26" ? 2.5 : s === "24-25" ? 2 : 1.5,
-      dashed: s === "25-26",
+      data: ARRIVALS[s] ?? [],
+      color:
+        mode === "compare"
+          ? i === 0
+            ? "#2563eb"
+            : "#ef4444"
+          : PALETTE[i % PALETTE.length],
+      width: s === latestKey ? 2.5 : s === prevKey ? 2 : 1.5,
+      dashed: s === latestKey,
     }));
-  }, [mode]);
+  }, [mode, seasons, latestKey, prevKey]);
 
-  const cur = ARRIVALS["25-26"].filter((v) => v != null);
-  const prev = ARRIVALS["24-25"];
+  if (!seasons.length) {
+    return <DataMissing title="Cotton Arrivals" icon="▨" dataset="arrivals" />;
+  }
+
+  const cur = (ARRIVALS[latestKey!] ?? []).filter((v) => v != null && !Number.isNaN(v));
+  const prev = ARRIVALS[prevKey!] ?? [];
   const curLatest = cur.at(-1) ?? null;
-  const prevAtSame = prev[cur.length - 1] ?? prev.at(-1) ?? null;
+  const prevAtSame = prev[cur.length - 1] ?? prev.filter((v) => v != null).at(-1) ?? null;
   const yoy = pctChange(curLatest, prevAtSame);
-  const prevFull = prev.at(-1) ?? null;
+  const prevFull = prev.filter((v) => v != null && !Number.isNaN(v)).at(-1) ?? null;
 
   return (
     <div>
       <PageHeader
         title="Cotton Arrivals"
-        sub="Cumulative market arrivals · lakh bales · weekly Oct → Feb"
+        icon="▨"
+        sub="Cumulative market arrivals · lakh bales · weekly"
       />
 
       <KpiRow>
-        <Kpi label="2025-26 to date" value={num(curLatest, 1)} unit="lakh bales" />
+        <Kpi label={`${latestKey} to date`} value={num(curLatest, 1)} unit="lakh bales" />
         <Kpi
-          label="Same week 2024-25"
+          label={`Same week ${prevKey}`}
           value={num(prevAtSame, 1)}
           unit="lakh bales"
           accent="blue"
@@ -62,7 +68,7 @@ export default function ArrivalsPage() {
           accent={yoy != null && yoy < 0 ? "red" : "green"}
         />
         <Kpi
-          label="2024-25 full season"
+          label={`${prevKey} full season`}
           value={num(prevFull, 1)}
           unit="lakh bales"
           accent="amber"
@@ -77,7 +83,7 @@ export default function ArrivalsPage() {
               <Tabs
                 options={[
                   { value: "all", label: "All seasons" },
-                  { value: "compare", label: "vs last yr" },
+                  { value: "compare", label: "Latest 2" },
                 ]}
                 value={mode}
                 onChange={setMode}
@@ -87,9 +93,9 @@ export default function ArrivalsPage() {
           <LineChart
             labels={ARRIVAL_WEEKS}
             series={series}
-            height={280}
+            height={300}
             smartX={false}
-            xTicks={8}
+            xTicks={9}
             tooltipLabel={(c) => `${c.dataset.label}: ${c.parsed.y} lakh bales`}
           />
         </Card>

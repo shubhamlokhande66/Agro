@@ -9,36 +9,50 @@ import { pctChange } from "@/lib/format";
 
 type Item = { label: string; value: string; delta: number | null };
 
-function last2<T>(a: T[]): [T, T] {
-  return [a[a.length - 2], a[a.length - 1]];
+function tail2(a: unknown): [number | null, number | null] {
+  if (!Array.isArray(a) || a.length === 0) return [null, null];
+  return [a[a.length - 2] ?? null, a[a.length - 1] ?? null];
+}
+
+function daily(key: string): number[] {
+  return VARIETIES.find((v) => v.key === key)?.daily ?? [];
 }
 
 function build(): Item[] {
-  const guj29 = VARIETIES.find((v) => v.key === "guj29")!;
-  const mmak29 = VARIETIES.find((v) => v.key === "mmak29")!;
-  const [gA, gB] = last2(guj29.daily);
-  const [mA, mB] = last2(mmak29.daily);
-  const [iceA, iceB] = last2(ICE_D_V);
-  const [brA, brB] = last2(BR_M_V);
-  const [inrA, inrB] = last2(USDINR_M_V);
-  const [cnyA, cnyB] = last2(USDCNY_M_V);
-  const seasons = IE.seasons;
-  const impLatest = IE.import_totals[IE.actual_cutoff.season];
-  const impPrev = IE.import_totals[seasons[seasons.indexOf(IE.actual_cutoff.season) - 1]];
+  const items: Item[] = [];
+  const push = (label: string, series: unknown, fmt: (v: number) => string) => {
+    const [a, b] = tail2(series);
+    if (b == null) return;
+    items.push({ label, value: fmt(b), delta: pctChange(b, a) });
+  };
 
-  return [
-    { label: "GUJ-29", value: "₹" + gB.toLocaleString("en-IN"), delta: pctChange(gB, gA) },
-    { label: "MMAK-29", value: "₹" + mB.toLocaleString("en-IN"), delta: pctChange(mB, mA) },
-    { label: "ICE #2", value: iceB.toFixed(2) + "¢", delta: pctChange(iceB, iceA) },
-    { label: "BRENT", value: "$" + brB.toFixed(1), delta: pctChange(brB, brA) },
-    { label: "USD/INR", value: "₹" + inrB.toFixed(2), delta: pctChange(inrB, inrA) },
-    { label: "USD/CNY", value: "¥" + cnyB.toFixed(3), delta: pctChange(cnyB, cnyA) },
-    { label: "IMPORTS 25-26", value: impLatest.toFixed(1) + " lb", delta: pctChange(impLatest, impPrev) },
-  ];
+  push("GUJ-29", daily("guj29"), (v) => "₹" + v.toLocaleString("en-IN"));
+  push("MMAK-29", daily("mmak29"), (v) => "₹" + v.toLocaleString("en-IN"));
+  push("ICE #2", ICE_D_V, (v) => v.toFixed(2) + "¢");
+  push("BRENT", BR_M_V, (v) => "$" + v.toFixed(1));
+  push("USD/INR", USDINR_M_V, (v) => "₹" + v.toFixed(2));
+  push("USD/CNY", USDCNY_M_V, (v) => "¥" + v.toFixed(3));
+
+  const impSeason = IE.actual_cutoff?.season;
+  const seasons = IE.seasons ?? [];
+  const imp = impSeason ? IE.import_totals?.[impSeason] : undefined;
+  const impPrev = impSeason
+    ? IE.import_totals?.[seasons[seasons.indexOf(impSeason) - 1]]
+    : undefined;
+  if (typeof imp === "number") {
+    items.push({
+      label: "IMPORTS " + impSeason,
+      value: imp.toFixed(1) + " lb",
+      delta: pctChange(imp, impPrev ?? null),
+    });
+  }
+
+  return items;
 }
 
 export function MarketTicker() {
   const items = build();
+  if (items.length === 0) return null;
   const doubled = [...items, ...items];
 
   return (

@@ -38,17 +38,18 @@ const unitLabel = (u: Unit) => (u === "kmt" ? "KMT" : "Lakh Bales");
 export default function TradePage() {
   const [tab, setTab] = useState<"import" | "export" | "overview">("import");
   const [unit, setUnit] = useState<Unit>("lb");
-  const seasons = IE.seasons;
-  const MONTH_ORDER = IE.months;
-  const [season, setSeason] = useState(IE.actual_cutoff.season);
-  const [through, setThrough] = useState(IE.actual_cutoff.month);
+  const seasons = IE.seasons ?? [];
+  const MONTH_ORDER = IE.months ?? [];
+  const cutoff = IE.actual_cutoff ?? { season: "", month: "" };
+  const [season, setSeason] = useState(cutoff.season || seasons.at(-1) || "");
+  const [through, setThrough] = useState(cutoff.month || MONTH_ORDER.at(-1) || "");
 
-  const latest = IE.actual_cutoff.season;
-  const prev = seasons[seasons.indexOf(latest) - 1];
-  const impNow = IE.import_totals[latest];
-  const expNow = IE.export_totals[latest];
-  const impPrev = IE.import_totals[prev];
-  const expPrev = IE.export_totals[prev];
+  const latest = cutoff.season || seasons.at(-1) || "";
+  const prev = seasons[seasons.indexOf(latest) - 1] ?? seasons.at(-2) ?? "";
+  const impNow = IE.import_totals?.[latest] ?? null;
+  const expNow = IE.export_totals?.[latest] ?? null;
+  const impPrev = IE.import_totals?.[prev] ?? null;
+  const expPrev = IE.export_totals?.[prev] ?? null;
 
   const flow: Flow = tab === "export" ? "export" : "import";
 

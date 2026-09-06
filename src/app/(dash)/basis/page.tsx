@@ -9,12 +9,12 @@ import { ICE_D_V } from "@/data/international";
 import { inr } from "@/lib/format";
 
 export default function BasisPage() {
-  const gujLast = VARIETIES.find((v) => v.key === "guj29")!.daily.at(-1)!;
-  const iceLast = ICE_D_V.at(-1)!;
+  const gujLast = VARIETIES.find((v) => v.key === "guj29")?.daily?.at(-1);
+  const iceLast = ICE_D_V.at(-1);
 
-  const [ice, setIce] = useState(String(iceLast));
+  const [ice, setIce] = useState(iceLast != null ? String(iceLast) : "");
   const [fx, setFx] = useState("93.88");
-  const [dom, setDom] = useState(String(gujLast));
+  const [dom, setDom] = useState(gujLast != null ? String(gujLast) : "");
   const [res, setRes] = useState<null | { iceInr: number; basis: number; pct: number }>(null);
 
   function calc() {

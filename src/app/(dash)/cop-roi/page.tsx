@@ -10,22 +10,33 @@ import LineChart from "@/components/charts/LineChart";
 import BarChart from "@/components/charts/BarChart";
 import { COP_DATA, COP_CROPS, COP_EMOJI } from "@/data/cop";
 import { SERIES } from "@/components/charts/theme";
+import { DataMissing } from "@/components/ui/DataGuard";
 import { int, num, pctChange } from "@/lib/format";
 
 export default function CopRoiPage() {
-  const [crop, setCrop] = useState("Cotton");
-  const c = COP_DATA[crop];
-  const yrs = c.years;
-  const lastIdx = yrs.length - 1;
+  const crops = COP_CROPS ?? [];
+  const [crop, setCrop] = useState(crops[0] ?? "Cotton");
 
-  const t = c.totals;
+  const active = crops.includes(crop) ? crop : crops[0];
+  const c = active ? COP_DATA[active] : undefined;
+
   const costComponents = useMemo(
     () =>
-      Object.entries(c.cost_components)
-        .map(([k, arr]) => ({ k, v: arr[lastIdx] }))
-        .sort((a, b) => b.v - a.v),
-    [c, lastIdx],
+      c
+        ? Object.entries(c.cost_components ?? {})
+            .map(([k, arr]) => ({ k, v: arr[arr.length - 1] ?? 0 }))
+            .sort((a, b) => b.v - a.v)
+        : [],
+    [c],
   );
+
+  if (!c || !c.totals || !(c.years?.length > 0)) {
+    return <DataMissing title="COP & ROI" icon="%" dataset="cop" />;
+  }
+
+  const yrs = c.years;
+  const lastIdx = yrs.length - 1;
+  const t = c.totals;
 
   return (
     <div>
@@ -80,13 +91,15 @@ export default function CopRoiPage() {
         <Card>
           <CardHeader title="ROI by crop — year on year (%)" />
           <LineChart
-            labels={COP_DATA.Cotton.years}
-            series={COP_CROPS.map((name, i) => ({
-              label: name,
-              data: COP_DATA[name].totals.roi.map((r) => r * 100),
-              color: SERIES[i % SERIES.length],
-              width: name === crop ? 2.5 : 1.25,
-            }))}
+            labels={yrs}
+            series={crops
+              .filter((name) => COP_DATA[name]?.totals?.roi)
+              .map((name, i) => ({
+                label: name,
+                data: COP_DATA[name].totals.roi.map((r) => r * 100),
+                color: SERIES[i % SERIES.length],
+                width: name === active ? 2.5 : 1.25,
+              }))}
             smartX={false}
             height={280}
             yFmt={(v) => v + "%"}

@@ -12,31 +12,42 @@ import { SND } from "@/data/balanceSheet";
 import { DP_DATA } from "@/data/production";
 import { IE } from "@/data/trade";
 import { RF_COMPOSITE_T, RF_MONTHS_L, jjas } from "@/data/rainfall";
-import { inr, inrCompact, num, pctChange, signedPct, todayStamp } from "@/lib/format";
+import { inr, num, pctChange, signedPct, todayStamp } from "@/lib/format";
+
+const at = <T,>(a: T[] | undefined, i: number): T | undefined =>
+  Array.isArray(a) ? a.at(i) : undefined;
+
+function variety(key: string) {
+  return VARIETIES.find((v) => v.key === key);
+}
 
 export default function OverviewPage() {
-  const guj29 = VARIETIES.find((v) => v.key === "guj29")!;
-  const g = guj29.daily;
-  const gLast = g.at(-1)!;
-  const gDay = pctChange(gLast, g.at(-2) ?? null);
-  const gMonth = pctChange(gLast, g[0]);
+  const guj29 = variety("guj29");
+  const g = guj29?.daily ?? [];
+  const gLast = at(g, -1) ?? null;
+  const gDay = pctChange(gLast, at(g, -2) ?? null);
+  const gMonth = pctChange(gLast, g[0] ?? null);
 
-  const iceLast = ICE_D_V.at(-1)!;
-  const iceDelta = pctChange(iceLast, ICE_D_V.at(-2) ?? null);
+  const iceLast = at(ICE_D_V, -1) ?? null;
+  const iceDelta = pctChange(iceLast, at(ICE_D_V, -2) ?? null);
 
-  const bsLatest = SND.annual_seasons[0];
-  const bsPrev = SND.annual_seasons[1];
-  const bs = SND.annual[bsLatest];
-  const bsP = SND.annual[bsPrev];
+  const bsSeasons = SND.annual_seasons ?? [];
+  const bsLatest = bsSeasons[0];
+  const bs = bsLatest ? SND.annual?.[bsLatest] : undefined;
+  const bsP = bsSeasons[1] ? SND.annual?.[bsSeasons[1]] : undefined;
 
-  const prodSeason = DP_DATA.seasons.at(-2)!;
-  const prodPrev = DP_DATA.seasons.at(-3)!;
-  const prod = DP_DATA.prod[prodSeason].ALL_INDIA;
-  const prodPrevV = DP_DATA.prod[prodPrev].ALL_INDIA;
+  const dpSeasons = DP_DATA.seasons ?? [];
+  const prodSeason = at(dpSeasons, -2);
+  const prodPrev = at(dpSeasons, -3);
+  const prod = prodSeason ? DP_DATA.prod?.[prodSeason]?.ALL_INDIA ?? null : null;
+  const prodPrevV = prodPrev ? DP_DATA.prod?.[prodPrev]?.ALL_INDIA ?? null : null;
 
-  const impSeason = IE.actual_cutoff.season;
-  const imp = IE.import_totals[impSeason];
-  const impPrev = IE.import_totals[IE.seasons[IE.seasons.indexOf(impSeason) - 1]];
+  const impSeason = IE.actual_cutoff?.season;
+  const impSeasons = IE.seasons ?? [];
+  const imp = impSeason ? IE.import_totals?.[impSeason] ?? null : null;
+  const impPrev = impSeason
+    ? IE.import_totals?.[impSeasons[impSeasons.indexOf(impSeason) - 1]] ?? null
+    : null;
 
   const rfJjas = jjas(RF_COMPOSITE_T.y2025);
   const rfNormal = jjas(RF_COMPOSITE_T.normal);
@@ -45,6 +56,9 @@ export default function OverviewPage() {
   const topVarieties = VARIETIES.filter((v) =>
     ["guj29", "mmak29", "phr28", "cs31"].includes(v.key),
   );
+
+  const heroPrice = at(variety("mmak29")?.daily, -1);
+  const kapasPrice = at(variety("kapas")?.daily, -1);
 
   return (
     <div>
@@ -64,7 +78,6 @@ export default function OverviewPage() {
         </Link>
       </div>
 
-      {/* hero band */}
       <div className="panel overflow-hidden">
         <div className="grid gap-6 p-5 sm:p-6 lg:grid-cols-[1.1fr_1.4fr] lg:items-center">
           <div>
@@ -81,9 +94,16 @@ export default function OverviewPage() {
               per Candy · <span className="num">{signedPct(gMonth, 1)}</span> vs season open
             </div>
             <div className="mt-5 grid grid-cols-3 gap-3">
-              <Mini label="MMAK-29" value={inr(VARIETIES.find((v) => v.key === "mmak29")!.daily.at(-1)!)} />
-              <Mini label="ICE #2" value={iceLast.toFixed(2) + "¢"} delta={iceDelta} />
-              <Mini label="Kapas" value={inr(VARIETIES.find((v) => v.key === "kapas")!.daily.at(-1)!) + "/qtl"} />
+              <Mini label="MMAK-29" value={heroPrice != null ? inr(heroPrice) : "—"} />
+              <Mini
+                label="ICE #2"
+                value={iceLast != null ? iceLast.toFixed(2) + "¢" : "—"}
+                delta={iceDelta}
+              />
+              <Mini
+                label="Kapas"
+                value={kapasPrice != null ? inr(kapasPrice) + "/qtl" : "—"}
+              />
             </div>
           </div>
           <div className="rounded-2xl bg-surface-2/60 p-4">
@@ -106,20 +126,20 @@ export default function OverviewPage() {
       <SectionLabel>Fundamentals at a glance</SectionLabel>
       <KpiRow>
         <Kpi
-          label={`Crop · ${bsLatest}`}
-          value={num(bs.crop_size, 1)}
+          label={`Crop${bsLatest ? ` · ${bsLatest}` : ""}`}
+          value={num(bs?.crop_size ?? null, 1)}
           unit="lakh bales"
-          foot={<Delta value={pctChange(bs.crop_size, bsP.crop_size)} />}
+          foot={<Delta value={pctChange(bs?.crop_size ?? null, bsP?.crop_size ?? null)} />}
         />
         <Kpi
-          label={`Production · ${prodSeason.split(" ")[0]}`}
+          label={`Production${prodSeason ? ` · ${prodSeason.split(" ")[0]}` : ""}`}
           value={num(prod, 1)}
           unit="lakh bales"
           accent="blue"
           foot={<Delta value={pctChange(prod, prodPrevV)} />}
         />
         <Kpi
-          label={`Imports · ${impSeason}`}
+          label={`Imports${impSeason ? ` · ${impSeason}` : ""}`}
           value={num(imp, 1)}
           unit="lakh bales"
           accent="amber"
@@ -130,7 +150,7 @@ export default function OverviewPage() {
           value={signedPct(rfDep, 0)}
           unit="composite vs LPA normal"
           accent={rfDep != null && rfDep < 0 ? "red" : "green"}
-          spark={RF_MONTHS_L.map((_, i) => RF_COMPOSITE_T.y2025[i])}
+          spark={(RF_COMPOSITE_T.y2025 ?? []).slice(0, RF_MONTHS_L.length)}
         />
       </KpiRow>
 
@@ -147,7 +167,8 @@ export default function OverviewPage() {
           />
           <div className="grid gap-2.5 sm:grid-cols-2">
             {topVarieties.map((v) => {
-              const d = pctChange(v.daily.at(-1)!, v.daily[0]);
+              const last = at(v.daily, -1) ?? null;
+              const d = pctChange(last, v.daily?.[0] ?? null);
               return (
                 <div
                   key={v.key}
@@ -155,12 +176,10 @@ export default function OverviewPage() {
                 >
                   <div className="min-w-0 flex-1">
                     <div className="truncate text-[12px] font-semibold text-ink">{v.title}</div>
-                    <div className="num text-[15px] font-semibold text-ink">
-                      {inr(v.daily.at(-1)!)}
-                    </div>
+                    <div className="num text-[15px] font-semibold text-ink">{inr(last)}</div>
                   </div>
                   <div className="h-8 w-20 shrink-0">
-                    <Sparkline data={v.daily} color={d != null && d < 0 ? "#e0605a" : undefined} />
+                    <Sparkline data={v.daily ?? []} color={d != null && d < 0 ? "#e0605a" : undefined} />
                   </div>
                   <Delta value={d} />
                 </div>
@@ -170,29 +189,35 @@ export default function OverviewPage() {
         </Card>
 
         <Card>
-          <CardHeader title="Balance sheet" sub={bsLatest} />
-          <dl className="space-y-2.5 text-[12.5px]">
-            {[
-              ["Opening stocks", bs.opening_stocks],
-              ["+ Crop", bs.crop_size],
-              ["+ Imports", bs.imports],
-              ["− Consumption", -bs.domestic_cons],
-              ["− Exports", -bs.exports],
-              ["= Closing stocks", bs.closing_stocks],
-            ].map(([label, val], i, arr) => (
-              <div
-                key={label as string}
-                className={
-                  i === arr.length - 1
-                    ? "flex justify-between border-t border-line pt-2.5 font-semibold"
-                    : "flex justify-between"
-                }
-              >
-                <dt className="text-ink-soft">{label}</dt>
-                <dd className="num text-ink">{num(Math.abs(val as number), 1)}</dd>
-              </div>
-            ))}
-          </dl>
+          <CardHeader title="Balance sheet" sub={bsLatest ?? undefined} />
+          {bs ? (
+            <dl className="space-y-2.5 text-[12.5px]">
+              {(
+                [
+                  ["Opening stocks", bs.opening_stocks],
+                  ["+ Crop", bs.crop_size],
+                  ["+ Imports", bs.imports],
+                  ["− Consumption", -bs.domestic_cons],
+                  ["− Exports", -bs.exports],
+                  ["= Closing stocks", bs.closing_stocks],
+                ] as [string, number][]
+              ).map(([label, val], i, arr) => (
+                <div
+                  key={label}
+                  className={
+                    i === arr.length - 1
+                      ? "flex justify-between border-t border-line pt-2.5 font-semibold"
+                      : "flex justify-between"
+                  }
+                >
+                  <dt className="text-ink-soft">{label}</dt>
+                  <dd className="num text-ink">{num(Math.abs(val), 1)}</dd>
+                </div>
+              ))}
+            </dl>
+          ) : (
+            <p className="text-[12px] text-ink-faint">Balance-sheet data not loaded.</p>
+          )}
           <Link
             href="/balance-sheet"
             className="mt-4 inline-flex text-[11px] font-semibold text-accent hover:underline"

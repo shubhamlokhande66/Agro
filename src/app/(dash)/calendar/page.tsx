@@ -2,6 +2,7 @@
 
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
+import { DataMissing } from "@/components/ui/DataGuard";
 import {
   CAL_MONTHS,
   CROP_STATES,
@@ -12,6 +13,10 @@ import {
 export default function CalendarPage() {
   const N = CAL_MONTHS.length;
   const cur = currentMonthIdx();
+
+  if (!N || !CROP_STATES.length) {
+    return <DataMissing title="Crop Calendar" icon="▦" dataset="calendar" />;
+  }
 
   return (
     <div>
