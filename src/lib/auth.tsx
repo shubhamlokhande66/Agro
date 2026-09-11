@@ -19,11 +19,57 @@ type AuthState = {
   /** true only for the admin role */
   canUpload: boolean;
   isAdmin: boolean;
-  login: (username: string, password: string) => Promise<boolean>;
+  /** returns null on success, or a message to show the user on failure */
+  login: (username: string, password: string) => Promise<string | null>;
+  /** returns null on success, or a message to show the user on failure */
+  signup: (username: string, password: string) => Promise<string | null>;
   logout: () => Promise<void>;
 };
 
 const AuthContext = createContext<AuthState | null>(null);
+
+const DEVICE_ID_KEY = "cda_device_id";
+
+/** a stable per-browser id, so the server can tell "this device" apart from others */
+function getDeviceId(): string {
+  try {
+    let id = localStorage.getItem(DEVICE_ID_KEY);
+    if (!id) {
+      id = crypto.randomUUID();
+      localStorage.setItem(DEVICE_ID_KEY, id);
+    }
+    return id;
+  } catch {
+    return "unknown-device";
+  }
+}
+
+/** best-effort "Chrome on Windows" style label for the admin's device list — not a security signal */
+function getDeviceLabel(): string {
+  if (typeof navigator === "undefined") return "Unknown device";
+  const ua = navigator.userAgent;
+  const os = /Windows/.test(ua)
+    ? "Windows"
+    : /Mac OS/.test(ua)
+      ? "macOS"
+      : /Android/.test(ua)
+        ? "Android"
+        : /iPhone|iPad/.test(ua)
+          ? "iOS"
+          : /Linux/.test(ua)
+            ? "Linux"
+            : "Unknown OS";
+  const browser = /Edg\//.test(ua)
+    ? "Edge"
+    : /Chrome\//.test(ua)
+      ? "Chrome"
+      : /Firefox\//.test(ua)
+        ? "Firefox"
+        : /Safari\//.test(ua)
+          ? "Safari"
+          : "Unknown browser";
+  return `${browser} on ${os}`;
+}
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [ready, setReady] = useState(false);
@@ -47,13 +93,29 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     const res = await fetch("/api/auth/login", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ username: u, password: p }),
+      body: JSON.stringify({
+        username: u,
+        password: p,
+        deviceId: getDeviceId(),
+        deviceLabel: getDeviceLabel(),
+      }),
     });
-    if (!res.ok) return false;
-    const d = await res.json();
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok) return d.error ?? "Sign in failed";
     setRole(d.role);
     setUsername(d.username);
-    return true;
+    return null;
+  }, []);
+
+  const signup = useCallback(async (u: string, p: string) => {
+    const res = await fetch("/api/auth/signup", {
+      method: "POST",
+      headers: { "content-type": "application/json" },
+      body: JSON.stringify({ username: u, password: p }),
+    });
+    const d = await res.json().catch(() => ({}));
+    if (!res.ok) return d.error ?? "Sign up failed";
+    return null;
   }, []);
 
   const logout = useCallback(async () => {
@@ -71,9 +133,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       canUpload: role === "admin",
       isAdmin: role === "admin",
       login,
+      signup,
       logout,
     }),
-    [ready, role, username, login, logout],
+    [ready, role, username, login, signup, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
