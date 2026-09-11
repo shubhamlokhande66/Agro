@@ -6,25 +6,32 @@ import { ChangeBadge } from "@/components/ui/ChangeBadge";
 import AreaChart from "@/components/charts/AreaChart";
 import {
   DOM_PERIOD_OPTS,
-  DOM_YEARS,
+  latestAnnual,
+  latestDaily,
   sliceVariety,
   type DomPeriod,
   type Variety,
 } from "@/data/prices";
-import { inr, inrCompact, pctChange } from "@/lib/format";
+import { inr, inrCompact, pctChange, shortDate } from "@/lib/format";
 
-export function PriceCard({ v, years = DOM_YEARS }: { v: Variety; years?: string[] }) {
+export function PriceCard({ v }: { v: Variety }) {
   const [period, setPeriod] = useState<DomPeriod>("monthly");
-  const sliced = sliceVariety(v, period, years);
+  const sliced = sliceVariety(v, period);
+  const latestQuote = latestDaily(v);
 
-  const annualValid = (v.annual ?? []).filter(
-    (x): x is number => x != null && !Number.isNaN(x),
-  );
+  const annualValid = [...(v.annual ?? [])]
+    .sort((a, b) => a.year.localeCompare(b.year))
+    .map((p) => p.value);
   const latest = annualValid.at(-1) ?? null;
   const n = annualValid.length;
   const wk = pctChange(latest, annualValid[n - 2] ?? null);
   const mo = pctChange(latest, n >= 4 ? annualValid[n - 4] : null);
   const yr = pctChange(latest, n >= 6 ? annualValid[n - 6] : (annualValid[0] ?? null));
+
+  const headlinePrice = latestQuote?.price ?? latest;
+  const headlineCaption = latestQuote
+    ? `${shortDate(latestQuote.date)} ${latestQuote.date.slice(0, 4)}`
+    : `FY ${latestAnnual(v)?.year ?? "—"}`;
 
   return (
     <div className="panel panel-hover p-4">
@@ -36,8 +43,8 @@ export function PriceCard({ v, years = DOM_YEARS }: { v: Variety; years?: string
           <div className="mt-0.5 text-[11px] text-ink-faint">{v.sub}</div>
         </div>
         <div className="shrink-0 text-right">
-          <div className="num text-[15px] font-semibold text-accent">{inr(latest)}</div>
-          <div className="num text-[10px] text-ink-faint">May {years.at(-1)}</div>
+          <div className="num text-[15px] font-semibold text-accent">{inr(headlinePrice)}</div>
+          <div className="num text-[10px] text-ink-faint">{headlineCaption}</div>
         </div>
       </div>
 
@@ -51,7 +58,7 @@ export function PriceCard({ v, years = DOM_YEARS }: { v: Variety; years?: string
         height={164}
         smartX={period !== "monthly"}
         yFmt={inrCompact}
-        xTicks={period === "monthly" ? 6 : period === "1y" ? 2 : 6}
+        xTicks={6}
         tooltipLabel={(y) => inr(y)}
       />
 

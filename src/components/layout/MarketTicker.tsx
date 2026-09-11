@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { VARIETIES } from "@/data/prices";
+import { VARIETIES, recentPrices } from "@/data/prices";
 import { ICE_D_V, BR_M_V } from "@/data/international";
 import { USDINR_M_V, USDCNY_M_V } from "@/data/currency";
 import { IE } from "@/data/trade";
@@ -15,7 +15,8 @@ function tail2(a: unknown): [number | null, number | null] {
 }
 
 function daily(key: string): number[] {
-  return VARIETIES.find((v) => v.key === key)?.daily ?? [];
+  const v = VARIETIES.find((x) => x.key === key);
+  return v ? recentPrices(v) : [];
 }
 
 function build(): Item[] {

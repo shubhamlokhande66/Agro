@@ -64,6 +64,19 @@ export function AdminRail() {
           Overview
         </Link>
 
+        <Link
+          href="/admin/users"
+          className={clsx(
+            "flex items-center gap-2 rounded-lg px-2.5 py-[7px] text-[12.5px] font-semibold transition-colors",
+            pathname === "/admin/users"
+              ? "bg-accent-soft text-ink"
+              : "text-ink-soft hover:bg-surface-2 hover:text-ink",
+          )}
+        >
+          <span className="grid h-5 w-5 place-items-center rounded-md bg-surface-2 text-[11px]">◈</span>
+          Users
+        </Link>
+
         {groups.map(([group, items]) => (
           <div key={group}>
             <div className="mb-1 px-2.5 text-[9.5px] font-bold uppercase tracking-[0.14em] text-ink-faint/80">

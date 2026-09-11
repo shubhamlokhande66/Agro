@@ -91,7 +91,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   if (!isAdmin) return null;
 
   const key = pathname.startsWith("/admin/") ? pathname.slice("/admin/".length) : null;
-  const meta = key ? datasetMeta(key) : null;
+  const meta = key === "users" ? { label: "Users" } : key ? datasetMeta(key) : null;
 
   return (
     <AdminMetaProvider>

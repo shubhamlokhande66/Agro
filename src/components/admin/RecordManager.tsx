@@ -7,34 +7,47 @@
  * table — nothing is ever left half-edited inline.
  */
 
-import { useState } from "react";
+import { Fragment, forwardRef, useImperativeHandle, useState } from "react";
 import { AddButton, EmptyRow, IconButton, Labeled, Modal } from "./kit";
 import { FieldControl, blankFromFields, fieldPreview, type FieldSpec } from "./fields";
 
-export function RecordManager<T extends Record<string, any>>({
-  value,
-  onChange,
-  fields,
-  columns,
-  itemName = "item",
-  makeItem,
-  renderExtra,
-}: {
-  value: T[];
-  onChange: (v: T[]) => void;
-  fields: FieldSpec[];
-  /** which fields become table columns (defaults to every non-textarea field) */
-  columns?: FieldSpec[];
-  itemName?: string;
-  makeItem?: () => T;
-  /** extra form content rendered inside the modal, below the standard fields */
-  renderExtra?: (draft: T, patch: (p: Partial<T>) => void) => React.ReactNode;
-}) {
+/** Imperative handle so a page-level "+ Add" button (e.g. in the header) can open this table's add form. */
+export type RecordManagerHandle = { openAdd: () => void };
+
+function RecordManagerInner<T extends Record<string, any>>(
+  {
+    value,
+    onChange,
+    fields,
+    columns,
+    itemName = "item",
+    makeItem,
+    renderExtra,
+    hideAddButton,
+    groupBy,
+  }: {
+    value: T[];
+    onChange: (v: T[]) => void;
+    fields: FieldSpec[];
+    /** which fields become table columns (defaults to every non-textarea field) */
+    columns?: FieldSpec[];
+    itemName?: string;
+    makeItem?: () => T;
+    /** extra form content rendered inside the modal, below the standard fields */
+    renderExtra?: (draft: T, patch: (p: Partial<T>) => void) => React.ReactNode;
+    /** hide the inline "+ Add" button — use when a page-header button drives this via ref instead */
+    hideAddButton?: boolean;
+    /** field key to band rows by — rows must already be sorted by this field */
+    groupBy?: string;
+  },
+  ref: React.ForwardedRef<RecordManagerHandle>,
+) {
   const list = value ?? [];
   const cols = columns ?? fields.filter((f) => f.type !== "textarea");
   const [modal, setModal] = useState<{ index: number | null; draft: T } | null>(null);
 
   const openAdd = () => setModal({ index: null, draft: makeItem ? makeItem() : blankFromFields<T>(fields) });
+  useImperativeHandle(ref, () => ({ openAdd }));
   const openEdit = (i: number) => setModal({ index: i, draft: structuredClone(list[i]) });
   const close = () => setModal(null);
   const patch = (p: Partial<T>) => setModal((m) => (m ? { ...m, draft: { ...m.draft, ...p } } : m));
@@ -70,8 +83,18 @@ export function RecordManager<T extends Record<string, any>>({
             </thead>
             <tbody>
               {list.map((item, i) => (
+                <Fragment key={i}>
+                  {groupBy && (i === 0 || item[groupBy] !== list[i - 1][groupBy]) ? (
+                    <tr>
+                      <td
+                        colSpan={cols.length + 1}
+                        className="bg-accent-soft px-2.5 py-1.5 text-[10px] font-bold uppercase tracking-wide text-accent-strong"
+                      >
+                        {String(item[groupBy] ?? "—")}
+                      </td>
+                    </tr>
+                  ) : null}
                 <tr
-                  key={i}
                   className="cursor-pointer hover:bg-surface-2/50"
                   onClick={() => openEdit(i)}
                 >
@@ -101,13 +124,14 @@ export function RecordManager<T extends Record<string, any>>({
                     </div>
                   </td>
                 </tr>
+                </Fragment>
               ))}
             </tbody>
           </table>
         </div>
       )}
 
-      <AddButton label={`+ Add ${itemName}`} onClick={openAdd} />
+      {hideAddButton ? null : <AddButton label={`+ Add ${itemName}`} onClick={openAdd} />}
 
       {modal ? (
         <Modal
@@ -137,3 +161,7 @@ export function RecordManager<T extends Record<string, any>>({
     </div>
   );
 }
+
+export const RecordManager = forwardRef(RecordManagerInner) as <T extends Record<string, any>>(
+  props: Parameters<typeof RecordManagerInner<T>>[0] & { ref?: React.ForwardedRef<RecordManagerHandle> },
+) => ReturnType<typeof RecordManagerInner>;

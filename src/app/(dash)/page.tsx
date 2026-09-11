@@ -6,7 +6,7 @@ import { Kpi, KpiRow } from "@/components/ui/Kpi";
 import { Delta } from "@/components/ui/ChangeBadge";
 import Sparkline from "@/components/charts/Sparkline";
 import AreaChart from "@/components/charts/AreaChart";
-import { VARIETIES } from "@/data/prices";
+import { VARIETIES, latestDaily, recentPrices } from "@/data/prices";
 import { ICE_D_L, ICE_D_V } from "@/data/international";
 import { SND } from "@/data/balanceSheet";
 import { DP_DATA } from "@/data/production";
@@ -23,7 +23,7 @@ function variety(key: string) {
 
 export default function OverviewPage() {
   const guj29 = variety("guj29");
-  const g = guj29?.daily ?? [];
+  const g = guj29 ? recentPrices(guj29) : [];
   const gLast = at(g, -1) ?? null;
   const gDay = pctChange(gLast, at(g, -2) ?? null);
   const gMonth = pctChange(gLast, g[0] ?? null);
@@ -57,8 +57,10 @@ export default function OverviewPage() {
     ["guj29", "mmak29", "phr28", "cs31"].includes(v.key),
   );
 
-  const heroPrice = at(variety("mmak29")?.daily, -1);
-  const kapasPrice = at(variety("kapas")?.daily, -1);
+  const mmak29 = variety("mmak29");
+  const kapas = variety("kapas");
+  const heroPrice = mmak29 ? latestDaily(mmak29)?.price ?? null : null;
+  const kapasPrice = kapas ? latestDaily(kapas)?.price ?? null : null;
 
   return (
     <div>
@@ -167,8 +169,9 @@ export default function OverviewPage() {
           />
           <div className="grid gap-2.5 sm:grid-cols-2">
             {topVarieties.map((v) => {
-              const last = at(v.daily, -1) ?? null;
-              const d = pctChange(last, v.daily?.[0] ?? null);
+              const series = recentPrices(v);
+              const last = at(series, -1) ?? null;
+              const d = pctChange(last, series[0] ?? null);
               return (
                 <div
                   key={v.key}
@@ -179,7 +182,7 @@ export default function OverviewPage() {
                     <div className="num text-[15px] font-semibold text-ink">{inr(last)}</div>
                   </div>
                   <div className="h-8 w-20 shrink-0">
-                    <Sparkline data={v.daily ?? []} color={d != null && d < 0 ? "#e0605a" : undefined} />
+                    <Sparkline data={series} color={d != null && d < 0 ? "#e0605a" : undefined} />
                   </div>
                   <Delta value={d} />
                 </div>
