@@ -8,7 +8,7 @@ import { PriceCard } from "@/components/sections/PriceCard";
 import { InternationalPrices } from "@/components/sections/InternationalPrices";
 import { AdminHint } from "@/components/ui/AdminHint";
 import { DataMissing } from "@/components/ui/DataGuard";
-import { VARIETIES, VARIETY_GROUPS, DOM_YEARS } from "@/data/prices";
+import { VARIETIES, VARIETY_GROUPS } from "@/data/prices";
 
 export default function PricesPage() {
   const [tab, setTab] = useState<"domestic" | "international">("domestic");
@@ -45,7 +45,7 @@ export default function PricesPage() {
                 <SectionLabel>{group} · ₹ / Candy</SectionLabel>
                 <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3">
                   {VARIETIES.filter((v) => v.group === group).map((v) => (
-                    <PriceCard key={v.key} v={v} years={DOM_YEARS} />
+                    <PriceCard key={v.key} v={v} />
                   ))}
                 </div>
               </div>
