@@ -65,6 +65,15 @@ export function smartAxisLabel(raw: string): string {
   return s;
 }
 
+const MONTHS_SHORT = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+
+/** "2026-05-02" → "2 May" (falls back to the raw string if it isn't a plain date) */
+export function shortDate(iso: string): string {
+  const d = new Date(`${iso}T00:00:00`);
+  if (Number.isNaN(d.getTime())) return iso;
+  return `${d.getDate()} ${MONTHS_SHORT[d.getMonth()]}`;
+}
+
 /** epoch seconds → "3h ago" / "5d ago" / "Mar 12" */
 export function timeAgo(epochSeconds: number | null | undefined): string {
   if (epochSeconds == null) return "never";

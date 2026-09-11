@@ -13,7 +13,7 @@
 
 import { DateInput, Labeled, NumInput, NumberFieldStack, SelectInput, TextArea, TextInput } from "@/components/admin/kit";
 import { KeyValueEditor, NumListEditor, StringListEditor } from "@/components/admin/collections";
-import { RecordManager } from "@/components/admin/RecordManager";
+import { RecordManager, type RecordManagerHandle } from "@/components/admin/RecordManager";
 import { RecordTable } from "@/components/admin/RecordCards";
 import { WD_CATEGORIES } from "@/data/wasde";
 import {
@@ -36,7 +36,14 @@ export type EditorSection = {
   id: string;
   title: string;
   hint?: string;
-  render: (data: any, set: (next: any) => void) => React.ReactNode;
+  /** if set, the page shows a "+ Add …" button in its own top-right header that opens this section's add form */
+  primaryAdd?: { label: string };
+  render: (
+    data: any,
+    set: (next: any) => void,
+    /** attach to this section's RecordManager so the page header's "+ Add" button can open it */
+    adderRef?: React.RefObject<RecordManagerHandle>,
+  ) => React.ReactNode;
 };
 
 /* helpers ---------------------------------------------------------- */
@@ -56,68 +63,90 @@ const MONTHS_CAL = ["May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan
 
 const pricesSchema: EditorSection[] = [
   {
-    id: "axes",
-    title: "Axis labels",
-    hint: "Year labels drive the annual series; day labels drive the last-month daily series.",
-    render: (d, set) => (
-      <div className="space-y-4">
-        <Labeled label="Years (annual series)">
-          <StringListEditor value={d.years ?? []} onChange={(years) => set({ ...d, years })} placeholder="2025" />
-        </Labeled>
-        <Labeled label="Day labels (daily series)">
-          <StringListEditor
-            value={d.dayLabels ?? []}
-            onChange={(dayLabels) => set({ ...d, dayLabels })}
-            placeholder="2 May"
-          />
-        </Labeled>
-        <Labeled label="Variety groups">
-          <StringListEditor value={d.groups ?? []} onChange={(groups) => set({ ...d, groups })} />
-        </Labeled>
-      </div>
-    ),
-  },
-  {
     id: "varieties",
     title: "Varieties",
-    hint: "Click a variety to edit it, or add a new one.",
-    render: (d, set) => (
-      <RecordManager<any>
-        value={d.varieties ?? []}
-        onChange={(varieties) => set({ ...d, varieties })}
-        itemName="variety"
-        columns={[
-          { key: "key", label: "Key", type: "text" },
-          { key: "title", label: "Title", type: "text" },
-          { key: "group", label: "Group", type: "select", options: d.groups ?? [] },
-        ]}
-        makeItem={() => ({ key: "", title: "", sub: "", group: (d.groups ?? [])[0] ?? "", annual: [], daily: [] })}
-        fields={[
-          { key: "key", label: "Key (id)", type: "text", placeholder: "guj29" },
-          { key: "group", label: "Group", type: "select", options: d.groups ?? [] },
-          { key: "title", label: "Title", type: "text", full: true },
-          { key: "sub", label: "Subtitle", type: "text", full: true },
-        ]}
-        renderExtra={(v, patch) => (
-          <div className="space-y-4">
-            <Labeled label="Annual values (₹ / Candy)">
-              <NumberFieldStack
-                labels={d.years ?? []}
-                value={v.annual ?? []}
-                onChange={(annual) => patch({ annual } as any)}
-              />
-            </Labeled>
-            <Labeled label="Daily values (₹ / Candy)">
-              <NumberFieldStack
-                labels={d.dayLabels ?? []}
-                value={v.daily ?? []}
-                onChange={(daily) => patch({ daily } as any)}
-              />
-            </Labeled>
-          </div>
-        )}
-      />
-    ),
+    hint: "Click a variety to edit its price history — grouped together below by variety group.",
+    primaryAdd: { label: "Add Price" },
+    render: (d, set, adderRef) => {
+      const groupOrder: string[] =
+        d.groups?.length ? d.groups : Array.from(new Set((d.varieties ?? []).map((v: any) => v.group)));
+
+      const sorted = [...(d.varieties ?? [])].sort((a: any, b: any) => {
+        const ga = groupOrder.indexOf(a.group);
+        const gb = groupOrder.indexOf(b.group);
+        if (ga !== gb) return (ga === -1 ? 999 : ga) - (gb === -1 ? 999 : gb);
+        return String(a.title ?? "").localeCompare(String(b.title ?? ""));
+      });
+      const rows = sorted.map((v: any) => {
+        const annual = (v.annual ?? []).slice().sort((a: any, b: any) => String(a.year).localeCompare(String(b.year)));
+        const daily = (v.daily ?? []).slice().sort((a: any, b: any) => String(a.date).localeCompare(String(b.date)));
+        return {
+          ...v,
+          annual,
+          daily,
+          latest: annual.at(-1)?.value ?? null,
+          points: daily.length,
+        };
+      });
+
+      const save = (next: any[]) => {
+        const varieties = next.map(({ latest, points, ...rest }: any) => rest);
+        const groups = groupOrder.slice();
+        for (const v of varieties) if (v.group && !groups.includes(v.group)) groups.push(v.group);
+        set({ ...d, varieties, groups });
+      };
+
+      return (
+        <RecordManager<any>
+          ref={adderRef}
+          hideAddButton
+          groupBy="group"
+          value={rows}
+          onChange={save}
+          itemName="variety"
+          columns={[
+            { key: "title", label: "Variety", type: "text" },
+            { key: "latest", label: "Latest annual (₹)", type: "number" },
+            { key: "points", label: "Daily quotes", type: "number" },
+          ]}
+          makeItem={() => ({ key: "", title: "", sub: "", group: groupOrder[0] ?? "", annual: [], daily: [] })}
+          fields={[
+            { key: "key", label: "Key (id)", type: "text", placeholder: "guj29" },
+            { key: "group", label: "Group", type: "text", placeholder: "Gujarat Varieties" },
+            { key: "title", label: "Title", type: "text", full: true },
+            { key: "sub", label: "Subtitle", type: "text", full: true },
+          ]}
+          renderExtra={(v, patch) => (
+            <div className="space-y-4">
+              <Labeled label="Annual values — pick the year, enter the price">
+                <RecordTable<any>
+                  value={v.annual ?? []}
+                  onChange={(annual) => patch({ annual } as any)}
+                  itemName="year"
+                  makeItem={() => ({ year: "", value: null })}
+                  fields={[
+                    { key: "year", label: "Year", type: "text", placeholder: "2026" },
+                    { key: "value", label: "Price (₹/Candy)", type: "number" },
+                  ]}
+                />
+              </Labeled>
+              <Labeled label="Daily price history — pick the date, enter the price">
+                <RecordTable<any>
+                  value={v.daily ?? []}
+                  onChange={(daily) => patch({ daily } as any)}
+                  itemName="quote"
+                  makeItem={() => ({ date: new Date().toISOString().slice(0, 10), price: null })}
+                  fields={[
+                    { key: "date", label: "Date", type: "date" },
+                    { key: "price", label: "Price (₹/Candy)", type: "number" },
+                  ]}
+                />
+              </Labeled>
+            </div>
+          )}
+        />
+      );
+    },
   },
 ];
 
@@ -127,17 +156,21 @@ function alignedSeriesSection(
   labelsKey: string,
   labelField: string,
   cols: { key: string; arrKey: string; label: string }[],
+  primaryAddLabel?: string,
 ): EditorSection {
   return {
     id,
     title,
-    render: (d, set) => {
+    primaryAdd: primaryAddLabel ? { label: primaryAddLabel } : undefined,
+    render: (d, set, adderRef) => {
       const rows = zipToRows(
         d[labelsKey] ?? [],
         cols.map((c) => ({ key: c.key, arr: d[c.arrKey] })),
       );
       return (
         <RecordManager<any>
+          ref={adderRef}
+          hideAddButton={!!primaryAddLabel}
           value={rows}
           onChange={(next) => {
             const { labels, arrays } = rowsToZip(next, cols.map((c) => c.key));
@@ -167,7 +200,7 @@ const internationalSchema: EditorSection[] = [
   ]),
   alignedSeriesSection("ice-daily", "ICE Cotton #2 — Daily", "iceDL", "Date", [
     { key: "value", arrKey: "iceDV", label: "ICE ¢/lb" },
-  ]),
+  ], "Add ICE Quote"),
   alignedSeriesSection("brent-annual", "Brent crude — Annual", "brAnnL", "Year", [
     { key: "value", arrKey: "brAnnV", label: "Brent $/bbl" },
   ]),
@@ -177,7 +210,7 @@ const currencySchema: EditorSection[] = [
   alignedSeriesSection("monthly", "Monthly — USD/INR & USD/CNY", "monthsL", "Month", [
     { key: "inr", arrKey: "usdinrM", label: "USD/INR" },
     { key: "cny", arrKey: "usdcnyM", label: "USD/CNY" },
-  ]),
+  ], "Add Month"),
   alignedSeriesSection("y1", "1-Year daily series", "usdinr1yL", "Date", [
     { key: "inr", arrKey: "usdinr1yV", label: "USD/INR" },
     { key: "cny", arrKey: "usdcny1yV", label: "USD/CNY" },
@@ -193,8 +226,11 @@ const cciSchema: EditorSection[] = [
     id: "datewise",
     title: "Daily OMSS quotes",
     hint: "Click a day to edit it, or add a new one. p = price (₹/candy), v = volume (lakh bales).",
-    render: (d, set) => (
+    primaryAdd: { label: "Add Day" },
+    render: (d, set, adderRef) => (
       <RecordManager<any>
+        ref={adderRef}
+        hideAddButton
         value={d.datewise ?? []}
         onChange={(datewise) => set({ ...d, datewise })}
         itemName="day"
@@ -318,8 +354,11 @@ const newsSchema: EditorSection[] = [
     id: "items",
     title: "Headlines",
     hint: "Click a headline to edit it, or add a new one. Tone controls the colour of the tag pill.",
-    render: (d, set) => (
+    primaryAdd: { label: "Add Headline" },
+    render: (d, set, adderRef) => (
       <RecordManager<any>
+        ref={adderRef}
+        hideAddButton
         value={d.items ?? []}
         onChange={(items) => set({ ...d, items })}
         itemName="headline"
@@ -373,10 +412,13 @@ const arrivalsSchema: EditorSection[] = [
     id: "data",
     title: "Arrivals (lakh bales)",
     hint: "Click an entry to edit it, or add a new one.",
-    render: (d, set) => {
+    primaryAdd: { label: "Add Entry" },
+    render: (d, set, adderRef) => {
       const rows = flattenSeries(d.values, d.weeks ?? []).map((r) => ({ week: r.label, season: r.series, value: r.value }));
       return (
         <RecordManager<any>
+          ref={adderRef}
+          hideAddButton
           value={rows}
           onChange={(next) => {
             const converted = next.map((r: any) => ({ label: r.week, series: r.season, value: r.value }));
@@ -408,7 +450,8 @@ const sowingSchema: EditorSection[] = [
     id: "data",
     title: "Sowing progress (lakh ha)",
     hint: "Click an entry to edit it, or add a new one. Use 'Normal' as the series for the long-period average.",
-    render: (d, set) => {
+    primaryAdd: { label: "Add Entry" },
+    render: (d, set, adderRef) => {
       const seriesRecord: Record<string, number[]> = Object.fromEntries(
         (d.series ?? []).map((s: any) => [s.label, s.data]),
       );
@@ -419,6 +462,8 @@ const sowingSchema: EditorSection[] = [
       }));
       return (
         <RecordManager<any>
+          ref={adderRef}
+          hideAddButton
           value={rows}
           onChange={(next) => {
             const converted = next.map((r: any) => ({ label: r.week, series: r.year, value: r.value }));
@@ -470,10 +515,13 @@ const productionSchema: EditorSection[] = [
     id: "data",
     title: "Area / Yield / Production",
     hint: "Click an entry to edit it, or add a new one.",
-    render: (d, set) => {
+    primaryAdd: { label: "Add Entry" },
+    render: (d, set, adderRef) => {
       const rows = flattenMulti({ area: d.area, yield: d.yield, prod: d.prod }, "season", "state");
       return (
         <RecordManager<any>
+          ref={adderRef}
+          hideAddButton
           value={rows}
           onChange={(next) => set({ ...d, ...unflattenMulti(next, "season", "state", ["area", "yield", "prod"]) })}
           itemName="entry"
@@ -560,7 +608,8 @@ const balanceSheetSchema: EditorSection[] = [
     id: "monthly",
     title: "Monthly balance",
     hint: "Click an entry to edit it, or add a new one.",
-    render: (d, set) => {
+    primaryAdd: { label: "Add Entry" },
+    render: (d, set, adderRef) => {
       const cols = [
         "opening", "crop", "farmer_sell", "cci_proc", "cci_sell", "stock_cci",
         "imports", "dom_cons", "nonmill_cons", "total_cons", "exports", "closing",
@@ -568,6 +617,8 @@ const balanceSheetSchema: EditorSection[] = [
       const rows = flattenNested(d.monthly, "season", "month", cols);
       return (
         <RecordManager<any>
+          ref={adderRef}
+          hideAddButton
           value={rows}
           onChange={(next) => set({ ...d, monthly: unflattenNested(next, "season", "month", cols) })}
           itemName="entry"
@@ -611,10 +662,13 @@ const tradeSchema: EditorSection[] = [
     id: "data",
     title: "Import & Export (lakh bales)",
     hint: "Click an entry to edit it, or add a new one.",
-    render: (d, set) => {
+    primaryAdd: { label: "Add Entry" },
+    render: (d, set, adderRef) => {
       const rows = flattenMulti({ import: d.import, export: d.export }, "season", "month");
       return (
         <RecordManager<any>
+          ref={adderRef}
+          hideAddButton
           value={rows}
           onChange={(next) => set({ ...d, ...unflattenMulti(next, "season", "month", ["import", "export"]) })}
           itemName="entry"
@@ -700,7 +754,8 @@ const copSchema: EditorSection[] = [
     id: "data",
     title: "Cost of production & returns",
     hint: "Click an entry to edit it, or add a new one. Cost components for that year are edited inside.",
-    render: (d, set) => {
+    primaryAdd: { label: "Add Entry" },
+    render: (d, set, adderRef) => {
       const data: Record<string, any> = d.data ?? {};
       const totalKeys = ["total_cost", "yield", "price", "gross_return", "net_return", "roi"];
       const rows: any[] = [];
@@ -753,6 +808,8 @@ const copSchema: EditorSection[] = [
 
       return (
         <RecordManager<any>
+          ref={adderRef}
+          hideAddButton
           value={rows}
           onChange={save}
           itemName="entry"
@@ -844,10 +901,13 @@ const calendarSchema: EditorSection[] = [
     id: "states",
     title: "State timelines",
     hint: "Click a state to edit it, or add a new one. Phase start/end are month positions (0 = first month, fractions allowed).",
-    render: (d, set) => {
+    primaryAdd: { label: "Add State" },
+    render: (d, set, adderRef) => {
       const phaseKeys = Object.keys(d.phaseMeta ?? {});
       return (
         <RecordManager<any>
+          ref={adderRef}
+          hideAddButton
           value={d.states ?? []}
           onChange={(states) => set({ ...d, states })}
           itemName="state"
@@ -967,7 +1027,8 @@ const rainfallSchema: EditorSection[] = [
     id: "rfh",
     title: "Subdivision rainfall",
     hint: "Click an entry to edit it, or add a new one — one per state + subdivision + series, with a value for each month.",
-    render: (d, set) => {
+    primaryAdd: { label: "Add Entry" },
+    render: (d, set, adderRef) => {
       const months = d.months ?? [];
       const rfh: Record<string, Record<string, any>> = d.rfh ?? {};
       const rows: any[] = [];
@@ -995,6 +1056,8 @@ const rainfallSchema: EditorSection[] = [
       };
       return (
         <RecordManager<any>
+          ref={adderRef}
+          hideAddButton
           value={rows}
           onChange={save}
           itemName="entry"
@@ -1080,13 +1143,16 @@ const wasdeSchema: EditorSection[] = [
     id: "data",
     title: "World cotton balance (1000 MT)",
     hint: "Click an entry to edit it, or add a new one.",
-    render: (d, set) => {
+    primaryAdd: { label: "Add Entry" },
+    render: (d, set, adderRef) => {
       const catKeys = WD_CATEGORIES.map((c) => c.key);
       const cats: Record<string, any> = {};
       for (const c of catKeys) cats[c] = d[c];
       const rows = flattenCategoryYear(cats, d.years ?? []);
       return (
         <RecordManager<any>
+          ref={adderRef}
+          hideAddButton
           value={rows}
           onChange={(next) => {
             const { years, cats: nextCats } = unflattenCategoryYear(next, catKeys, d.years ?? []);
