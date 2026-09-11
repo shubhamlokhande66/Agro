@@ -73,7 +73,30 @@ export function recentPrices(v: Variety): number[] {
   return sliceVariety(v, "monthly").data;
 }
 
-/** slice a variety's yearly averages (or the last ~month of dated daily quotes) for the chosen period */
+/** "2026-05-02" -> "2026-Q2" */
+function quarterKey(date: string): string {
+  const q = Math.ceil(parseInt(date.slice(5, 7), 10) / 3);
+  return `${date.slice(0, 4)}-Q${q}`;
+}
+
+/** one point per quarter — the last quote entered that quarter — over the last `quarters` quarters */
+function quarterlyFromDaily(v: Variety, quarters: number) {
+  const sorted = sortedDaily(v);
+  const byQuarter = new Map<string, number>();
+  for (const p of sorted) byQuarter.set(quarterKey(p.date), p.price); // later entries overwrite -> last quote wins
+  const allQuarters = Array.from(byQuarter.keys()).sort();
+  const windowed = allQuarters.slice(-quarters);
+  return {
+    labels: windowed.map((q) => `${q.slice(5)} '${q.slice(2, 4)}`) as (string | number)[], // "Q2 '26"
+    data: windowed.map((q) => byQuarter.get(q)!),
+  };
+}
+
+/** slice a variety's price history for the chosen period:
+ *  - monthly: the last ~30 days of dated daily quotes, one point per day
+ *  - 1y: the daily quotes bucketed to one point per quarter, over the last 4 quarters
+ *  - 3y: the yearly-average series, last 3 years
+ *  - all: the full yearly-average series, one point per year */
 export function sliceVariety(v: Variety, period: DomPeriod) {
   if (period === "monthly") {
     const sorted = sortedDaily(v);
@@ -86,10 +109,19 @@ export function sliceVariety(v: Variety, period: DomPeriod) {
       data: windowed.map((p) => p.price),
     };
   }
+  if (period === "1y") {
+    const bucketed = quarterlyFromDaily(v, 4);
+    if (bucketed.data.length >= 2) return bucketed;
+    // not enough distinct quarters yet — show the raw daily quotes instead of a lone dot
+    const sorted = sortedDaily(v);
+    return {
+      labels: sorted.map((p) => shortDate(p.date)) as (string | number)[],
+      data: sorted.map((p) => p.price),
+    };
+  }
+
   const sorted = sortedAnnual(v);
-  const n = sorted.length;
-  const start = period === "1y" ? Math.max(0, n - 2) : period === "3y" ? Math.max(0, n - 7) : 0;
-  const windowed = sorted.slice(start);
+  const windowed = period === "3y" ? sorted.slice(-3) : sorted;
   return {
     labels: windowed.map((p) => p.year) as (string | number)[],
     data: windowed.map((p) => p.value),

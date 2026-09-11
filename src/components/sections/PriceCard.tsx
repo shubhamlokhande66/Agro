@@ -58,7 +58,7 @@ export function PriceCard({ v }: { v: Variety }) {
         height={164}
         smartX={period !== "monthly"}
         yFmt={inrCompact}
-        xTicks={period === "monthly" ? 6 : period === "1y" ? 2 : 6}
+        xTicks={6}
         tooltipLabel={(y) => inr(y)}
       />
 
