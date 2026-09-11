@@ -26,6 +26,26 @@ export async function getDataset(key: string): Promise<DatasetDoc | null> {
   return db.collection<DatasetDoc>(COLLECTIONS.datasets).findOne({ _id: key });
 }
 
+export type DatasetMetaRow = {
+  key: string;
+  updatedAt: number | null;
+  updatedBy: string | null;
+};
+
+/** Lightweight metadata for every dataset — no data payload, for admin nav/dashboards. */
+export async function getAllDatasetMeta(): Promise<DatasetMetaRow[]> {
+  const db = await getDb();
+  const rows = await db
+    .collection<DatasetDoc>(COLLECTIONS.datasets)
+    .find({}, { projection: { data: 0 } })
+    .toArray();
+  return rows.map((r) => ({
+    key: r._id,
+    updatedAt: r.updatedAt ?? null,
+    updatedBy: r.updatedBy ?? null,
+  }));
+}
+
 export async function putDataset(
   key: string,
   data: unknown,

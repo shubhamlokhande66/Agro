@@ -59,7 +59,7 @@ export const NAV: NavGroup[] = [
   {
     heading: "Admin",
     adminOnly: true,
-    items: [{ href: "/admin", label: "Manage Datasets", icon: "⚙" }],
+    items: [{ href: "/admin", label: "Admin Dashboard", icon: "⚙" }],
   },
 ];
 
