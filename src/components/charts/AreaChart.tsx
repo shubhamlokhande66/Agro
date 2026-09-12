@@ -36,14 +36,19 @@ export default function AreaChart({
   const t = useChartTheme();
   const line = color ?? t.accent;
 
+  const valid = data.filter((v): v is number => v != null);
+
   const auto = useMemo(() => {
-    const valid = data.filter((v): v is number => v != null);
     if (!valid.length) return {} as { min?: number; max?: number };
     const mn = Math.min(...valid);
     const mx = Math.max(...valid);
     const pad = (mx - mn) * 0.12 || mx * 0.1 || 1;
     return { min: Math.max(0, mn - pad), max: mx + pad };
-  }, [data]);
+  }, [valid]);
+
+  // a line needs 2+ points to draw at all — with only a handful, show real dots
+  // instead of an invisible chart (pointRadius 0 is the norm for dense series)
+  const pointRadius = valid.length <= 3 ? 3 : 0;
 
   const options = lineOptions({
     t,
@@ -69,7 +74,10 @@ export default function AreaChart({
                 ? areaFill(line)
                 : hexToRgba("#12a277", 0.15),
               borderWidth: 2,
-              pointRadius: 0,
+              pointRadius,
+              pointBackgroundColor: line,
+              pointBorderColor: "var(--surface)",
+              pointBorderWidth: 1.5,
               pointHoverRadius: 5,
               pointHoverBackgroundColor: line,
               pointHoverBorderColor: "var(--surface)",

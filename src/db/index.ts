@@ -30,4 +30,6 @@ export async function getDb(): Promise<Db> {
 export const COLLECTIONS = {
   datasets: "datasets",
   audit: "audit_log",
+  users: "users",
+  sessions: "sessions",
 } as const;
