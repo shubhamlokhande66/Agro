@@ -63,6 +63,25 @@ export function latestAnnual(v: Variety): AnnualPoint | null {
   return sortedAnnual(v).at(-1) ?? null;
 }
 
+export type AnnualDeltas = { y1: number | null; y3: number | null; y5: number | null };
+
+/** year-over-year, 3yr and 5yr % change from a chronological annual-average series —
+ *  3yr/5yr fall back to the earliest available value if there isn't that much history yet */
+export function annualDeltasFromSeries(values: number[]): AnnualDeltas {
+  const latest = values.at(-1) ?? null;
+  const n = values.length;
+  return {
+    y1: pctChange(latest, values[n - 2] ?? null),
+    y3: pctChange(latest, n >= 4 ? values[n - 4] : null),
+    y5: pctChange(latest, n >= 6 ? values[n - 6] : (values[0] ?? null)),
+  };
+}
+
+/** same as {@link annualDeltasFromSeries}, from a variety's own annual-average points */
+export function annualDeltas(v: Variety): AnnualDeltas {
+  return annualDeltasFromSeries(sortedAnnual(v).map((p) => p.value));
+}
+
 /** most recent dated quote for a variety, or null if it has none yet */
 export function latestDaily(v: Variety): PricePoint | null {
   return sortedDaily(v).at(-1) ?? null;

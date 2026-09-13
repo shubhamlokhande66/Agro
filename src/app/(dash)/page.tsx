@@ -3,12 +3,20 @@
 import Link from "next/link";
 import { Card, CardHeader, SectionLabel } from "@/components/ui/Card";
 import { Kpi, KpiRow } from "@/components/ui/Kpi";
-import { Delta } from "@/components/ui/ChangeBadge";
+import { ChangeBadge, Delta } from "@/components/ui/ChangeBadge";
 import Sparkline from "@/components/charts/Sparkline";
 import AreaChart from "@/components/charts/AreaChart";
 import LineChart from "@/components/charts/LineChart";
-import { VARIETIES, recentPrices, sliceVariety, weeklyChange, type Variety } from "@/data/prices";
-import { ICE_D_L, ICE_D_V } from "@/data/international";
+import {
+  VARIETIES,
+  annualDeltas,
+  annualDeltasFromSeries,
+  recentPrices,
+  sliceVariety,
+  weeklyChange,
+  type Variety,
+} from "@/data/prices";
+import { ICE_ANN_V, ICE_D_L, ICE_D_V } from "@/data/international";
 import { SND } from "@/data/balanceSheet";
 import { DP_DATA } from "@/data/production";
 import { IE } from "@/data/trade";
@@ -58,9 +66,11 @@ export default function OverviewPage() {
   const g = guj29 ? recentPrices(guj29) : [];
   const gLast = at(g, -1) ?? null;
   const gWeek = guj29 ? weeklyChange(guj29) : null;
+  const gYears = guj29 ? annualDeltas(guj29) : { y1: null, y3: null, y5: null };
 
   const iceLast = at(ICE_D_V, -1) ?? null;
   const iceDelta = weeklyChangeFromLabels(ICE_D_L, ICE_D_V);
+  const iceYears = annualDeltasFromSeries(ICE_ANN_V);
 
   const bsSeasons = SND.annual_seasons ?? [];
   const bsLatest = bsSeasons[0];
@@ -100,18 +110,21 @@ export default function OverviewPage() {
   const cseedLast = at(cseedSeries, -1) ?? null;
   const cseedDelta = cseed ? weeklyChange(cseed) : null;
   const cseedChart = cseed ? sliceVariety(cseed, "monthly") : { labels: [], data: [] };
+  const cseedYears = cseed ? annualDeltas(cseed) : { y1: null, y3: null, y5: null };
 
   const yarn = variety("yarn");
   const yarnSeries = yarn ? recentPrices(yarn) : [];
   const yarnLast = at(yarnSeries, -1) ?? null;
   const yarnDelta = yarn ? weeklyChange(yarn) : null;
   const yarnChart = yarn ? sliceVariety(yarn, "monthly") : { labels: [], data: [] };
+  const yarnYears = yarn ? annualDeltas(yarn) : { y1: null, y3: null, y5: null };
 
   const kapas = variety("kapas");
   const kapasSeries = kapas ? recentPrices(kapas) : [];
   const kapasLast = at(kapasSeries, -1) ?? null;
   const kapasDelta = kapas ? weeklyChange(kapas) : null;
   const kapasChart = kapas ? sliceVariety(kapas, "monthly") : { labels: [], data: [] };
+  const kapasYears = kapas ? annualDeltas(kapas) : { y1: null, y3: null, y5: null };
 
   const sowSeries = SOWING_SERIES ?? [];
   const sowNormal = sowSeries.find((s) => /normal/i.test(s.label));
@@ -158,6 +171,11 @@ export default function OverviewPage() {
             yFmt={inrCompact}
             tooltipLabel={(y) => inr(y)}
           />
+          <div className="mt-2.5 flex flex-wrap justify-end gap-1.5">
+            <ChangeBadge label="1yr" value={gYears.y1} />
+            <ChangeBadge label="3yr" value={gYears.y3} />
+            <ChangeBadge label="5yr" value={gYears.y5} />
+          </div>
         </div>
 
         <div className="panel p-4 sm:p-5">
@@ -180,6 +198,11 @@ export default function OverviewPage() {
             yFmt={(v) => v + "¢"}
             tooltipLabel={(y) => y + "¢/lb"}
           />
+          <div className="mt-2.5 flex flex-wrap justify-end gap-1.5">
+            <ChangeBadge label="1yr" value={iceYears.y1} />
+            <ChangeBadge label="3yr" value={iceYears.y3} />
+            <ChangeBadge label="5yr" value={iceYears.y5} />
+          </div>
         </div>
 
         <div className="panel p-4 sm:p-5">
@@ -227,6 +250,11 @@ export default function OverviewPage() {
             yFmt={inrCompact}
             tooltipLabel={(y) => inr(y)}
           />
+          <div className="mt-2.5 flex flex-wrap justify-end gap-1.5">
+            <ChangeBadge label="1yr" value={cseedYears.y1} />
+            <ChangeBadge label="3yr" value={cseedYears.y3} />
+            <ChangeBadge label="5yr" value={cseedYears.y5} />
+          </div>
         </div>
 
         <div className="panel p-4 sm:p-5">
@@ -247,6 +275,11 @@ export default function OverviewPage() {
             yFmt={inrCompact}
             tooltipLabel={(y) => inr(y)}
           />
+          <div className="mt-2.5 flex flex-wrap justify-end gap-1.5">
+            <ChangeBadge label="1yr" value={yarnYears.y1} />
+            <ChangeBadge label="3yr" value={yarnYears.y3} />
+            <ChangeBadge label="5yr" value={yarnYears.y5} />
+          </div>
         </div>
 
         <div className="panel p-4 sm:p-5">
@@ -267,6 +300,11 @@ export default function OverviewPage() {
             yFmt={inrCompact}
             tooltipLabel={(y) => inr(y)}
           />
+          <div className="mt-2.5 flex flex-wrap justify-end gap-1.5">
+            <ChangeBadge label="1yr" value={kapasYears.y1} />
+            <ChangeBadge label="3yr" value={kapasYears.y3} />
+            <ChangeBadge label="5yr" value={kapasYears.y5} />
+          </div>
         </div>
       </div>
 
