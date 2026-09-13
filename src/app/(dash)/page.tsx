@@ -7,7 +7,7 @@ import { Delta } from "@/components/ui/ChangeBadge";
 import Sparkline from "@/components/charts/Sparkline";
 import AreaChart from "@/components/charts/AreaChart";
 import LineChart from "@/components/charts/LineChart";
-import { VARIETIES, recentPrices, sliceVariety } from "@/data/prices";
+import { VARIETIES, recentPrices, sliceVariety, type Variety } from "@/data/prices";
 import { ICE_D_L, ICE_D_V } from "@/data/international";
 import { SND } from "@/data/balanceSheet";
 import { DP_DATA } from "@/data/production";
@@ -21,6 +21,12 @@ const at = <T,>(a: T[] | undefined, i: number): T | undefined =>
 
 function variety(key: string) {
   return VARIETIES.find((v) => v.key === key);
+}
+
+/** "By-product · ₹ / Quintal" -> "/ Quintal" */
+function unitOf(v: Variety | undefined): string {
+  const part = v?.sub?.split("/").pop()?.trim();
+  return part ? `/ ${part}` : "/ Candy";
 }
 
 export default function OverviewPage() {
@@ -38,8 +44,8 @@ export default function OverviewPage() {
   const bsP = bsSeasons[1] ? SND.annual?.[bsSeasons[1]] : undefined;
 
   const dpSeasons = DP_DATA.seasons ?? [];
-  const prodSeason = at(dpSeasons, -2);
-  const prodPrev = at(dpSeasons, -3);
+  const prodSeason = at(dpSeasons, -1);
+  const prodPrev = at(dpSeasons, -2);
   const prod = prodSeason ? DP_DATA.prod?.[prodSeason]?.ALL_INDIA ?? null : null;
   const prodPrevV = prodPrev ? DP_DATA.prod?.[prodPrev]?.ALL_INDIA ?? null : null;
 
@@ -50,7 +56,12 @@ export default function OverviewPage() {
     ? IE.import_totals?.[impSeasons[impSeasons.indexOf(impSeason) - 1]] ?? null
     : null;
 
-  const rfJjas = jjas(RF_COMPOSITE_T.y2025);
+  const rfYears = Object.keys(RF_COMPOSITE_T)
+    .filter((k) => /^y\d{4}$/.test(k))
+    .sort();
+  const rfLatestKey = rfYears.at(-1);
+  const rfLatestYear = rfLatestKey?.slice(1);
+  const rfJjas = jjas(RF_COMPOSITE_T[rfLatestKey ?? "y2025"]);
   const rfNormal = jjas(RF_COMPOSITE_T.normal);
   const rfDep = pctChange(rfJjas, rfNormal);
 
@@ -59,6 +70,24 @@ export default function OverviewPage() {
   );
 
   const domesticChart = guj29 ? sliceVariety(guj29, "monthly") : { labels: [], data: [] };
+
+  const cseed = variety("cseed");
+  const cseedSeries = cseed ? recentPrices(cseed) : [];
+  const cseedLast = at(cseedSeries, -1) ?? null;
+  const cseedDelta = pctChange(cseedLast, at(cseedSeries, -2) ?? null);
+  const cseedChart = cseed ? sliceVariety(cseed, "monthly") : { labels: [], data: [] };
+
+  const yarn = variety("yarn");
+  const yarnSeries = yarn ? recentPrices(yarn) : [];
+  const yarnLast = at(yarnSeries, -1) ?? null;
+  const yarnDelta = pctChange(yarnLast, at(yarnSeries, -2) ?? null);
+  const yarnChart = yarn ? sliceVariety(yarn, "monthly") : { labels: [], data: [] };
+
+  const kapas = variety("kapas");
+  const kapasSeries = kapas ? recentPrices(kapas) : [];
+  const kapasLast = at(kapasSeries, -1) ?? null;
+  const kapasDelta = pctChange(kapasLast, at(kapasSeries, -2) ?? null);
+  const kapasChart = kapas ? sliceVariety(kapas, "monthly") : { labels: [], data: [] };
 
   const sowSeries = SOWING_SERIES ?? [];
   const sowNormal = sowSeries.find((s) => /normal/i.test(s.label));
@@ -155,6 +184,68 @@ export default function OverviewPage() {
         </div>
       </div>
 
+      <div className="mt-4 grid gap-4 lg:grid-cols-3">
+        <div className="panel p-4 sm:p-5">
+          <div className="mb-2 flex items-baseline justify-between gap-2">
+            <div className="eyebrow">Cotton Seed · By-product</div>
+            <Delta value={cseedDelta} />
+          </div>
+          <div className="mb-2 flex items-end gap-2">
+            <span className="num text-2xl font-semibold tracking-tight text-ink">{inr(cseedLast)}</span>
+            <span className="num pb-0.5 text-[11px] text-ink-faint">{unitOf(cseed)}</span>
+          </div>
+          <AreaChart
+            labels={cseedChart.labels}
+            data={cseedChart.data}
+            height={150}
+            smartX={false}
+            xTicks={5}
+            yFmt={inrCompact}
+            tooltipLabel={(y) => inr(y)}
+          />
+        </div>
+
+        <div className="panel p-4 sm:p-5">
+          <div className="mb-2 flex items-baseline justify-between gap-2">
+            <div className="eyebrow">Cotton Yarn · Downstream</div>
+            <Delta value={yarnDelta} />
+          </div>
+          <div className="mb-2 flex items-end gap-2">
+            <span className="num text-2xl font-semibold tracking-tight text-ink">{inr(yarnLast)}</span>
+            <span className="num pb-0.5 text-[11px] text-ink-faint">{unitOf(yarn)}</span>
+          </div>
+          <AreaChart
+            labels={yarnChart.labels}
+            data={yarnChart.data}
+            height={150}
+            smartX={false}
+            xTicks={5}
+            yFmt={inrCompact}
+            tooltipLabel={(y) => inr(y)}
+          />
+        </div>
+
+        <div className="panel p-4 sm:p-5">
+          <div className="mb-2 flex items-baseline justify-between gap-2">
+            <div className="eyebrow">Kapas (Raw Cotton) · Farm Gate</div>
+            <Delta value={kapasDelta} />
+          </div>
+          <div className="mb-2 flex items-end gap-2">
+            <span className="num text-2xl font-semibold tracking-tight text-ink">{inr(kapasLast)}</span>
+            <span className="num pb-0.5 text-[11px] text-ink-faint">{unitOf(kapas)}</span>
+          </div>
+          <AreaChart
+            labels={kapasChart.labels}
+            data={kapasChart.data}
+            height={150}
+            smartX={false}
+            xTicks={5}
+            yFmt={inrCompact}
+            tooltipLabel={(y) => inr(y)}
+          />
+        </div>
+      </div>
+
       <SectionLabel>Fundamentals at a glance</SectionLabel>
       <KpiRow>
         <Kpi
@@ -178,11 +269,11 @@ export default function OverviewPage() {
           foot={<Delta value={pctChange(imp, impPrev)} />}
         />
         <Kpi
-          label="Monsoon (JJAS 2025)"
+          label={`Monsoon${rfLatestYear ? ` (JJAS ${rfLatestYear})` : ""}`}
           value={signedPct(rfDep, 0)}
           unit="composite vs LPA normal"
           accent={rfDep != null && rfDep < 0 ? "red" : "green"}
-          spark={(RF_COMPOSITE_T.y2025 ?? []).slice(0, RF_MONTHS_L.length)}
+          spark={(RF_COMPOSITE_T[rfLatestKey ?? "y2025"] ?? []).slice(0, RF_MONTHS_L.length)}
         />
       </KpiRow>
 

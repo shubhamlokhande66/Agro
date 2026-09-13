@@ -59,9 +59,9 @@ export function LoginScreen() {
         className="relative w-full max-w-[420px] rounded-3xl border border-white/10 bg-white/[0.03] p-7 text-center backdrop-blur-xl sm:p-9"
         style={{ boxShadow: "0 40px 120px -20px rgba(0,0,0,0.6)" }}
       >
-        <div className="mx-auto mb-5 inline-flex rounded-2xl bg-white px-5 py-3 shadow-[0_10px_30px_-8px_rgba(45,208,138,0.35)]">
+        <div className="mx-auto mb-5 inline-flex rounded-2xl bg-white px-7 py-4 shadow-[0_10px_30px_-8px_rgba(45,208,138,0.35)]">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/agrolytix-logo.jpg" alt="Agrolytix Research" className="h-8 w-auto" />
+          <img src="/agrolytix-logo.jpg" alt="Agrolytix Research" className="h-16 w-auto" />
         </div>
         <h2 className="text-xl font-semibold tracking-tight text-white">Cotton Terminal</h2>
         <p className="mb-6 mt-1 text-[13px] text-white/45">

@@ -12,10 +12,10 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
 
   return (
     <div className="flex h-full flex-col bg-surface">
-      <div className="px-4 py-4">
+      <div className="px-4 py-5">
         {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/agrolytix-logo.jpg" alt="Agrolytix Research" className="h-7 w-auto" />
-        <div className="mt-1.5 text-[9.5px] font-medium uppercase tracking-[0.16em] text-ink-faint">
+        <img src="/agrolytix-logo.jpg" alt="Agrolytix Research" className="h-14 w-auto" />
+        <div className="mt-2 text-[9.5px] font-medium uppercase tracking-[0.16em] text-ink-faint">
           Cotton Terminal
         </div>
       </div>

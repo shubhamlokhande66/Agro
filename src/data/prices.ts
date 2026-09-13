@@ -111,8 +111,9 @@ export function sliceVariety(v: Variety, period: DomPeriod) {
   }
   if (period === "1y") {
     const bucketed = quarterlyFromDaily(v, 4);
-    if (bucketed.data.length >= 2) return bucketed;
-    // not enough distinct quarters yet — show the raw daily quotes instead of a lone dot
+    // 2 quarters is still just one straight line segment — not worth showing over
+    // the richer daily view until there's enough spread to make a real curve
+    if (bucketed.data.length >= 3) return bucketed;
     const sorted = sortedDaily(v);
     return {
       labels: sorted.map((p) => shortDate(p.date)) as (string | number)[],
