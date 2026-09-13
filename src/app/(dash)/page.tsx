@@ -7,7 +7,7 @@ import { Delta } from "@/components/ui/ChangeBadge";
 import Sparkline from "@/components/charts/Sparkline";
 import AreaChart from "@/components/charts/AreaChart";
 import LineChart from "@/components/charts/LineChart";
-import { VARIETIES, recentPrices, sliceVariety, type Variety } from "@/data/prices";
+import { VARIETIES, recentPrices, sliceVariety, weeklyChange, type Variety } from "@/data/prices";
 import { ICE_D_L, ICE_D_V } from "@/data/international";
 import { SND } from "@/data/balanceSheet";
 import { DP_DATA } from "@/data/production";
@@ -29,14 +29,38 @@ function unitOf(v: Variety | undefined): string {
   return part ? `/ ${part}` : "/ Candy";
 }
 
+/** "02/06/26" -> epoch ms */
+function parseDMY(label: string): number {
+  const [d, m, y] = label.split("/").map(Number);
+  const fullYear = y < 100 ? 2000 + y : y;
+  return new Date(fullYear, (m || 1) - 1, d || 1).getTime();
+}
+
+/** % change vs. the quote closest to (but not after) 7 calendar days before the latest quote —
+ *  for label/value series (like ICE) that aren't a `Variety` with dated points */
+function weeklyChangeFromLabels(labels: string[], values: number[]): number | null {
+  const lastIdx = values.length - 1;
+  if (lastIdx < 0) return null;
+  const cutoff = parseDMY(labels[lastIdx]) - 7 * 86400000;
+  let prevIdx = -1;
+  for (let i = lastIdx - 1; i >= 0; i--) {
+    if (parseDMY(labels[i]) <= cutoff) {
+      prevIdx = i;
+      break;
+    }
+  }
+  if (prevIdx === -1 && lastIdx > 0) prevIdx = 0;
+  return pctChange(values[lastIdx], prevIdx >= 0 ? values[prevIdx] : null);
+}
+
 export default function OverviewPage() {
   const guj29 = variety("guj29");
   const g = guj29 ? recentPrices(guj29) : [];
   const gLast = at(g, -1) ?? null;
-  const gDay = pctChange(gLast, at(g, -2) ?? null);
+  const gWeek = guj29 ? weeklyChange(guj29) : null;
 
   const iceLast = at(ICE_D_V, -1) ?? null;
-  const iceDelta = pctChange(iceLast, at(ICE_D_V, -2) ?? null);
+  const iceDelta = weeklyChangeFromLabels(ICE_D_L, ICE_D_V);
 
   const bsSeasons = SND.annual_seasons ?? [];
   const bsLatest = bsSeasons[0];
@@ -74,19 +98,19 @@ export default function OverviewPage() {
   const cseed = variety("cseed");
   const cseedSeries = cseed ? recentPrices(cseed) : [];
   const cseedLast = at(cseedSeries, -1) ?? null;
-  const cseedDelta = pctChange(cseedLast, at(cseedSeries, -2) ?? null);
+  const cseedDelta = cseed ? weeklyChange(cseed) : null;
   const cseedChart = cseed ? sliceVariety(cseed, "monthly") : { labels: [], data: [] };
 
   const yarn = variety("yarn");
   const yarnSeries = yarn ? recentPrices(yarn) : [];
   const yarnLast = at(yarnSeries, -1) ?? null;
-  const yarnDelta = pctChange(yarnLast, at(yarnSeries, -2) ?? null);
+  const yarnDelta = yarn ? weeklyChange(yarn) : null;
   const yarnChart = yarn ? sliceVariety(yarn, "monthly") : { labels: [], data: [] };
 
   const kapas = variety("kapas");
   const kapasSeries = kapas ? recentPrices(kapas) : [];
   const kapasLast = at(kapasSeries, -1) ?? null;
-  const kapasDelta = pctChange(kapasLast, at(kapasSeries, -2) ?? null);
+  const kapasDelta = kapas ? weeklyChange(kapas) : null;
   const kapasChart = kapas ? sliceVariety(kapas, "monthly") : { labels: [], data: [] };
 
   const sowSeries = SOWING_SERIES ?? [];
@@ -119,7 +143,7 @@ export default function OverviewPage() {
         <div className="panel p-4 sm:p-5">
           <div className="mb-2 flex items-baseline justify-between gap-2">
             <div className="eyebrow">Gujarat Shankar-29 · Domestic</div>
-            <Delta value={gDay} />
+            <Delta value={gWeek} />
           </div>
           <div className="mb-2 flex items-end gap-2">
             <span className="num text-2xl font-semibold tracking-tight text-ink">{inr(gLast)}</span>

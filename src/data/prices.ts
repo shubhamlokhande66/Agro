@@ -3,7 +3,7 @@
  * (see DatasetProvider); this module only holds types + live bindings.
  */
 
-import { shortDate } from "@/lib/format";
+import { pctChange, shortDate } from "@/lib/format";
 
 export type PriceKey = string;
 
@@ -71,6 +71,24 @@ export function latestDaily(v: Variety): PricePoint | null {
 /** the last ~month of daily quotes as a plain chronological number[] — for sparklines etc. */
 export function recentPrices(v: Variety): number[] {
   return sliceVariety(v, "monthly").data;
+}
+
+/** % change vs. the quote closest to (but not after) 7 calendar days before the latest quote —
+ *  falls back to the earliest available quote if there isn't a week of history yet */
+export function weeklyChange(v: Variety): number | null {
+  const sorted = sortedDaily(v);
+  if (sorted.length === 0) return null;
+  const last = sorted.at(-1)!;
+  const cutoff = new Date(last.date + "T00:00:00").getTime() - 7 * 86400000;
+  let prev: PricePoint | null = null;
+  for (let i = sorted.length - 2; i >= 0; i--) {
+    if (new Date(sorted[i].date + "T00:00:00").getTime() <= cutoff) {
+      prev = sorted[i];
+      break;
+    }
+  }
+  if (!prev && sorted.length > 1) prev = sorted[0];
+  return pctChange(last.price, prev?.price ?? null);
 }
 
 /** "2026-05-02" -> "2026-Q2" */
