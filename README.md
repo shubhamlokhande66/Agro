@@ -1,4 +1,4 @@
-# Agrolityx · Cotton Terminal
+# Agrolytix · Cotton Terminal
 
 Next.js 14 (App Router) + TypeScript + Tailwind. Every dashboard dataset lives in
 **MongoDB** and is edited from an in-app admin panel — there is no hardcoded

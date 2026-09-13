@@ -26,12 +26,11 @@ function AdminHeader() {
     <header className="sticky top-0 z-30 border-b border-line bg-[var(--topbar-bg)] backdrop-blur-md">
       <div className="flex items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
         <div className="flex items-center gap-2.5">
-          <span className="grid h-8 w-8 place-items-center rounded-xl bg-accent text-[15px] text-accent-contrast">
-            ⚙
-          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/agrolytix-logo.jpg" alt="Agrolytix Research" className="h-6 w-auto" />
           <div className="leading-tight">
             <div className="text-[9.5px] font-medium uppercase tracking-[0.16em] text-ink-faint">
-              Agrolityx · Cotton Terminal
+              Cotton Terminal
             </div>
             <div className="text-[14px] font-semibold tracking-tight text-ink">Admin Dashboard</div>
           </div>

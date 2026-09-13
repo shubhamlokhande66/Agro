@@ -30,7 +30,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
           </button>
           <div className="leading-tight">
             <div className="text-[9.5px] font-medium uppercase tracking-[0.16em] text-ink-faint">
-              Agrolityx Research
+              Agrolytix Research
             </div>
             <div className="text-[14px] font-semibold tracking-tight text-ink">
               {current}
