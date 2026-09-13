@@ -19,7 +19,7 @@ const mono = IBM_Plex_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Agrolityx · Cotton Terminal",
+  title: "Agrolytix · Cotton Terminal",
   description:
     "Cotton prices, arrivals, production, balance sheet, trade and weather intelligence for the Indian cotton market.",
 };

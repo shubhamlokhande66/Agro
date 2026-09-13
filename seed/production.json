@@ -336,7 +336,7 @@
       "OTHERS": 176,
       "ALL_INDIA": 11169
     },
-    "2025/26 (Estimated)": {
+    "2025/26": {
       "PUNJAB": 115,
       "HARYANA": 418,
       "RAJASTHAN": 560,
@@ -350,19 +350,19 @@
       "OTHERS": 160,
       "ALL_INDIA": 10817.24
     },
-    "2026/27 (Expected)": {
-      "PUNJAB": 115,
-      "HARYANA": 418,
-      "RAJASTHAN": 548.8,
-      "GUJARAT": 2012.4,
-      "MAHARASHTRA": 3978,
-      "MP": 672,
-      "AP": 531.3,
+    "2026/27": {
+      "PUNJAB": 110.4,
+      "HARYANA": 397.1,
+      "RAJASTHAN": 588,
+      "GUJARAT": 1896.3,
+      "MAHARASHTRA": 3786.75,
+      "MP": 665.6,
+      "AP": 521.18,
       "TELANGANA": 1934.4,
-      "KARNATAKA": 777,
-      "TNADU": 60.57,
-      "OTHERS": 160,
-      "ALL_INDIA": 11207.47
+      "KARNATAKA": 769.6,
+      "TNADU": 59.987,
+      "OTHERS": 166.4,
+      "ALL_INDIA": 10895.717
     }
   },
   "yield": {
@@ -693,16 +693,16 @@
       "HARYANA": 270,
       "RAJASTHAN": 626.657,
       "GUJARAT": 590,
-      "MAHARASHTRA": 385,
+      "MAHARASHTRA": 477.491,
       "MP": 525,
       "AP": 433.721,
       "TELANGANA": 467,
       "KARNATAKA": 590,
       "TNADU": 610,
       "OTHERS": 555,
-      "ALL_INDIA": 469.813
+      "ALL_INDIA": 503.633
     },
-    "2025/26 (Estimated)": {
+    "2025/26": {
       "PUNJAB": 370,
       "HARYANA": 255,
       "RAJASTHAN": 730,
@@ -716,19 +716,19 @@
       "OTHERS": 562.329,
       "ALL_INDIA": 453.78
     },
-    "2026/27 (Expected)": {
-      "PUNJAB": 388.5,
-      "HARYANA": 260.1,
-      "RAJASTHAN": 751.9,
-      "GUJARAT": 584.25,
-      "MAHARASHTRA": 329,
-      "MP": 504,
-      "AP": 397.7,
-      "TELANGANA": 396.15,
-      "KARNATAKA": 550,
-      "TNADU": 595.471,
-      "OTHERS": 562.329,
-      "ALL_INDIA": 439.014
+    "2026/27": {
+      "PUNJAB": 365,
+      "HARYANA": 308.333,
+      "RAJASTHAN": 647.219,
+      "GUJARAT": 583.667,
+      "MAHARASHTRA": 370,
+      "MP": 510,
+      "AP": 414.574,
+      "TELANGANA": 399.667,
+      "KARNATAKA": 522,
+      "TNADU": 609.49,
+      "OTHERS": 539.11,
+      "ALL_INDIA": 450.438
     }
   },
   "prod": {
@@ -1059,16 +1059,19 @@
       "HARYANA": 7.56,
       "RAJASTHAN": 19.168,
       "GUJARAT": 76.561,
-      "MAHARASHTRA": 92.491,
+      "MAHARASHTRA": 114.71,
       "MP": 19.147,
       "AP": 11.557,
       "TELANGANA": 49.749,
       "KARNATAKA": 23.149,
       "TNADU": 2.009,
       "OTHERS": 5.746,
-      "ALL_INDIA": 308.667
+      "ALL_INDIA": 330.887
     },
-    "2025/26 (Estimated)": {
+    "2016/2017": {
+      "MAHARASHTRA": 3
+    },
+    "2025/26": {
       "PUNJAB": 2.503,
       "HARYANA": 6.27,
       "RAJASTHAN": 24.047,
@@ -1082,19 +1085,19 @@
       "OTHERS": 5.293,
       "ALL_INDIA": 288.744
     },
-    "2026/27 (Expected)": {
-      "PUNJAB": 2.628,
-      "HARYANA": 6.395,
-      "RAJASTHAN": 24.273,
-      "GUJARAT": 69.161,
-      "MAHARASHTRA": 76.986,
-      "MP": 19.923,
-      "AP": 12.429,
-      "TELANGANA": 45.077,
-      "KARNATAKA": 25.138,
-      "TNADU": 2.122,
-      "OTHERS": 5.293,
-      "ALL_INDIA": 289.426
+    "2026/27": {
+      "PUNJAB": 2.37,
+      "HARYANA": 7.202,
+      "RAJASTHAN": 22.386,
+      "GUJARAT": 65.106,
+      "MAHARASHTRA": 82.418,
+      "MP": 19.968,
+      "AP": 12.71,
+      "TELANGANA": 45.477,
+      "KARNATAKA": 23.631,
+      "TNADU": 2.151,
+      "OTHERS": 5.277,
+      "ALL_INDIA": 288.697
     }
   },
   "seasons": [
@@ -1114,6 +1117,7 @@
     "2014/15",
     "2015/16",
     "2016/17",
+    "2016/2017",
     "2017/18",
     "2018/19",
     "2019/20",
@@ -1122,8 +1126,8 @@
     "2022/23",
     "2023/24",
     "2024/25",
-    "2025/26 (Estimated)",
-    "2026/27 (Expected)"
+    "2025/26",
+    "2026/27"
   ],
   "states": [
     "PUNJAB",

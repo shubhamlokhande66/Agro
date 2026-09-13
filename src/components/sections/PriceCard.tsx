@@ -6,27 +6,22 @@ import { ChangeBadge } from "@/components/ui/ChangeBadge";
 import AreaChart from "@/components/charts/AreaChart";
 import {
   DOM_PERIOD_OPTS,
+  annualDeltas,
   latestAnnual,
   latestDaily,
   sliceVariety,
   type DomPeriod,
   type Variety,
 } from "@/data/prices";
-import { inr, inrCompact, pctChange, shortDate } from "@/lib/format";
+import { inr, inrCompact, shortDate } from "@/lib/format";
 
 export function PriceCard({ v }: { v: Variety }) {
   const [period, setPeriod] = useState<DomPeriod>("monthly");
   const sliced = sliceVariety(v, period);
   const latestQuote = latestDaily(v);
 
-  const annualValid = [...(v.annual ?? [])]
-    .sort((a, b) => a.year.localeCompare(b.year))
-    .map((p) => p.value);
-  const latest = annualValid.at(-1) ?? null;
-  const n = annualValid.length;
-  const wk = pctChange(latest, annualValid[n - 2] ?? null);
-  const mo = pctChange(latest, n >= 4 ? annualValid[n - 4] : null);
-  const yr = pctChange(latest, n >= 6 ? annualValid[n - 6] : (annualValid[0] ?? null));
+  const { y1, y3, y5 } = annualDeltas(v);
+  const latest = latestAnnual(v)?.value ?? null;
 
   const headlinePrice = latestQuote?.price ?? latest;
   const headlineCaption = latestQuote
@@ -63,9 +58,9 @@ export function PriceCard({ v }: { v: Variety }) {
       />
 
       <div className="mt-2.5 flex flex-wrap justify-end gap-1.5">
-        <ChangeBadge label="1yr" value={wk} />
-        <ChangeBadge label="3yr" value={mo} />
-        <ChangeBadge label="5yr" value={yr} />
+        <ChangeBadge label="1yr" value={y1} />
+        <ChangeBadge label="3yr" value={y3} />
+        <ChangeBadge label="5yr" value={y5} />
       </div>
     </div>
   );

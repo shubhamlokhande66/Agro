@@ -3,7 +3,7 @@
  * (see DatasetProvider); this module only holds types + live bindings.
  */
 
-import { shortDate } from "@/lib/format";
+import { pctChange, shortDate } from "@/lib/format";
 
 export type PriceKey = string;
 
@@ -63,6 +63,25 @@ export function latestAnnual(v: Variety): AnnualPoint | null {
   return sortedAnnual(v).at(-1) ?? null;
 }
 
+export type AnnualDeltas = { y1: number | null; y3: number | null; y5: number | null };
+
+/** year-over-year, 3yr and 5yr % change from a chronological annual-average series —
+ *  3yr/5yr fall back to the earliest available value if there isn't that much history yet */
+export function annualDeltasFromSeries(values: number[]): AnnualDeltas {
+  const latest = values.at(-1) ?? null;
+  const n = values.length;
+  return {
+    y1: pctChange(latest, values[n - 2] ?? null),
+    y3: pctChange(latest, n >= 4 ? values[n - 4] : null),
+    y5: pctChange(latest, n >= 6 ? values[n - 6] : (values[0] ?? null)),
+  };
+}
+
+/** same as {@link annualDeltasFromSeries}, from a variety's own annual-average points */
+export function annualDeltas(v: Variety): AnnualDeltas {
+  return annualDeltasFromSeries(sortedAnnual(v).map((p) => p.value));
+}
+
 /** most recent dated quote for a variety, or null if it has none yet */
 export function latestDaily(v: Variety): PricePoint | null {
   return sortedDaily(v).at(-1) ?? null;
@@ -71,6 +90,24 @@ export function latestDaily(v: Variety): PricePoint | null {
 /** the last ~month of daily quotes as a plain chronological number[] — for sparklines etc. */
 export function recentPrices(v: Variety): number[] {
   return sliceVariety(v, "monthly").data;
+}
+
+/** % change vs. the quote closest to (but not after) 7 calendar days before the latest quote —
+ *  falls back to the earliest available quote if there isn't a week of history yet */
+export function weeklyChange(v: Variety): number | null {
+  const sorted = sortedDaily(v);
+  if (sorted.length === 0) return null;
+  const last = sorted.at(-1)!;
+  const cutoff = new Date(last.date + "T00:00:00").getTime() - 7 * 86400000;
+  let prev: PricePoint | null = null;
+  for (let i = sorted.length - 2; i >= 0; i--) {
+    if (new Date(sorted[i].date + "T00:00:00").getTime() <= cutoff) {
+      prev = sorted[i];
+      break;
+    }
+  }
+  if (!prev && sorted.length > 1) prev = sorted[0];
+  return pctChange(last.price, prev?.price ?? null);
 }
 
 /** "2026-05-02" -> "2026-Q2" */
@@ -111,8 +148,9 @@ export function sliceVariety(v: Variety, period: DomPeriod) {
   }
   if (period === "1y") {
     const bucketed = quarterlyFromDaily(v, 4);
-    if (bucketed.data.length >= 2) return bucketed;
-    // not enough distinct quarters yet — show the raw daily quotes instead of a lone dot
+    // 2 quarters is still just one straight line segment — not worth showing over
+    // the richer daily view until there's enough spread to make a real curve
+    if (bucketed.data.length >= 3) return bucketed;
     const sorted = sortedDaily(v);
     return {
       labels: sorted.map((p) => shortDate(p.date)) as (string | number)[],
