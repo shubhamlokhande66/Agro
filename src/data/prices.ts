@@ -3,7 +3,7 @@
  * (see DatasetProvider); this module only holds types + live bindings.
  */
 
-import { shortDate } from "@/lib/format";
+import { pctChange, shortDate } from "@/lib/format";
 
 export type PriceKey = string;
 
@@ -73,6 +73,24 @@ export function recentPrices(v: Variety): number[] {
   return sliceVariety(v, "monthly").data;
 }
 
+/** % change vs. the quote closest to (but not after) 7 calendar days before the latest quote —
+ *  falls back to the earliest available quote if there isn't a week of history yet */
+export function weeklyChange(v: Variety): number | null {
+  const sorted = sortedDaily(v);
+  if (sorted.length === 0) return null;
+  const last = sorted.at(-1)!;
+  const cutoff = new Date(last.date + "T00:00:00").getTime() - 7 * 86400000;
+  let prev: PricePoint | null = null;
+  for (let i = sorted.length - 2; i >= 0; i--) {
+    if (new Date(sorted[i].date + "T00:00:00").getTime() <= cutoff) {
+      prev = sorted[i];
+      break;
+    }
+  }
+  if (!prev && sorted.length > 1) prev = sorted[0];
+  return pctChange(last.price, prev?.price ?? null);
+}
+
 /** "2026-05-02" -> "2026-Q2" */
 function quarterKey(date: string): string {
   const q = Math.ceil(parseInt(date.slice(5, 7), 10) / 3);
@@ -111,8 +129,9 @@ export function sliceVariety(v: Variety, period: DomPeriod) {
   }
   if (period === "1y") {
     const bucketed = quarterlyFromDaily(v, 4);
-    if (bucketed.data.length >= 2) return bucketed;
-    // not enough distinct quarters yet — show the raw daily quotes instead of a lone dot
+    // 2 quarters is still just one straight line segment — not worth showing over
+    // the richer daily view until there's enough spread to make a real curve
+    if (bucketed.data.length >= 3) return bucketed;
     const sorted = sortedDaily(v);
     return {
       labels: sorted.map((p) => shortDate(p.date)) as (string | number)[],
