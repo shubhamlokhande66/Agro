@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuth } from "@/lib/auth";
@@ -18,7 +18,7 @@ function Splash() {
   );
 }
 
-function AdminHeader() {
+function AdminHeader({ onMenu }: { onMenu: () => void }) {
   const { username, logout } = useAuth();
   const { mode, toggle } = useTheme();
 
@@ -26,9 +26,19 @@ function AdminHeader() {
     <header className="sticky top-0 z-30 border-b border-line bg-[var(--topbar-bg)] backdrop-blur-md">
       <div className="flex items-center justify-between gap-3 px-4 py-2.5 sm:px-6">
         <div className="flex items-center gap-2.5">
+          <button
+            type="button"
+            onClick={onMenu}
+            aria-label="Open admin menu"
+            className="focusable grid h-9 w-9 shrink-0 place-items-center rounded-xl border border-line bg-surface md:hidden"
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <path d="M3 12h18M3 6h18M3 18h18" />
+            </svg>
+          </button>
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/agrolytix-logo.jpg" alt="Agrolytix Research" className="h-11 w-auto" />
-          <div className="leading-tight">
+          <img src="/agrolytix-logo.jpg" alt="Agrolytix Research" className="h-8 w-auto sm:h-11" />
+          <div className="hidden leading-tight sm:block">
             <div className="text-[9.5px] font-medium uppercase tracking-[0.16em] text-ink-faint">
               Cotton Terminal
             </div>
@@ -36,12 +46,12 @@ function AdminHeader() {
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           <Link
             href="/"
-            className="rounded-xl border border-line bg-surface px-3 py-2 text-[12px] font-semibold text-ink-soft transition-colors hover:bg-surface-2 hover:text-ink"
+            className="rounded-xl border border-line bg-surface px-2.5 py-2 text-[12px] font-semibold text-ink-soft transition-colors hover:bg-surface-2 hover:text-ink sm:px-3"
           >
-            ← Back to site
+            <span aria-hidden>←</span> <span className="hidden sm:inline">Back to site</span>
           </Link>
           <button
             type="button"
@@ -66,7 +76,7 @@ function AdminHeader() {
           <button
             type="button"
             onClick={logout}
-            className="rounded-xl border border-line bg-surface px-3 py-2 text-[12px] font-semibold text-ink-soft transition-colors hover:bg-surface-2 hover:text-ink"
+            className="rounded-xl border border-line bg-surface px-2.5 py-2 text-[12px] font-semibold text-ink-soft transition-colors hover:bg-surface-2 hover:text-ink sm:px-3"
           >
             Sign out
           </button>
@@ -80,6 +90,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const { ready, authed, isAdmin } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [drawer, setDrawer] = useState(false);
 
   useEffect(() => {
     if (ready && authed && !isAdmin) router.replace("/");
@@ -95,7 +106,22 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   return (
     <AdminMetaProvider>
       <div className="min-h-screen bg-bg">
-        <AdminHeader />
+        <AdminHeader onMenu={() => setDrawer(true)} />
+
+        {drawer ? (
+          <div className="fixed inset-0 z-50 md:hidden">
+            <button
+              type="button"
+              aria-label="Close admin menu"
+              className="absolute inset-0 bg-black/50 backdrop-blur-sm"
+              onClick={() => setDrawer(false)}
+            />
+            <div className="absolute left-0 top-0 h-full w-[264px] max-w-[82vw] overflow-y-auto border-r border-line bg-surface shadow-pop animate-rise">
+              <AdminRail onNavigate={() => setDrawer(false)} />
+            </div>
+          </div>
+        ) : null}
+
         <main className="mx-auto max-w-[1400px] px-4 py-6 sm:px-6 lg:px-8">
           <div className="mb-4 flex items-center gap-1.5 text-[11.5px] text-ink-faint">
             <Link href="/admin" className="font-semibold text-ink hover:text-accent">

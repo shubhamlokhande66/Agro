@@ -135,7 +135,7 @@ export default function DatasetEditorPage() {
           </>
         }
         right={
-          <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-end gap-2.5 sm:gap-3">
             <span
               className={
                 "text-[11.5px] font-medium " +
