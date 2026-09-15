@@ -19,7 +19,7 @@ function statusDot(updatedAt: number | null | undefined) {
   return "bg-neg";
 }
 
-export function AdminRail() {
+export function AdminRail({ onNavigate }: { onNavigate?: () => void }) {
   const pathname = usePathname();
   const { meta } = useAdminMeta();
   const [q, setQ] = useState("");
@@ -53,6 +53,7 @@ export function AdminRail() {
       <div className="space-y-3 px-2 pb-3">
         <Link
           href="/admin"
+          onClick={onNavigate}
           className={clsx(
             "flex items-center gap-2 rounded-lg px-2.5 py-[7px] text-[12.5px] font-semibold transition-colors",
             pathname === "/admin"
@@ -66,6 +67,7 @@ export function AdminRail() {
 
         <Link
           href="/admin/users"
+          onClick={onNavigate}
           className={clsx(
             "flex items-center gap-2 rounded-lg px-2.5 py-[7px] text-[12.5px] font-semibold transition-colors",
             pathname === "/admin/users"
@@ -90,6 +92,7 @@ export function AdminRail() {
                   <Link
                     key={d.key}
                     href={`/admin/${d.key}`}
+                    onClick={onNavigate}
                     className={clsx(
                       "group relative flex items-center gap-2 rounded-lg px-2.5 py-[7px] text-[12px] font-medium transition-colors",
                       active ? "bg-accent-soft text-ink" : "text-ink-soft hover:bg-surface-2 hover:text-ink",
