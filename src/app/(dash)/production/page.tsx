@@ -7,6 +7,7 @@ import { Kpi, KpiRow } from "@/components/ui/Kpi";
 import { Tabs } from "@/components/ui/Tabs";
 import { Table, TableWrap, Td, Th } from "@/components/ui/DataTable";
 import { Delta } from "@/components/ui/ChangeBadge";
+import { CommentsPanel } from "@/components/ui/CommentsPanel";
 import BarChart from "@/components/charts/BarChart";
 import {
   DP_DATA,
@@ -61,6 +62,7 @@ export default function ProductionPage() {
       <PageHeader
         title="Domestic Cotton Production" icon="▤"
         sub="Area · Yield · Production · state-wise · Source: GOI / CAB / state govts"
+        dataset="production"
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-3">
@@ -151,6 +153,10 @@ export default function ProductionPage() {
       <p className="mt-3 text-[11px] italic text-ink-faint">
         ★ 2025/26 Estimated (provisional) · † 2026/27 Expected (forecast). 1 Bale = 170 kg.
       </p>
+
+      <div className="mt-3.5">
+        <CommentsPanel section="production" />
+      </div>
     </div>
   );
 }

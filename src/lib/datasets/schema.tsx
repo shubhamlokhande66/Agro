@@ -643,6 +643,27 @@ const balanceSheetSchema: EditorSection[] = [
   },
 ];
 
+const importParitySchema: EditorSection[] = [
+  {
+    id: "inputs",
+    title: "Landed-cost inputs",
+    hint: "Feeds the import-parity comparison on the Balance Sheet page (ICE price × USD/INR × duty, plus freight & insurance).",
+    render: (d, set) => (
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Labeled label="Import duty (%)">
+          <NumInput value={num(d.dutyPct)} align="left" onChange={(v) => set({ ...d, dutyPct: v ?? 0 })} />
+        </Labeled>
+        <Labeled label="Freight (₹ / candy)">
+          <NumInput value={num(d.freightPerCandy)} align="left" onChange={(v) => set({ ...d, freightPerCandy: v ?? 0 })} />
+        </Labeled>
+        <Labeled label="Insurance (₹ / candy)">
+          <NumInput value={num(d.insurancePerCandy)} align="left" onChange={(v) => set({ ...d, insurancePerCandy: v ?? 0 })} />
+        </Labeled>
+      </div>
+    ),
+  },
+];
+
 const tradeSchema: EditorSection[] = [
   {
     id: "axes",
@@ -1194,6 +1215,7 @@ export const SCHEMAS: Record<string, EditorSection[]> = {
   sowing: sowingSchema,
   production: productionSchema,
   balanceSheet: balanceSheetSchema,
+  importParity: importParitySchema,
   trade: tradeSchema,
   cop: copSchema,
   calendar: calendarSchema,

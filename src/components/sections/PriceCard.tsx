@@ -7,6 +7,7 @@ import AreaChart from "@/components/charts/AreaChart";
 import {
   DOM_PERIOD_OPTS,
   annualDeltas,
+  dailySeries,
   latestAnnual,
   latestDaily,
   sliceVariety,
@@ -14,14 +15,22 @@ import {
   type Variety,
 } from "@/data/prices";
 import { inr, inrCompact, shortDate } from "@/lib/format";
+import { deltaOverPeriod, type GlobalPeriod } from "@/lib/period";
 
-export function PriceCard({ v }: { v: Variety }) {
+export function PriceCard({ v, globalPeriod }: { v: Variety; globalPeriod?: GlobalPeriod }) {
   const [period, setPeriod] = useState<DomPeriod>("monthly");
   const sliced = sliceVariety(v, period);
   const latestQuote = latestDaily(v);
 
   const { y1, y3, y5 } = annualDeltas(v);
   const latest = latestAnnual(v)?.value ?? null;
+
+  const windowDelta = globalPeriod
+    ? (() => {
+        const d = dailySeries(v);
+        return deltaOverPeriod(d.labels, d.values, globalPeriod).pct;
+      })()
+    : null;
 
   const headlinePrice = latestQuote?.price ?? latest;
   const headlineCaption = latestQuote
@@ -58,6 +67,7 @@ export function PriceCard({ v }: { v: Variety }) {
       />
 
       <div className="mt-2.5 flex flex-wrap justify-end gap-1.5">
+        {globalPeriod ? <ChangeBadge label={globalPeriod.toUpperCase()} value={windowDelta} /> : null}
         <ChangeBadge label="1yr" value={y1} />
         <ChangeBadge label="3yr" value={y3} />
         <ChangeBadge label="5yr" value={y5} />

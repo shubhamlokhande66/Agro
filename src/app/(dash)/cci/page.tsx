@@ -9,6 +9,7 @@ import AreaChart from "@/components/charts/AreaChart";
 import BarChart from "@/components/charts/BarChart";
 import { CCI } from "@/data/cci";
 import { DataMissing } from "@/components/ui/DataGuard";
+import { CommentsPanel } from "@/components/ui/CommentsPanel";
 import { inr, int, num } from "@/lib/format";
 
 export default function CciPage() {
@@ -36,6 +37,7 @@ export default function CciPage() {
       <PageHeader
         title="CCI Updates" icon="🏛"
         sub="Cotton Corporation of India — MSP procurement, OMSS sales & prices"
+        dataset="cci"
       />
 
       <KpiRow>
@@ -127,6 +129,10 @@ export default function CciPage() {
             </Table>
           </TableWrap>
         </Card>
+      </div>
+
+      <div className="mt-3.5">
+        <CommentsPanel section="cci" />
       </div>
     </div>
   );

@@ -37,6 +37,7 @@ export default function WasdePage() {
         title="WASDE — World Cotton Balance"
         icon="🌐"
         sub={`USDA · ${String(WD.meta.latest_report)} report · 1,000 MT (KMT) · marketing year ${String(WD.meta.marketing_year)}`}
+        dataset="wasde"
       />
 
       <KpiRow>

@@ -58,6 +58,7 @@ export default function NewsPage() {
         title="Market News"
         icon="❒"
         sub="India cotton headlines · curated feed"
+        dataset="news"
       />
 
       {canUpload ? (

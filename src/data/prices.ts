@@ -87,6 +87,13 @@ export function latestDaily(v: Variety): PricePoint | null {
   return sortedDaily(v).at(-1) ?? null;
 }
 
+/** a variety's dated daily quotes as chronological {labels, values} — e.g. for
+ *  `sliceByPeriod`/`deltaOverPeriod` (src/lib/period.ts), which want plain parallel arrays */
+export function dailySeries(v: Variety | undefined): { labels: string[]; values: number[] } {
+  const sorted = sortedDaily(v ?? { daily: [] } as unknown as Variety);
+  return { labels: sorted.map((p) => p.date), values: sorted.map((p) => p.price) };
+}
+
 /** the last ~month of daily quotes as a plain chronological number[] — for sparklines etc. */
 export function recentPrices(v: Variety): number[] {
   return sliceVariety(v, "monthly").data;

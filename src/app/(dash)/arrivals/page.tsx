@@ -52,6 +52,7 @@ export default function ArrivalsPage() {
         title="Cotton Arrivals"
         icon="▨"
         sub="Cumulative market arrivals · lakh bales · weekly"
+        dataset="arrivals"
       />
 
       <KpiRow>

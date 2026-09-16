@@ -32,4 +32,5 @@ export const COLLECTIONS = {
   audit: "audit_log",
   users: "users",
   sessions: "sessions",
+  comments: "comments",
 } as const;

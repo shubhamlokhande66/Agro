@@ -8,6 +8,7 @@ import { Tabs } from "@/components/ui/Tabs";
 import AreaChart from "@/components/charts/AreaChart";
 import LineChart from "@/components/charts/LineChart";
 import BarChart from "@/components/charts/BarChart";
+import { CommentsPanel } from "@/components/ui/CommentsPanel";
 import {
   RFH,
   RF_COMPOSITE_T,
@@ -17,13 +18,23 @@ import {
   RF_YEAR_PALETTE,
   jjas,
   seasonTotal,
+  cumulative,
+  pctDeviation,
 } from "@/data/rainfall";
 import { signedPct, pctChange } from "@/lib/format";
 
-const YEARS = ["2021", "2022", "2023", "2024", "2025", "all"] as const;
-type Year = (typeof YEARS)[number];
+type Year = string; // a year string from RF_ALL_YEARS, or "all"
 
 export default function WeatherPage() {
+  // computed at render time (not module scope) so it reflects RF_ALL_YEARS once hydrated
+  const YEARS = [...RF_ALL_YEARS.filter((y) => Number(y) >= 2021), "all"];
+  const latestYear = RF_ALL_YEARS.at(-1) ?? "2025";
+  // don't default the page to a season-in-progress year — jjas()/seasonTotal() would count
+  // its unreported months as 0 rainfall, making the KPIs look worse than they really are;
+  // the composite series is the most complete one, so completeness is checked against it
+  const seasonComplete = (y: string) => (RF_COMPOSITE_T["y" + y] ?? []).every((v) => v != null);
+  const defaultYear = [...RF_ALL_YEARS].reverse().find(seasonComplete) ?? latestYear;
+
   const [stateName, setStateName] = useState<string>(RF_STATES[0] ?? "Maharashtra");
   const isComposite = stateName === "_composite";
   const subs = useMemo(
@@ -31,7 +42,7 @@ export default function WeatherPage() {
     [isComposite, stateName],
   );
   const [sub, setSub] = useState<string>("_state");
-  const [year, setYear] = useState<Year>("2025");
+  const [year, setYear] = useState<Year>(defaultYear);
 
   const series = useMemo(() => {
     if (isComposite)
@@ -50,25 +61,37 @@ export default function WeatherPage() {
       ? RF_COMPOSITE_T["y" + y]
       : (series as unknown as Record<string, number[]>)["y" + y];
 
-  const selYearData = year === "all" ? yv("2025") : yv(year);
+  const effectiveYear = year === "all" ? defaultYear : year;
+  const selYearData = yv(effectiveYear);
+  // the year immediately before whichever year is actually being shown — not just
+  // "second-to-latest overall", so it stays a meaningful pair even while the latest
+  // year in RF_ALL_YEARS is still a season in progress
+  const prevYear = RF_ALL_YEARS[RF_ALL_YEARS.indexOf(effectiveYear) - 1] ?? effectiveYear;
 
   const jjasSel = jjas(selYearData);
   const jjasNormal = jjas(normal);
   const seasonSel = seasonTotal(selYearData);
   const seasonNormal = seasonTotal(normal);
 
-  const peak = selYearData
-    ? RF_MONTHS_L[selYearData.indexOf(Math.max(...selYearData))]
+  // filter out not-yet-reported months (null, e.g. a season in progress) before
+  // finding the extremes — Math.min/max coerce null to 0, which would otherwise
+  // misreport (or blank out) the driest month as an unreported one
+  const reported = (selYearData ?? [])
+    .map((v, i) => ({ v, i }))
+    .filter((e): e is { v: number; i: number } => e.v != null);
+  const peak = reported.length
+    ? RF_MONTHS_L[reported.reduce((a, b) => (b.v > a.v ? b : a)).i]
     : "—";
-  const dry = selYearData
-    ? RF_MONTHS_L[selYearData.indexOf(Math.min(...selYearData))]
+  const dry = reported.length
+    ? RF_MONTHS_L[reported.reduce((a, b) => (b.v < a.v ? b : a)).i]
     : "—";
 
   return (
     <div>
       <PageHeader
         title="Weather & Rainfall" icon="☂"
-        sub="IMD subdivision rainfall · May–Dec cotton season · 2012–2025"
+        sub={`IMD subdivision rainfall · May–Dec cotton season · ${RF_ALL_YEARS[0] ?? "2012"}–${latestYear}`}
+        dataset="rainfall"
       />
 
       <div className="mb-4 flex flex-wrap items-center gap-2">
@@ -117,7 +140,7 @@ export default function WeatherPage() {
           </select>
         ) : null}
         <Tabs
-          options={YEARS.map((y) => ({ value: y, label: y === "all" ? "All years" : y === "2025" ? "2025 ★" : y }))}
+          options={YEARS.map((y) => ({ value: y, label: y === "all" ? "All years" : y === latestYear ? `${y} ★` : y }))}
           value={year}
           onChange={setYear}
         />
@@ -145,15 +168,15 @@ export default function WeatherPage() {
             </span>
           }
         />
-        <Kpi label="Peak month" value={peak} accent="blue" unit={year === "all" ? "2025" : year} />
-        <Kpi label="Driest month" value={dry} accent="red" unit={year === "all" ? "2025" : year} />
+        <Kpi label="Peak month" value={peak} accent="blue" unit={effectiveYear} />
+        <Kpi label="Driest month" value={dry} accent="red" unit={effectiveYear} />
       </KpiRow>
 
       <div className="mt-5 space-y-3.5">
         <Card>
           <CardHeader
-            title="Monthly rainfall — cotton crop season (May–Dec)"
-            sub="Selected year vs LPA normal (dashed)"
+            title={year === "all" ? "Cumulative rainfall — by year (May–Dec)" : "Monthly rainfall — cotton crop season (May–Dec)"}
+            sub={year === "all" ? `Running total · ${latestYear} (dashed) vs prior years` : "Selected year vs LPA normal (dashed)"}
           />
           {year === "all" ? (
             <LineChart
@@ -161,12 +184,15 @@ export default function WeatherPage() {
               series={[
                 ...RF_ALL_YEARS.map((y) => ({
                   label: y,
-                  data: yv(y) ?? [],
+                  data: cumulative(yv(y)),
                   color: (RF_YEAR_PALETTE as Record<string, string>)[y] ?? "#cbd5e1",
-                  width: y === "2025" ? 2.5 : 1,
+                  width: y === latestYear ? 2.5 : 1,
+                  dashed: y === latestYear,
                 })),
-                { label: "Normal", data: normal, color: "#c97b1e", width: 1.5, dashed: true },
+                { label: "Normal", data: cumulative(normal), color: "#c97b1e", width: 1.5 },
               ]}
+              yFmt={(v) => Math.round(v) + "mm"}
+              tooltipLabel={(c) => `${c.dataset.label}: ${Math.round(c.parsed.y)} mm`}
               smartX={false}
               height={300}
             />
@@ -212,26 +238,32 @@ export default function WeatherPage() {
 
           <Card>
             <CardHeader
-              title="Monthly departure from normal (mm)"
-              sub={`${year === "all" ? "2025" : year} · green = surplus, red = deficit`}
+              title="% deviation from normal"
+              sub={`${prevYear} vs ${effectiveYear}`}
             />
             <BarChart
               labels={RF_MONTHS_L}
               series={[
+                { label: prevYear, data: pctDeviation(yv(prevYear), normal), color: "#94a3b8" },
                 {
-                  data: RF_MONTHS_L.map((_, i) =>
-                    selYearData ? Math.round(selYearData[i] - normal[i]) : null,
-                  ),
-                  colors: RF_MONTHS_L.map((_, i) =>
-                    selYearData && selYearData[i] - normal[i] >= 0 ? "#2d7d46" : "#b83232",
-                  ),
+                  label: effectiveYear,
+                  data: pctDeviation(selYearData, normal),
+                  color: "#2d7d46",
                 },
               ]}
+              legend
+              yFmt={(v) => Math.round(v) + "%"}
+              tooltipLabel={(c) => {
+                const v = c.parsed.y;
+                return `${c.dataset.label}: ${v >= 0 ? "+" : ""}${v.toFixed(1)}%`;
+              }}
               smartX={false}
               height={220}
             />
           </Card>
         </div>
+
+        <CommentsPanel section="weather" />
       </div>
     </div>
   );
