@@ -38,7 +38,7 @@ export default function OverviewPage() {
     .sort((a, b) => b - a)[0];
 
   const [period, setPeriod] = useState<GlobalPeriod>("6m");
-  const [heroCat, setHeroCat] = useState<HeroCategory>("cotton");
+  const [heroCat, setHeroCat] = useState<HeroCategory>("domestic");
 
   const guj29 = variety("guj29");
   const g = guj29 ? recentPrices(guj29) : [];

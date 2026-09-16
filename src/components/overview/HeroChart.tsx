@@ -10,7 +10,7 @@ import { ICE_D_L, ICE_D_V, BR_M_L, BR_M_V } from "@/data/international";
 import { USDINR_M_L, USDINR_M_V } from "@/data/currency";
 import { inr, inrCompact } from "@/lib/format";
 
-export type HeroCategory = "cotton" | "kapas" | "cseed" | "yarn" | "inr" | "crude";
+export type HeroCategory = "domestic" | "cotton" | "kapas" | "cseed" | "yarn" | "inr" | "crude";
 
 function varietyDaily(key: string) {
   return dailySeries(VARIETIES.find((x) => x.key === key));
@@ -26,6 +26,8 @@ function seriesFor(cat: HeroCategory): {
   tooltipFmt: (v: number) => string;
 } {
   switch (cat) {
+    case "domestic":
+      return { title: "Gujarat Shankar-29 (Guj-29)", ...varietyDaily("guj29"), unit: "₹/Candy", headlineFmt: (v) => inr(v), axisFmt: inrCompact, tooltipFmt: (v) => inr(v) };
     case "cotton":
       return { title: "Global Cotton (ICE #2)", labels: ICE_D_L, values: ICE_D_V, unit: "¢/lb", headlineFmt: (v) => v.toFixed(2), axisFmt: (v) => v + "¢", tooltipFmt: (v) => v + "¢/lb" };
     case "kapas":
@@ -41,8 +43,8 @@ function seriesFor(cat: HeroCategory): {
   }
 }
 
-/** The Overview page's featured chart — switches between the 6 categories via the
- *  right-hand rail, with its own independent Weekly/Monthly/…/5Y period filter
+/** The Overview page's featured chart — switches between domestic Guj-29 and the
+ *  doc's 6 categories via the right-hand rail, with its own independent Weekly/Monthly/…/5Y period filter
  *  (the doc's "chart-specific" filter, separate from the page-level global one). */
 export function HeroChart({ category }: { category: HeroCategory }) {
   const [period, setPeriod] = useState<GlobalPeriod>("6m");

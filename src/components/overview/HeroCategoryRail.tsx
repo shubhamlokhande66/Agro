@@ -4,6 +4,7 @@ import clsx from "clsx";
 import type { HeroCategory } from "./HeroChart";
 
 export const HERO_CATEGORIES: { value: HeroCategory; label: string }[] = [
+  { value: "domestic", label: "Gujarat Shankar-29 (Guj-29)" },
   { value: "cotton", label: "Global Cotton" },
   { value: "kapas", label: "Kapas" },
   { value: "cseed", label: "Cotton Seed" },
@@ -12,8 +13,9 @@ export const HERO_CATEGORIES: { value: HeroCategory; label: string }[] = [
   { value: "crude", label: "Crude Oil" },
 ];
 
-/** The right-hand "6 category tabs" rail from the requirements doc — switches which
- *  series the Overview hero chart shows. */
+/** The right-hand category rail from the requirements doc (its 6 tabs, plus domestic
+ *  Guj-29 as the default/primary view per the mockup) — switches which series the
+ *  Overview hero chart shows. */
 export function HeroCategoryRail({
   value,
   onChange,
