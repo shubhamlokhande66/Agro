@@ -18,7 +18,7 @@ type Props = {
   xTicks?: number;
   tooltipLabel?: (v: number) => string;
   smartX?: boolean;
-  height?: number;
+  height?: number | "fill";
 };
 
 export default function AreaChart({
@@ -61,7 +61,10 @@ export default function AreaChart({
   });
 
   return (
-    <div style={{ height }} className="relative">
+    <div
+      style={height === "fill" ? undefined : { height }}
+      className={height === "fill" ? "absolute inset-0" : "relative"}
+    >
       <Line
         options={options}
         data={{

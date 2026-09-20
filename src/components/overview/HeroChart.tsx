@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import AreaChart from "@/components/charts/AreaChart";
 import { GlobalPeriodTabs } from "@/components/ui/GlobalPeriodTabs";
 import { Delta } from "@/components/ui/ChangeBadge";
@@ -16,7 +16,7 @@ function varietyDaily(key: string) {
   return dailySeries(VARIETIES.find((x) => x.key === key));
 }
 
-function seriesFor(cat: HeroCategory): {
+export function seriesFor(cat: HeroCategory): {
   title: string;
   labels: (string | number)[];
   values: (number | null)[];
@@ -44,17 +44,32 @@ function seriesFor(cat: HeroCategory): {
 }
 
 /** The Overview page's featured chart — switches between domestic Guj-29 and the
- *  doc's 6 categories via the right-hand rail, with its own independent Weekly/Monthly/…/5Y period filter
- *  (the doc's "chart-specific" filter, separate from the page-level global one). */
-export function HeroChart({ category }: { category: HeroCategory }) {
-  const [period, setPeriod] = useState<GlobalPeriod>("6m");
+ *  doc's 6 categories via the right-hand rail. Its period is the page-level 1W–5Y filter, so
+ *  the hero's own buttons and the header buttons stay in sync. */
+export function HeroChart({
+  category,
+  period,
+  onPeriodChange,
+}: {
+  category: HeroCategory;
+  period: GlobalPeriod;
+  onPeriodChange: (p: GlobalPeriod) => void;
+}) {
   const src = useMemo(() => seriesFor(category), [category]);
   const sliced = useMemo(() => sliceByPeriod(src.labels, src.values, period), [src, period]);
   const delta = useMemo(() => deltaOverPeriod(src.labels, src.values, period), [src, period]);
   const last = src.values.at(-1) ?? null;
+  const [compact, setCompact] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia("(max-width: 639px)");
+    const update = () => setCompact(mq.matches);
+    update();
+    mq.addEventListener("change", update);
+    return () => mq.removeEventListener("change", update);
+  }, []);
 
   return (
-    <div className="panel p-4 sm:p-5">
+    <div className="panel flex flex-col p-4 sm:p-5">
       <div className="mb-2 flex flex-wrap items-start justify-between gap-3">
         <div>
           <div className="eyebrow">{src.title}</div>
@@ -68,17 +83,19 @@ export function HeroChart({ category }: { category: HeroCategory }) {
             </span>
           </div>
         </div>
-        <GlobalPeriodTabs value={period} onChange={setPeriod} />
+        <GlobalPeriodTabs value={period} onChange={onPeriodChange} />
       </div>
-      <AreaChart
-        labels={sliced.labels}
-        data={sliced.values}
-        height={300}
-        smartX={false}
-        xTicks={6}
-        yFmt={src.axisFmt}
-        tooltipLabel={src.tooltipFmt}
-      />
+      <div className={compact ? "relative h-[220px]" : "relative min-h-[300px] flex-1"}>
+        <AreaChart
+          labels={sliced.labels}
+          data={sliced.values}
+          height="fill"
+          smartX={false}
+          xTicks={6}
+          yFmt={src.axisFmt}
+          tooltipLabel={src.tooltipFmt}
+        />
+      </div>
     </div>
   );
 }

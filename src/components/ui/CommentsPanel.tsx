@@ -16,10 +16,12 @@ export function CommentsPanel({
   section,
   title = "Notes & commentary",
   minHeight = 320,
+  rows = 20,
 }: {
   section: Section;
   title?: string;
   minHeight?: number;
+  rows?: number;
 }) {
   const { authed, username } = useAuth();
   const [text, setText] = useState("");
@@ -117,7 +119,7 @@ export function CommentsPanel({
         onChange={(e) => setText(e.target.value)}
         readOnly={!authed}
         placeholder={authed ? "Add commentary…" : "Sign in to add commentary."}
-        rows={20}
+        rows={rows}
         style={{ minHeight }}
         className="w-full resize-y rounded-xl border border-line bg-surface-2/40 p-3 text-[12.5px] leading-relaxed text-ink outline-none focusable placeholder:text-ink-faint"
       />
