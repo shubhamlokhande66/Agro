@@ -5,6 +5,7 @@ import { __hydrateArrivals } from "@/data/arrivals";
 import { __hydrateSowing } from "@/data/sowing";
 import { __hydrateProduction } from "@/data/production";
 import { __hydrateBalanceSheet } from "@/data/balanceSheet";
+import { __hydrateImportParity } from "@/data/importParity";
 import { __hydrateTrade } from "@/data/trade";
 import { __hydrateCci } from "@/data/cci";
 import { __hydrateRainfall } from "@/data/rainfall";
@@ -21,6 +22,7 @@ const HYDRATORS: Record<string, (blob: any) => void> = {
   sowing: __hydrateSowing,
   production: __hydrateProduction,
   balanceSheet: __hydrateBalanceSheet,
+  importParity: __hydrateImportParity,
   trade: __hydrateTrade,
   cci: __hydrateCci,
   rainfall: __hydrateRainfall,

@@ -52,3 +52,27 @@ export function seasonTotal(arr: number[] | undefined): number | null {
   if (!arr) return null;
   return arr.reduce((s, v) => s + (v ?? 0), 0);
 }
+
+/** Running monthly total — null-safe, null propagates (month not yet reported). */
+export function cumulative(arr: (number | null)[] | undefined): (number | null)[] {
+  if (!arr) return [];
+  let sum = 0;
+  return arr.map((v) => {
+    if (v == null || Number.isNaN(v)) return null;
+    sum += v;
+    return sum;
+  });
+}
+
+/** Per-month % deviation from the LPA normal — null-safe. */
+export function pctDeviation(
+  actual: (number | null)[] | undefined,
+  normal: number[] | undefined,
+): (number | null)[] {
+  if (!actual || !normal) return [];
+  return actual.map((v, i) => {
+    const n = normal[i];
+    if (v == null || Number.isNaN(v) || n == null || n === 0) return null;
+    return ((v - n) / n) * 100;
+  });
+}

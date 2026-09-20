@@ -24,6 +24,7 @@ export default function CalendarPage() {
         title="Crop Calendar"
         icon="▦"
         sub="State-wise cotton phase timeline · May → Feb · sowing to picking"
+        dataset="calendar"
       />
 
       {/* legend */}

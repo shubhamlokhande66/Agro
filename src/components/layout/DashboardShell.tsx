@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useAuth } from "@/lib/auth";
 import { DatasetProvider } from "@/lib/datasets/provider";
+import { DatasetMetaProvider } from "@/lib/meta/context";
 import { useDataState } from "@/lib/datasets/store";
 import { LoginScreen } from "./LoginScreen";
 import { Sidebar } from "./Sidebar";
@@ -109,7 +110,9 @@ export function DashboardShell({ children }: { children: React.ReactNode }) {
 
   return (
     <DatasetProvider>
-      <Inner>{children}</Inner>
+      <DatasetMetaProvider>
+        <Inner>{children}</Inner>
+      </DatasetMetaProvider>
     </DatasetProvider>
   );
 }

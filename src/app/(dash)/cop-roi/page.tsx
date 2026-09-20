@@ -44,6 +44,7 @@ export default function CopRoiPage() {
         title="COP & ROI"
         icon="%"
         sub="Cost of production, returns and ROI — cotton vs competing kharif crops (₹ / acre)"
+        dataset="cop"
       />
 
       <div className="mb-4 flex flex-wrap gap-2">

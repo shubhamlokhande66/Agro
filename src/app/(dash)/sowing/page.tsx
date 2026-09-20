@@ -4,6 +4,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Kpi, KpiRow } from "@/components/ui/Kpi";
 import { DataMissing } from "@/components/ui/DataGuard";
+import { CommentsPanel } from "@/components/ui/CommentsPanel";
 import LineChart from "@/components/charts/LineChart";
 import { SOWING_SERIES, SOWING_WEEKS } from "@/data/sowing";
 import { num, pctChange, signedPct } from "@/lib/format";
@@ -35,6 +36,7 @@ export default function SowingPage() {
         title="Cotton Sowing"
         icon="❊"
         sub="Area sown · lakh ha · weekly Jun → Sep"
+        dataset="sowing"
       />
 
       <KpiRow>
@@ -52,7 +54,7 @@ export default function SowingPage() {
         />
       </KpiRow>
 
-      <div className="mt-5">
+      <div className="mt-5 grid grid-cols-1 gap-3.5 lg:grid-cols-[1fr_360px]">
         <Card>
           <CardHeader title="Sowing progress (lakh ha) — weekly" />
           <LineChart
@@ -75,6 +77,7 @@ export default function SowingPage() {
             tooltipLabel={(c) => `${c.dataset.label}: ${c.parsed.y} lakh ha`}
           />
         </Card>
+        <CommentsPanel section="sowing" minHeight={320} />
       </div>
     </div>
   );

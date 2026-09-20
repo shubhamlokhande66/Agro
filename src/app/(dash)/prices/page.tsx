@@ -8,10 +8,13 @@ import { PriceCard } from "@/components/sections/PriceCard";
 import { InternationalPrices } from "@/components/sections/InternationalPrices";
 import { AdminHint } from "@/components/ui/AdminHint";
 import { DataMissing } from "@/components/ui/DataGuard";
+import { GlobalPeriodTabs } from "@/components/ui/GlobalPeriodTabs";
 import { VARIETIES, VARIETY_GROUPS } from "@/data/prices";
+import { type GlobalPeriod } from "@/lib/period";
 
 export default function PricesPage() {
   const [tab, setTab] = useState<"domestic" | "international">("domestic");
+  const [period, setPeriod] = useState<GlobalPeriod>("6m");
   const groups =
     VARIETY_GROUPS.length > 0
       ? VARIETY_GROUPS
@@ -22,15 +25,19 @@ export default function PricesPage() {
       <PageHeader
         title="Prices"
         icon="₹"
+        dataset={tab === "domestic" ? "prices" : "international"}
         right={
-          <SegmentedTabs
-            options={[
-              { value: "domestic", label: "Domestic" },
-              { value: "international", label: "International" },
-            ]}
-            value={tab}
-            onChange={setTab}
-          />
+          <div className="flex flex-wrap items-center gap-2">
+            <GlobalPeriodTabs value={period} onChange={setPeriod} />
+            <SegmentedTabs
+              options={[
+                { value: "domestic", label: "Domestic" },
+                { value: "international", label: "International" },
+              ]}
+              value={tab}
+              onChange={setTab}
+            />
+          </div>
         }
       />
 
@@ -45,7 +52,7 @@ export default function PricesPage() {
                 <SectionLabel>{group} · ₹ / Candy</SectionLabel>
                 <div className="grid grid-cols-1 gap-3.5 md:grid-cols-2 xl:grid-cols-3">
                   {VARIETIES.filter((v) => v.group === group).map((v) => (
-                    <PriceCard key={v.key} v={v} />
+                    <PriceCard key={v.key} v={v} globalPeriod={period} />
                   ))}
                 </div>
               </div>

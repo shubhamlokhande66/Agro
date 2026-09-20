@@ -11,7 +11,12 @@ import LineChart from "@/components/charts/LineChart";
 import BarChart from "@/components/charts/BarChart";
 import { SND } from "@/data/balanceSheet";
 import { DataMissing } from "@/components/ui/DataGuard";
-import { num, pctChange } from "@/lib/format";
+import { CommentsPanel } from "@/components/ui/CommentsPanel";
+import { num, pctChange, inr, signedPct } from "@/lib/format";
+import { ICE_D_V } from "@/data/international";
+import { USDINR_M_V } from "@/data/currency";
+import { VARIETIES, latestDaily } from "@/data/prices";
+import { landedCostPerCandy, IMPORT_DUTY_PCT } from "@/data/importParity";
 
 const ROWS: { key: keyof (typeof SND.annual)[string]; label: string; group: "supply" | "demand" | "close" }[] = [
   { key: "opening_stocks", label: "Opening stocks", group: "supply" },
@@ -44,11 +49,20 @@ export default function BalanceSheetPage() {
   const p = SND.annual[prev] ?? a;
   const stu = a.total_demand ? (a.closing_stocks / a.total_demand) * 100 : 0;
 
+  const icePrice = ICE_D_V.at(-1) ?? null;
+  const usdInr = USDINR_M_V.at(-1) ?? null;
+  const landed = icePrice != null && usdInr != null ? landedCostPerCandy(icePrice, usdInr) : null;
+  const guj29 = VARIETIES.find((v) => v.key === "guj29");
+  const domesticPrice = guj29 ? (latestDaily(guj29)?.price ?? null) : null;
+  const parityGap = landed != null && domesticPrice != null ? domesticPrice - landed : null;
+  const parityGapPct = pctChange(domesticPrice, landed);
+
   return (
     <div>
       <PageHeader
         title="Cotton Balance Sheet" icon="⚖"
         sub="India supply & demand · lakh bales · Source: CAB / trade estimates"
+        dataset="balanceSheet"
       />
 
       <KpiRow>
@@ -160,6 +174,34 @@ export default function BalanceSheetPage() {
           </Card>
         </div>
       )}
+
+      <div className="mt-3.5">
+        <Card>
+          <CardHeader
+            title="Import parity"
+            sub="Landed cost of imported cotton (ICE × USD/INR × duty + freight) vs Gujarat Shankar-29 domestic · ₹ / Candy"
+          />
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            <Kpi label="ICE Cotton #2" value={icePrice != null ? icePrice.toFixed(2) : "—"} unit="¢/lb" />
+            <Kpi label="USD/INR" value={usdInr != null ? usdInr.toFixed(2) : "—"} unit="₹" accent="blue" />
+            <Kpi label={`Landed cost · ${IMPORT_DUTY_PCT}% duty`} value={landed != null ? num(landed, 0) : "—"} unit="₹/candy" accent="amber" />
+            <Kpi
+              label="Domestic vs landed"
+              value={parityGapPct != null ? signedPct(parityGapPct, 1) : "—"}
+              unit={parityGap != null ? `₹${num(Math.abs(parityGap), 0)}/candy ${parityGap >= 0 ? "premium" : "discount"}` : undefined}
+              accent={parityGap != null && parityGap < 0 ? "green" : "red"}
+            />
+          </div>
+          <p className="mt-3 text-[11px] italic text-ink-faint">
+            Domestic latest: {inr(domesticPrice)} / candy. Duty, freight & insurance are admin-editable
+            under Import Parity.
+          </p>
+        </Card>
+      </div>
+
+      <div className="mt-3.5">
+        <CommentsPanel section="balanceSheet" />
+      </div>
     </div>
   );
 }
