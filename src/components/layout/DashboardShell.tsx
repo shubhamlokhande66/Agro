@@ -50,7 +50,7 @@ function Inner({ children }: { children: React.ReactNode }) {
 
   return (
     <div className="flex min-h-screen">
-      <aside className="sticky top-0 hidden h-screen w-[236px] shrink-0 border-r border-line lg:block">
+      <aside className="print-hide sticky top-0 hidden h-screen w-[236px] shrink-0 border-r border-line lg:block">
         <Sidebar />
       </aside>
 
@@ -69,16 +69,18 @@ function Inner({ children }: { children: React.ReactNode }) {
       ) : null}
 
       <div className="flex min-w-0 flex-1 flex-col">
-        <Topbar onMenu={() => setDrawer(true)} />
-        <MarketTicker />
+        <div className="print-hide">
+          <Topbar onMenu={() => setDrawer(true)} />
+          <MarketTicker />
+        </div>
 
-        <main className="flex-1 px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-16">
-          <div key={`${pathname}:${version}`} className="mx-auto max-w-[1280px] animate-rise">
+        <main className="print-main flex-1 px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-16">
+          <div key={`${pathname}:${version}`} className="print-page mx-auto max-w-[1280px] animate-rise">
             {children}
           </div>
         </main>
 
-        <nav className="fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-[var(--topbar-bg)] backdrop-blur-md lg:hidden">
+        <nav className="print-hide fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-[var(--topbar-bg)] backdrop-blur-md lg:hidden">
           {QUICK_NAV.map((item) => {
             const active =
               item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);

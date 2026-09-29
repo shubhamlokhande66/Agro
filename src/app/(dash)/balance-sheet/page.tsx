@@ -1,42 +1,23 @@
 "use client";
 
-import { useMemo, useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Kpi, KpiRow } from "@/components/ui/Kpi";
-import { Tabs } from "@/components/ui/Tabs";
-import { Table, TableWrap, Td, Th } from "@/components/ui/DataTable";
 import { Delta } from "@/components/ui/ChangeBadge";
 import LineChart from "@/components/charts/LineChart";
-import BarChart from "@/components/charts/BarChart";
 import { SND } from "@/data/balanceSheet";
 import { DataMissing } from "@/components/ui/DataGuard";
 import { CommentsPanel } from "@/components/ui/CommentsPanel";
+import { BalanceSheetTabs } from "@/components/sections/BalanceSheetTabs";
 import { num, pctChange, inr, signedPct } from "@/lib/format";
 import { ICE_D_V } from "@/data/international";
-import { USDINR_M_V } from "@/data/currency";
+import { USDINR_LATEST } from "@/data/currency";
 import { VARIETIES, latestDaily } from "@/data/prices";
 import { landedCostPerCandy, IMPORT_DUTY_PCT } from "@/data/importParity";
 
-const ROWS: { key: keyof (typeof SND.annual)[string]; label: string; group: "supply" | "demand" | "close" }[] = [
-  { key: "opening_stocks", label: "Opening stocks", group: "supply" },
-  { key: "crop_size", label: "Crop size", group: "supply" },
-  { key: "imports", label: "Imports", group: "supply" },
-  { key: "total_supply", label: "Total supply", group: "supply" },
-  { key: "domestic_cons", label: "Domestic consumption", group: "demand" },
-  { key: "exports", label: "Exports", group: "demand" },
-  { key: "total_demand", label: "Total demand", group: "demand" },
-  { key: "closing_stocks", label: "Closing stocks", group: "close" },
-];
-
 export default function BalanceSheetPage() {
-  const [view, setView] = useState<"annual" | "monthly">("annual");
-  const annualSeasons = SND.annual_seasons ?? []; // newest first
-  const [season, setSeason] = useState((SND.seasons ?? []).at(-1) ?? "");
-  const monthRows = useMemo(() => {
-    const block = SND.monthly?.[season] ?? {};
-    return (SND.months_order ?? []).map((mn) => ({ mn, ...(block[mn] ?? {}) }));
-  }, [season]);
+  // newest first by starting year
+  const annualSeasons = [...(SND.annual_seasons ?? [])].sort((x, y) => parseInt(y, 10) - parseInt(x, 10));
 
   if (!annualSeasons.length || !SND.annual?.[annualSeasons[0]]) {
     return <DataMissing title="Cotton Balance Sheet" icon="⚖" dataset="balanceSheet" />;
@@ -50,7 +31,7 @@ export default function BalanceSheetPage() {
   const stu = a.total_demand ? (a.closing_stocks / a.total_demand) * 100 : 0;
 
   const icePrice = ICE_D_V.at(-1) ?? null;
-  const usdInr = USDINR_M_V.at(-1) ?? null;
+  const usdInr = USDINR_LATEST;
   const landed = icePrice != null && usdInr != null ? landedCostPerCandy(icePrice, usdInr) : null;
   const guj29 = VARIETIES.find((v) => v.key === "guj29");
   const domesticPrice = guj29 ? (latestDaily(guj29)?.price ?? null) : null;
@@ -75,105 +56,22 @@ export default function BalanceSheetPage() {
         <Kpi label="Stocks-to-use" value={stu.toFixed(1) + "%"} accent="violet" />
       </KpiRow>
 
-      <div className="mt-4">
-        <Tabs
-          size="md"
-          options={[
-            { value: "annual", label: "Annual balance sheet" },
-            { value: "monthly", label: "Monthly detail" },
-          ]}
-          value={view}
-          onChange={setView}
-        />
+      <div className="mt-4 space-y-3.5">
+        <BalanceSheetTabs />
+        <Card>
+          <CardHeader title="Crop, consumption & closing stocks (lakh bales)" />
+          <LineChart
+            labels={chrono}
+            series={[
+              { label: "Crop size", data: chrono.map((s) => SND.annual[s]?.crop_size ?? null), color: "#0d9e77", width: 2 },
+              { label: "Total demand", data: chrono.map((s) => SND.annual[s]?.total_demand ?? null), color: "#2563eb", width: 2 },
+              { label: "Closing stocks", data: chrono.map((s) => SND.annual[s]?.closing_stocks ?? null), color: "#f59e0b", width: 2, dashed: true },
+            ]}
+            smartX={false}
+            height={260}
+          />
+        </Card>
       </div>
-
-      {view === "annual" ? (
-        <div className="mt-4 space-y-3.5">
-          <Card>
-            <CardHeader title="Crop, consumption & closing stocks (lakh bales)" />
-            <LineChart
-              labels={chrono}
-              series={[
-                { label: "Crop size", data: chrono.map((s) => SND.annual[s]?.crop_size ?? null), color: "#0d9e77", width: 2 },
-                { label: "Total demand", data: chrono.map((s) => SND.annual[s]?.total_demand ?? null), color: "#2563eb", width: 2 },
-                { label: "Closing stocks", data: chrono.map((s) => SND.annual[s]?.closing_stocks ?? null), color: "#f59e0b", width: 2, dashed: true },
-              ]}
-              smartX={false}
-              height={260}
-            />
-          </Card>
-
-          <Card>
-            <CardHeader title={`Balance sheet — ${latest} vs ${prev}`} />
-            <TableWrap>
-              <Table>
-                <thead>
-                  <tr>
-                    <Th>Item (lakh bales)</Th>
-                    <Th align="right">{prev}</Th>
-                    <Th align="right">{latest}</Th>
-                    <Th align="right">YoY</Th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {ROWS.map((r) => (
-                    <tr key={r.key} className={r.key.startsWith("total") || r.key === "closing_stocks" ? "font-semibold" : ""}>
-                      <Td>{r.label}</Td>
-                      <Td align="right" mono>{num(p[r.key], 1)}</Td>
-                      <Td align="right" mono>{num(a[r.key], 1)}</Td>
-                      <Td align="right"><Delta value={pctChange(a[r.key], p[r.key])} /></Td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </TableWrap>
-            <p className="mt-2 text-[11px] italic text-ink-faint">
-              {latest} closing stocks are a trade forecast and can be provisional / negative when
-              demand + exports run ahead of supply.
-            </p>
-          </Card>
-        </div>
-      ) : (
-        <div className="mt-4 space-y-3.5">
-          <Card>
-            <CardHeader
-              title={`Monthly stock movement — ${season}`}
-              right={
-                <select
-                  value={season}
-                  onChange={(e) => setSeason(e.target.value)}
-                  className="rounded-lg border border-line bg-surface px-2 py-1 text-[12px]"
-                >
-                  {[...SND.seasons].reverse().map((s) => (
-                    <option key={s}>{s}</option>
-                  ))}
-                </select>
-              }
-            />
-            <LineChart
-              labels={SND.months_order}
-              series={[
-                { label: "Opening", data: monthRows.map((r) => r.opening ?? null), color: "#94a3b8", width: 1.5 },
-                { label: "Closing", data: monthRows.map((r) => r.closing ?? null), color: "#0d9e77", width: 2, fill: true, fillColor: "rgba(13,158,119,0.1)" },
-              ]}
-              smartX={false}
-              height={230}
-            />
-          </Card>
-          <Card>
-            <CardHeader title={`Consumption vs exports — ${season} (lakh bales / month)`} />
-            <BarChart
-              labels={SND.months_order}
-              series={[
-                { label: "Domestic consumption", data: monthRows.map((r) => r.total_cons ?? null), color: "#2563eb" },
-                { label: "Exports", data: monthRows.map((r) => r.exports ?? null), color: "#f59e0b" },
-              ]}
-              legend
-              height={230}
-            />
-          </Card>
-        </div>
-      )}
 
       <div className="mt-3.5">
         <Card>

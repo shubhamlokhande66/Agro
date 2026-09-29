@@ -194,29 +194,40 @@ const internationalSchema: EditorSection[] = [
   alignedSeriesSection("ice-annual", "ICE Cotton #2 — Annual", "iceAnnL", "Year", [
     { key: "value", arrKey: "iceAnnV", label: "ICE ¢/lb" },
   ]),
-  alignedSeriesSection("ice-monthly", "ICE Cotton #2 & Brent — Monthly", "iceML", "Month", [
+  alignedSeriesSection("ice-monthly", "ICE Cotton #2 & Brent — Monthly (Apr 2026 on: auto-synced from ICE daily)", "iceML", "Month", [
     { key: "ice", arrKey: "iceMV", label: "ICE ¢/lb" },
     { key: "brent", arrKey: "brMV", label: "Brent $/bbl" },
   ]),
   alignedSeriesSection("ice-daily", "ICE Cotton #2 — Daily", "iceDL", "Date", [
     { key: "value", arrKey: "iceDV", label: "ICE ¢/lb" },
   ], "Add ICE Quote"),
+  alignedSeriesSection("brent-daily", "Brent crude — Daily (ICE, auto-synced)", "brDL", "Date", [
+    { key: "value", arrKey: "brDV", label: "Brent $/bbl" },
+  ]),
   alignedSeriesSection("brent-annual", "Brent crude — Annual", "brAnnL", "Year", [
     { key: "value", arrKey: "brAnnV", label: "Brent $/bbl" },
   ]),
 ];
 
 const currencySchema: EditorSection[] = [
-  alignedSeriesSection("monthly", "Monthly — USD/INR & USD/CNY", "monthsL", "Month", [
+  // USD/INR is rebuilt from the RBI reference rate on every sync — edits here get overwritten
+  alignedSeriesSection("monthly", "USD/INR — Monthly average (RBI, auto-synced)", "monthsL", "Month", [
     { key: "inr", arrKey: "usdinrM", label: "USD/INR" },
-    { key: "cny", arrKey: "usdcnyM", label: "USD/CNY" },
-  ], "Add Month"),
-  alignedSeriesSection("y1", "1-Year daily series", "usdinr1yL", "Date", [
+  ]),
+  alignedSeriesSection("y1", "USD/INR — Daily, last 1 year (RBI, auto-synced)", "usdinr1yL", "Date", [
     { key: "inr", arrKey: "usdinr1yV", label: "USD/INR" },
+  ]),
+  alignedSeriesSection("y5", "USD/INR — 5-Year monthly (RBI, auto-synced)", "usdinr5yL", "Month", [
+    { key: "inr", arrKey: "usdinr5yV", label: "USD/INR" },
+  ]),
+  // USD/CNY has no automatic source — entered by hand
+  alignedSeriesSection("cny-monthly", "USD/CNY — Monthly", "cnyMonthsL", "Month", [
+    { key: "cny", arrKey: "usdcnyM", label: "USD/CNY" },
+  ], "Add CNY Month"),
+  alignedSeriesSection("cny-y1", "USD/CNY — 1-Year series", "usdcny1yL", "Date", [
     { key: "cny", arrKey: "usdcny1yV", label: "USD/CNY" },
   ]),
-  alignedSeriesSection("y5", "5-Year monthly series", "usdinr5yL", "Month", [
-    { key: "inr", arrKey: "usdinr5yV", label: "USD/INR" },
+  alignedSeriesSection("cny-y5", "USD/CNY — 5-Year series", "usdcny5yL", "Month", [
     { key: "cny", arrKey: "usdcny5yV", label: "USD/CNY" },
   ]),
 ];

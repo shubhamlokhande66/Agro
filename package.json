@@ -8,6 +8,10 @@
     "start": "next start -p 4000",
     "lint": "next lint",
     "db:seed": "tsx scripts/seed.ts",
+    "sync:cai": "tsx scripts/sync-cai.ts",
+    "sync:ice": "tsx scripts/sync-ice.ts",
+    "sync:rbi": "tsx scripts/sync-rbi.ts",
+    "import:snd": "tsx scripts/import-balance-sheet.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

@@ -15,6 +15,28 @@ import { timeAgo } from "@/lib/format";
 
 const AUTOSAVE_DEBOUNCE_MS = 600;
 
+/** datasets that can pull fresh data from an outside source on demand (same endpoints the cron jobs hit) */
+const SYNC_SOURCES: Record<string, { source: string; url: string; label: string; title: string }> = {
+  prices: {
+    source: "CAI",
+    url: "/api/cron/cai-spot-rates",
+    label: "⟳ Sync CAI rates",
+    title: "Fetch the latest CAI upcountry spot rates (last 7 days) into Guj / MMA / CS / PHR varieties",
+  },
+  international: {
+    source: "ICE",
+    url: "/api/cron/ice-futures",
+    label: "⟳ Sync ICE cotton & Brent",
+    title: "Fetch ICE Cotton No. 2 and Brent settlements (most-active contracts, last ~3 months) into the daily + monthly series",
+  },
+  currency: {
+    source: "RBI",
+    url: "/api/cron/rbi-usd",
+    label: "⟳ Sync RBI USD/INR",
+    title: "Fetch the RBI USD/INR reference rate (last ~400 days) and rebuild the daily + monthly USD/INR series",
+  },
+};
+
 export default function DatasetEditorPage() {
   const { key } = useParams<{ key: string }>();
   const meta = datasetMeta(key);
@@ -29,6 +51,8 @@ export default function DatasetEditorPage() {
     kind: "idle",
     msg: "",
   });
+
+  const [sync, setSync] = useState<{ busy: boolean; msg: string; err?: boolean }>({ busy: false, msg: "" });
 
   const adderRef = useRef<RecordManagerHandle>(null);
   const primarySection = schema?.find((s) => s.primaryAdd);
@@ -79,6 +103,45 @@ export default function DatasetEditorPage() {
         pendingRef.current = false;
         persist(draftRef.current);
       }
+    }
+  }
+
+  const syncSource = SYNC_SOURCES[key ?? ""];
+
+  /** pull the latest outside data now (same sync the cron runs), then reload the editor */
+  async function syncNow() {
+    if (!syncSource) return;
+    setSync({ busy: true, msg: `Syncing ${syncSource.source}…` });
+    try {
+      // save pending edits first so the server-side merge doesn't drop them
+      if (timerRef.current) clearTimeout(timerRef.current);
+      if (JSON.stringify(draftRef.current) !== JSON.stringify(origRef.current)) await persist(draftRef.current);
+
+      const res = await fetch(syncSource.url, { cache: "no-store" });
+      const out = await res.json().catch(() => ({}));
+      if (!res.ok || !out.ok) {
+        setSync({ busy: false, msg: out.error ?? `Sync failed (${res.status})`, err: true });
+        return;
+      }
+      const added: string[] = out.dates.filter((d: any) => d.status === "added").map((d: any) => d.date);
+      if (out.saved) {
+        const row = await fetch(`/api/datasets/${key}`, { cache: "no-store" }).then((r) => r.json());
+        setOrig(row.data);
+        setDraft(structuredClone(row.data));
+        await Promise.all([refresh(), refreshAdminMeta()]);
+        router.refresh();
+      }
+      const from = syncSource.source + (out.contract ? ` ${out.contract}` : "");
+      setSync({
+        busy: false,
+        msg: !added.length
+          ? `✓ Already up to date with ${from}`
+          : added.length <= 5
+            ? `✓ Added ${from} for ${added.join(", ")}`
+            : `✓ Added/updated ${added.length} days from ${from}`,
+      });
+    } catch {
+      setSync({ busy: false, msg: "Sync failed — check connection", err: true });
     }
   }
 
@@ -164,6 +227,24 @@ export default function DatasetEditorPage() {
               >
                 Retry save
               </button>
+            ) : null}
+            {syncSource ? (
+              <>
+                {sync.msg ? (
+                  <span className={"text-[11.5px] font-medium " + (sync.err ? "text-neg" : sync.busy ? "text-ink-faint" : "text-pos")}>
+                    {sync.msg}
+                  </span>
+                ) : null}
+                <button
+                  type="button"
+                  onClick={syncNow}
+                  disabled={sync.busy || draft == null}
+                  title={syncSource.title}
+                  className="rounded-xl border border-line px-3.5 py-2 text-[12.5px] font-semibold text-ink transition-colors hover:bg-surface-2 disabled:opacity-50"
+                >
+                  {sync.busy ? "Syncing…" : syncSource.label}
+                </button>
+              </>
             ) : null}
             {primarySection ? (
               <button

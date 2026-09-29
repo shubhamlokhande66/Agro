@@ -9,8 +9,9 @@ import { seriesFor, type HeroCategory } from "./HeroChart";
 export const HERO_CATEGORIES: { value: HeroCategory; label: string }[] = [
   { value: "domestic", label: "Gujarat Shankar-29" },
   { value: "cotton", label: "Global Cotton" },
-  { value: "kapas", label: "Kapas" },
   { value: "cseed", label: "Cotton Seed" },
+  { value: "coilc", label: "Cotton Seed Oil Cake" },
+  { value: "kapas", label: "Kapas" },
   { value: "yarn", label: "Cotton Yarn" },
   { value: "inr", label: "INR" },
   { value: "crude", label: "Crude Oil" },

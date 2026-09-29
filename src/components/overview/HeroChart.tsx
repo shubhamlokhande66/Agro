@@ -6,11 +6,11 @@ import { GlobalPeriodTabs } from "@/components/ui/GlobalPeriodTabs";
 import { Delta } from "@/components/ui/ChangeBadge";
 import { sliceByPeriod, deltaOverPeriod, type GlobalPeriod } from "@/lib/period";
 import { VARIETIES, dailySeries } from "@/data/prices";
-import { ICE_D_L, ICE_D_V, BR_M_L, BR_M_V } from "@/data/international";
+import { ICE_D_L, ICE_D_V, BR_D_L, BR_D_V, BR_M_L, BR_M_V } from "@/data/international";
 import { USDINR_M_L, USDINR_M_V } from "@/data/currency";
 import { inr, inrCompact } from "@/lib/format";
 
-export type HeroCategory = "domestic" | "cotton" | "kapas" | "cseed" | "yarn" | "inr" | "crude";
+export type HeroCategory = "domestic" | "cotton" | "kapas" | "cseed" | "yarn" | "coilc" | "inr" | "crude";
 
 function varietyDaily(key: string) {
   return dailySeries(VARIETIES.find((x) => x.key === key));
@@ -36,10 +36,12 @@ export function seriesFor(cat: HeroCategory): {
       return { title: "Cotton Seed", ...varietyDaily("cseed"), unit: "₹/Quintal", headlineFmt: (v) => inr(v), axisFmt: inrCompact, tooltipFmt: (v) => inr(v) };
     case "yarn":
       return { title: "Cotton Yarn", ...varietyDaily("yarn"), unit: "₹/kg", headlineFmt: (v) => inr(v), axisFmt: inrCompact, tooltipFmt: (v) => inr(v) };
+    case "coilc":
+      return { title: "Cotton Seed Oil Cake", ...varietyDaily("coilc"), unit: "₹/Quintal", headlineFmt: (v) => inr(v), axisFmt: inrCompact, tooltipFmt: (v) => inr(v) };
     case "inr":
       return { title: "USD / INR", labels: USDINR_M_L, values: USDINR_M_V, unit: "₹ per $", headlineFmt: (v) => v.toFixed(2), axisFmt: (v) => v.toFixed(1), tooltipFmt: (v) => "₹" + v.toFixed(2) };
     case "crude":
-      return { title: "Crude Oil (Brent)", labels: BR_M_L, values: BR_M_V, unit: "$/bbl", headlineFmt: (v) => v.toFixed(2), axisFmt: (v) => "$" + v, tooltipFmt: (v) => "$" + v + "/bbl" };
+      return { title: "Crude Oil (Brent)", labels: BR_D_L.length ? BR_D_L : BR_M_L, values: BR_D_V.length ? BR_D_V : BR_M_V, unit: "$/bbl", headlineFmt: (v) => v.toFixed(2), axisFmt: (v) => "$" + v, tooltipFmt: (v) => "$" + v + "/bbl" };
   }
 }
 
@@ -85,7 +87,9 @@ export function HeroChart({
         </div>
         <GlobalPeriodTabs value={period} onChange={onPeriodChange} />
       </div>
-      <div className={compact ? "relative h-[220px]" : "relative min-h-[300px] flex-1"}>
+      {/* side-by-side (lg+): a low min-height so the category rail sets the row height and the
+          chart stretches to match it; stacked: a fixed comfortable height */}
+      <div className={compact ? "relative h-[220px]" : "relative min-h-[300px] flex-1 lg:min-h-[160px]"}>
         <AreaChart
           labels={sliced.labels}
           data={sliced.values}

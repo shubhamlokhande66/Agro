@@ -6,20 +6,21 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { Field, ResultTile, btnPrimary } from "@/components/ui/Field";
 import { VARIETIES } from "@/data/prices";
 import { ICE_D_V } from "@/data/international";
+import { USDINR_LATEST } from "@/data/currency";
 import { inr } from "@/lib/format";
 
 export default function BasisPage() {
-  const gujLast = VARIETIES.find((v) => v.key === "guj29")?.daily?.at(-1);
+  const gujLast = VARIETIES.find((v) => v.key === "guj29")?.daily?.at(-1)?.price;
   const iceLast = ICE_D_V.at(-1);
 
   const [ice, setIce] = useState(iceLast != null ? String(iceLast) : "");
-  const [fx, setFx] = useState("93.88");
+  const [fx, setFx] = useState(USDINR_LATEST != null ? USDINR_LATEST.toFixed(2) : "");
   const [dom, setDom] = useState(gujLast != null ? String(gujLast) : "");
   const [res, setRes] = useState<null | { iceInr: number; basis: number; pct: number }>(null);
 
   function calc() {
     const i = parseFloat(ice);
-    const f = parseFloat(fx) || 93.88;
+    const f = parseFloat(fx) || USDINR_LATEST || 0;
     const d = parseFloat(dom);
     if (!i || !d) return;
     const iceInr = (i / 100) * f * 785;
