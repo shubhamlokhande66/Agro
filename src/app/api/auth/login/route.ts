@@ -14,8 +14,9 @@ export async function POST(req: Request) {
   }
 
   const user = await getUserByUsername(username);
-  // accounts belong to one dashboard; a cotton login can't open the weather dashboard or vice versa
-  if (!user || !checkPassword(user, password) || userApp(user) !== app) {
+  // accounts belong to one dashboard (a cotton login can't open the weather dashboard or vice
+  // versa) — except admins, who manage both and may sign in to either
+  if (!user || !checkPassword(user, password) || (userApp(user) !== app && user.role !== "admin")) {
     return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
   }
 
