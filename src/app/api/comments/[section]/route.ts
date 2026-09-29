@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 
 /** Every section a CommentsPanel currently renders on — keeps the collection from
  *  accepting arbitrary keys from a crafted request. */
-const SECTIONS = ["overview", "sowing", "production", "weather", "balanceSheet", "cci"];
+const SECTIONS = ["overview", "overviewWeather", "overviewSowing", "overviewProduction", "overviewBalance", "sowing", "production", "weather", "balanceSheet", "cci"];
 
 export async function GET(_req: Request, { params }: { params: { section: string } }) {
   if (!SECTIONS.includes(params.section)) {

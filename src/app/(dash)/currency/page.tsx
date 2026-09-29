@@ -36,7 +36,7 @@ function pick(pair: "inr" | "cny", p: P) {
 }
 
 export default function CurrencyPage() {
-  const [rate, setRate] = useState("93.88");
+  const [rate, setRate] = useState(FX.USDINR_LATEST != null ? FX.USDINR_LATEST.toFixed(2) : "");
   const [ice, setIce] = useState("");
   const [res, setRes] = useState<null | { candy: number; kg: number }>(null);
   const [inrP, setInrP] = useState<P>("6m");
@@ -44,7 +44,7 @@ export default function CurrencyPage() {
   const [period, setPeriod] = useState<GlobalPeriod>("6m");
 
   function convert() {
-    const r = parseFloat(rate) || 93.88;
+    const r = parseFloat(rate) || FX.USDINR_LATEST || 0;
     const c = parseFloat(ice);
     if (!c) return;
     setRes({
@@ -71,7 +71,7 @@ export default function CurrencyPage() {
       <KpiRow>
         <Kpi
           label={`USD/INR · ${period.toUpperCase()} change`}
-          value={FX.USDINR_M_V.at(-1) != null ? "₹" + FX.USDINR_M_V.at(-1)!.toFixed(2) : "—"}
+          value={FX.USDINR_LATEST != null ? "₹" + FX.USDINR_LATEST.toFixed(2) : "—"}
           unit={inrPeriodDelta != null ? (inrPeriodDelta >= 0 ? "+" : "") + inrPeriodDelta.toFixed(2) + "%" : undefined}
           accent={inrPeriodDelta != null && inrPeriodDelta < 0 ? "green" : "red"}
         />
@@ -120,8 +120,9 @@ export default function CurrencyPage() {
             tooltipLabel={(y) => "₹" + y.toFixed(2)}
           />
           <p className="mt-2 text-[11px] italic text-ink-faint">
-            Source: x-rates.com / RBI-FBIL reference rates. Rupee near all-time weak ₹93.88
-            (Mar 2026) — costlier imports lift domestic cotton in ₹ terms.
+            Source: RBI / FBIL USD reference rate, synced daily
+            {FX.USDINR_1Y_L.length ? ` (latest ${FX.USDINR_1Y_L.at(-1)})` : ""}. A weaker rupee makes
+            imports costlier and lifts domestic cotton in ₹ terms.
           </p>
         </Card>
 

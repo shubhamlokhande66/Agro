@@ -26,13 +26,19 @@ export function Th({
   children,
   className,
   align = "left",
+  colSpan,
+  rowSpan,
 }: {
   children?: React.ReactNode;
   className?: string;
   align?: "left" | "right" | "center";
+  colSpan?: number;
+  rowSpan?: number;
 }) {
   return (
     <th
+      colSpan={colSpan}
+      rowSpan={rowSpan}
       className={clsx(
         "sticky top-0 z-[1] border-b border-line bg-surface px-2.5 py-2 text-[10px] font-semibold uppercase tracking-wide text-ink-faint",
         align === "right" && "text-right",

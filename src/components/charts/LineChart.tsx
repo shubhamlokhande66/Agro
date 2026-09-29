@@ -13,8 +13,14 @@ export type LineSeries = {
   color?: string;
   width?: number;
   dashed?: boolean;
+  /** fine round dots instead of dashes (takes precedence over `dashed`) */
+  dotted?: boolean;
   fill?: boolean;
   fillColor?: string;
+  /** curve smoothing, 0 = straight segments point to point (default 0.35) */
+  tension?: number;
+  /** marker radius at each data point (default 0 = none) */
+  pointRadius?: number;
 };
 
 type Props = {
@@ -61,10 +67,12 @@ export default function LineChart({
             borderColor: s.color ?? SERIES[i % SERIES.length],
             backgroundColor: s.fillColor ?? "transparent",
             borderWidth: s.width ?? 1.75,
-            borderDash: s.dashed ? [4, 3] : [],
-            pointRadius: 0,
+            borderDash: s.dotted ? [1, 4] : s.dashed ? [4, 3] : [],
+            borderCapStyle: s.dotted ? ("round" as const) : ("butt" as const),
+            pointRadius: s.pointRadius ?? 0,
+            pointBackgroundColor: s.color ?? SERIES[i % SERIES.length],
             pointHoverRadius: 4,
-            tension: 0.35,
+            tension: s.tension ?? 0.35,
             fill: s.fill ?? false,
             spanGaps: true,
           })),

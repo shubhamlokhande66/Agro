@@ -7,11 +7,12 @@ import { timeAgo } from "@/lib/format";
 
 const AUTOSAVE_DEBOUNCE_MS = 600;
 
-type Section = "overview" | "sowing" | "production" | "weather" | "balanceSheet" | "cci";
+type Section = "overview" | "overviewWeather" | "overviewSowing" | "overviewProduction" | "overviewBalance" | "sowing" | "production" | "weather" | "balanceSheet" | "cci";
 
 /** A persisted free-text notes panel — "add commentary below the chart" from the
  *  requirements doc. One blob of text per section, shared by everyone who opens the page,
- *  autosaved the same way the admin dataset editor autosaves (debounce, no save button). */
+ *  autosaved the same way the admin dataset editor autosaves (debounce, no save button).
+ *  Starts collapsed to a single bar (title + last edit); clicking it opens the editor. */
 export function CommentsPanel({
   section,
   title = "Notes & commentary",
@@ -31,6 +32,7 @@ export function CommentsPanel({
     updatedBy: null,
   });
   const [status, setStatus] = useState<"idle" | "saving" | "ok" | "err">("idle");
+  const [open, setOpen] = useState(false);
 
   const textRef = useRef(text);
   const origRef = useRef(orig);
@@ -88,16 +90,40 @@ export function CommentsPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [section]);
 
+  const lastEdited =
+    meta.updatedAt != null
+      ? `Last edited ${timeAgo(meta.updatedAt)}${meta.updatedBy ? ` by ${meta.updatedBy}` : ""}`
+      : "No notes yet";
+
+  if (!open) {
+    return (
+      <button
+        type="button"
+        onClick={() => setOpen(true)}
+        aria-expanded={false}
+        className="panel panel-hover focusable flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
+      >
+        <span className="flex min-w-0 items-center gap-2.5">
+          <span aria-hidden className="text-[14px]">📝</span>
+          <span className="min-w-0">
+            <span className="block text-[13px] font-semibold tracking-tight text-ink">{title}</span>
+            <span className="block truncate text-[11px] text-ink-faint">{lastEdited}</span>
+          </span>
+        </span>
+        <span className="shrink-0 rounded-lg border border-line px-2.5 py-1 text-[11.5px] font-semibold text-accent">
+          Show ▾
+        </span>
+      </button>
+    );
+  }
+
   return (
     <Card>
       <CardHeader
         title={title}
-        sub={
-          meta.updatedAt != null
-            ? `Last edited ${timeAgo(meta.updatedAt)}${meta.updatedBy ? ` by ${meta.updatedBy}` : ""}`
-            : "No notes yet"
-        }
+        sub={lastEdited}
         right={
+          <span className="flex items-center gap-2.5">
           <span
             className={
               "text-[11px] font-medium " +
@@ -112,6 +138,15 @@ export function CommentsPanel({
           >
             {status === "saving" ? "Saving…" : status === "ok" ? "✓ Saved" : status === "err" ? "⚠ Save failed" : "·"}
           </span>
+          <button
+            type="button"
+            onClick={() => setOpen(false)}
+            aria-expanded
+            className="focusable rounded-lg border border-line px-2.5 py-1 text-[11.5px] font-semibold text-ink-soft hover:bg-surface-2"
+          >
+            Hide ▴
+          </button>
+          </span>
         }
       />
       <textarea
@@ -119,6 +154,7 @@ export function CommentsPanel({
         onChange={(e) => setText(e.target.value)}
         readOnly={!authed}
         placeholder={authed ? "Add commentary…" : "Sign in to add commentary."}
+        autoFocus={authed}
         rows={rows}
         style={{ minHeight }}
         className="w-full resize-y rounded-xl border border-line bg-surface-2/40 p-3 text-[12.5px] leading-relaxed text-ink outline-none focusable placeholder:text-ink-faint"

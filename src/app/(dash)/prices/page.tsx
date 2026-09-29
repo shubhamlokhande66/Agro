@@ -60,7 +60,7 @@ export default function PricesPage() {
           </div>
         )
       ) : (
-        <InternationalPrices />
+        <InternationalPrices globalPeriod={period} />
       )}
     </div>
   );

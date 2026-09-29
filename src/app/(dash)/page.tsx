@@ -6,6 +6,7 @@ import { HeroChart, type HeroCategory } from "@/components/overview/HeroChart";
 import { HeroCategoryRail } from "@/components/overview/HeroCategoryRail";
 import { OverviewSections } from "@/components/overview/OverviewSections";
 import { CommentsPanel } from "@/components/ui/CommentsPanel";
+import { ExportPdfButton } from "@/components/ui/ExportPdfButton";
 import { GlobalPeriodTabs } from "@/components/ui/GlobalPeriodTabs";
 import { type GlobalPeriod } from "@/lib/period";
 import { useDatasetMeta } from "@/lib/meta/context";
@@ -36,9 +37,10 @@ export default function OverviewPage() {
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
           <GlobalPeriodTabs value={period} onChange={setPeriod} />
+          <ExportPdfButton fileName={`Agrolytix Market Overview ${new Date().toISOString().slice(0, 10)}`} />
           <Link
             href="/prices"
-            className="focusable rounded-xl bg-accent px-4 py-2.5 text-[12.5px] font-semibold text-accent-contrast transition-colors hover:bg-accent-strong"
+            className="focusable print-hide rounded-xl bg-accent px-4 py-2.5 text-[12.5px] font-semibold text-accent-contrast transition-colors hover:bg-accent-strong"
           >
             Open Prices →
           </Link>
@@ -49,8 +51,11 @@ export default function OverviewPage() {
         <HeroChart category={heroCat} period={period} onPeriodChange={setPeriod} />
         <div className="flex min-w-0 flex-col gap-3">
           <HeroCategoryRail value={heroCat} onChange={setHeroCat} period={period} />
-          <CommentsPanel section="overview" minHeight={120} rows={5} />
         </div>
+      </div>
+
+      <div className="mt-4">
+        <CommentsPanel section="overview" title="Summary (Prices)" minHeight={120} rows={5} />
       </div>
 
       <OverviewSections />
