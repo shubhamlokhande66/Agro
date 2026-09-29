@@ -14,7 +14,7 @@ export type NavGroup = {
 export const NAV: NavGroup[] = [
   {
     heading: "Overview",
-    items: [{ href: "/", label: "Market Overview", icon: "◎" }],
+    items: [{ href: "/overview", label: "Market Overview", icon: "◎" }],
   },
   {
     heading: "Markets",
@@ -67,7 +67,7 @@ export const ALL_ITEMS = NAV.flatMap((g) => g.items);
 
 /** primary items for the mobile bottom bar */
 export const QUICK_NAV: NavItem[] = [
-  { href: "/", label: "Overview", icon: "◎" },
+  { href: "/overview", label: "Overview", icon: "◎" },
   { href: "/prices", label: "Prices", icon: "₹" },
   { href: "/production", label: "Production", icon: "▤" },
   { href: "/weather", label: "Weather", icon: "☂" },

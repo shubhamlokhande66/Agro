@@ -4,6 +4,9 @@ import {
   getUserByUsername,
   listUsers,
   setDeviceLimit,
+  setUserApp,
+  APPS,
+  type App,
   setUserRole,
   setUserStatus,
 } from "@/lib/server/users";
@@ -54,6 +57,17 @@ export async function POST(
           return NextResponse.json({ error: "Invalid role" }, { status: 400 });
         }
         await setUserRole(target._id, body.role);
+        break;
+      case "setApp":
+        if (!APPS.includes(body.app as App)) {
+          return NextResponse.json({ error: "Invalid dashboard" }, { status: 400 });
+        }
+        if (target.role === "admin" && body.app !== "cotton") {
+          return NextResponse.json({ error: "Admin accounts manage the cotton dashboard — keep them on Cotton" }, { status: 400 });
+        }
+        await setUserApp(target._id, body.app as App);
+        // their current sessions were issued for the other dashboard
+        await revokeAllDevices(target._id);
         break;
       case "setDeviceLimit": {
         const limit = body.deviceLimit;

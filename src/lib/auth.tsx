@@ -10,8 +10,11 @@ import {
 } from "react";
 
 export type Role = "admin" | "client";
+/** which dashboard this provider signs in to — each has its own accounts and session */
+export type App = "cotton" | "weather";
 
 type AuthState = {
+  app: App;
   ready: boolean;
   authed: boolean;
   role: Role | null;
@@ -71,13 +74,13 @@ function getDeviceLabel(): string {
   return `${browser} on ${os}`;
 }
 
-export function AuthProvider({ children }: { children: React.ReactNode }) {
+export function AuthProvider({ children, app = "cotton" }: { children: React.ReactNode; app?: App }) {
   const [ready, setReady] = useState(false);
   const [role, setRole] = useState<Role | null>(null);
   const [username, setUsername] = useState<string | null>(null);
 
   useEffect(() => {
-    fetch("/api/auth/me")
+    fetch(`/api/auth/me?app=${app}`)
       .then((r) => r.json())
       .then((d) => {
         if (d?.session) {
@@ -87,7 +90,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
       .catch(() => {})
       .finally(() => setReady(true));
-  }, []);
+  }, [app]);
 
   const login = useCallback(async (u: string, p: string) => {
     const res = await fetch("/api/auth/login", {
@@ -98,6 +101,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         password: p,
         deviceId: getDeviceId(),
         deviceLabel: getDeviceLabel(),
+        app,
       }),
     });
     const d = await res.json().catch(() => ({}));
@@ -105,27 +109,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setRole(d.role);
     setUsername(d.username);
     return null;
-  }, []);
+  }, [app]);
 
   const signup = useCallback(async (u: string, p: string) => {
     const res = await fetch("/api/auth/signup", {
       method: "POST",
       headers: { "content-type": "application/json" },
-      body: JSON.stringify({ username: u, password: p }),
+      body: JSON.stringify({ username: u, password: p, app }),
     });
     const d = await res.json().catch(() => ({}));
     if (!res.ok) return d.error ?? "Sign up failed";
     return null;
-  }, []);
+  }, [app]);
 
   const logout = useCallback(async () => {
-    await fetch("/api/auth/logout", { method: "POST" }).catch(() => {});
+    await fetch(`/api/auth/logout?app=${app}`, { method: "POST" }).catch(() => {});
     setRole(null);
     setUsername(null);
-  }, []);
+  }, [app]);
 
   const value = useMemo<AuthState>(
     () => ({
+      app,
       ready,
       authed: role != null,
       role,
@@ -136,7 +141,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       signup,
       logout,
     }),
-    [ready, role, username, login, signup, logout],
+    [app, ready, role, username, login, signup, logout],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

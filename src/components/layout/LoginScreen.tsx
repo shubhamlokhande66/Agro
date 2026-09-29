@@ -1,10 +1,18 @@
 "use client";
 
 import { useState } from "react";
+import Link from "next/link";
 import { useAuth } from "@/lib/auth";
 
+/** per-dashboard look of the shared sign-in screen */
+const THEMES = {
+  cotton: { title: "Cotton Terminal", bg: "#07100c", a: "#2dd08a", b: "#0b7d4e", glow: "15,157,99", text: "#05221a" },
+  weather: { title: "Monsoon Monitor", bg: "#060b16", a: "#38bdf8", b: "#1d4ed8", glow: "37,99,235", text: "#04122e" },
+} as const;
+
 export function LoginScreen() {
-  const { login, signup } = useAuth();
+  const { login, signup, app } = useAuth();
+  const t = THEMES[app];
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [user, setUser] = useState("");
   const [pass, setPass] = useState("");
@@ -50,9 +58,15 @@ export function LoginScreen() {
   }
 
   return (
-    <div className="relative grid min-h-screen place-items-center overflow-hidden bg-[#07100c] p-4">
-      <div className="pointer-events-none absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full bg-[#0f9d63]/20 blur-3xl" />
-      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[520px] w-[520px] rounded-full bg-[#0b7d4e]/20 blur-3xl" />
+    <div
+      className="relative grid min-h-screen place-items-center overflow-hidden p-4"
+      style={{ background: t.bg, ["--lg-a" as string]: t.a, ["--lg-b" as string]: t.b }}
+    >
+      <div className="pointer-events-none absolute -left-40 -top-40 h-[520px] w-[520px] rounded-full blur-3xl" style={{ background: `rgba(${t.glow},0.2)` }} />
+      <div className="pointer-events-none absolute -bottom-40 -right-40 h-[520px] w-[520px] rounded-full blur-3xl" style={{ background: `rgba(${t.glow},0.2)` }} />
+      <Link href="/" className="absolute left-4 top-4 text-[12px] font-medium text-white/45 hover:text-white">
+        ← All dashboards
+      </Link>
 
       <form
         onSubmit={submit}
@@ -63,7 +77,7 @@ export function LoginScreen() {
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/agrolytix-logo.jpg" alt="Agrolytix Research" className="h-16 w-auto" />
         </div>
-        <h2 className="text-xl font-semibold tracking-tight text-white">Cotton Terminal</h2>
+        <h2 className="text-xl font-semibold tracking-tight text-white">{t.title}</h2>
         <p className="mb-6 mt-1 text-[13px] text-white/45">
           {mode === "login" ? "Sign in to your workspace" : "Request access to your workspace"}
         </p>
@@ -99,7 +113,7 @@ export function LoginScreen() {
           onChange={(e) => setUser(e.target.value)}
           autoComplete="username"
           placeholder={mode === "login" ? "admin" : "pick a username"}
-          className="mb-3.5 w-full rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-[#2dd08a] focus:bg-white/[0.06]"
+          className="mb-3.5 w-full rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-[var(--lg-a)] focus:bg-white/[0.06]"
         />
 
         <label className="mb-1.5 block text-left text-[11px] font-semibold uppercase tracking-wide text-white/50">
@@ -111,7 +125,7 @@ export function LoginScreen() {
           onChange={(e) => setPass(e.target.value)}
           autoComplete={mode === "login" ? "current-password" : "new-password"}
           placeholder="••••••••"
-          className={mode === "signup" ? "mb-3.5 w-full rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-[#2dd08a] focus:bg-white/[0.06]" : "mb-4 w-full rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-[#2dd08a] focus:bg-white/[0.06]"}
+          className={mode === "signup" ? "mb-3.5 w-full rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-[var(--lg-a)] focus:bg-white/[0.06]" : "mb-4 w-full rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-[var(--lg-a)] focus:bg-white/[0.06]"}
         />
 
         {mode === "signup" ? (
@@ -125,7 +139,7 @@ export function LoginScreen() {
               onChange={(e) => setConfirm(e.target.value)}
               autoComplete="new-password"
               placeholder="••••••••"
-              className="mb-4 w-full rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-[#2dd08a] focus:bg-white/[0.06]"
+              className="mb-4 w-full rounded-xl border border-white/12 bg-white/[0.04] px-3.5 py-3 text-sm text-white outline-none transition-colors placeholder:text-white/25 focus:border-[var(--lg-a)] focus:bg-white/[0.06]"
             />
           </>
         ) : null}
@@ -144,7 +158,8 @@ export function LoginScreen() {
         <button
           type="submit"
           disabled={busy}
-          className="w-full rounded-xl bg-gradient-to-r from-[#2dd08a] to-[#0b7d4e] py-3.5 text-[15px] font-semibold text-[#05221a] shadow-[0_10px_30px_-8px_rgba(45,208,138,0.55)] transition-opacity hover:opacity-95 disabled:opacity-60"
+          className="w-full rounded-xl py-3.5 text-[15px] font-semibold transition-opacity hover:opacity-95 disabled:opacity-60"
+          style={{ background: `linear-gradient(to right, ${t.a}, ${t.b})`, color: t.text }}
         >
           {busy ? "Please wait…" : mode === "login" ? "Sign in →" : "Request access →"}
         </button>
