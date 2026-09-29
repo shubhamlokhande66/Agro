@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { PageTitle, PANEL } from "@/components/monsoon/ui";
+import { useMonsoon } from "@/components/monsoon/data";
 
 type Item = { no: string; date: string; title: string; url: string; severity: "Alert" | "Warning" | "Watch" | "Normal" };
 
@@ -13,6 +14,8 @@ const SEV: Record<Item["severity"], string> = {
 };
 
 export default function WeatherReportsPage() {
+  const { data } = useMonsoon();
+  const pinned = (data?.alerts?.items ?? []).filter((a) => a?.title);
   const [items, setItems] = useState<Item[] | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [source, setSource] = useState("");
@@ -47,6 +50,23 @@ export default function WeatherReportsPage() {
           </a>
         }
       />
+
+      {pinned.length ? (
+        <div className="space-y-2.5">
+          <p className="text-[11px] font-semibold uppercase tracking-wide text-slate-500">Desk alerts</p>
+          {pinned.map((a, i) => (
+            <div key={i} className={"rounded-lg border p-3 " + (SEV[a.severity] ?? SEV.Normal)}>
+              <div className="flex flex-wrap items-center justify-between gap-2">
+                <span className="text-[11px] font-semibold uppercase tracking-wide">{a.severity}</span>
+                <span className="font-mono text-[11px] text-slate-500">{a.date}</span>
+              </div>
+              <p className="mt-1 text-sm font-medium text-slate-100">{a.title}</p>
+              {a.summary ? <p className="mt-1 text-[13px] text-slate-300">{a.summary}</p> : null}
+            </div>
+          ))}
+          <p className="pt-2 text-[11px] font-semibold uppercase tracking-wide text-slate-500">IMD press releases</p>
+        </div>
+      ) : null}
 
       {error ? (
         <div className={PANEL + " flex flex-col items-center gap-3 p-8"}>

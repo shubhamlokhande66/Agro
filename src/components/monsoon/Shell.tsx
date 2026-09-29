@@ -5,6 +5,10 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useAuth } from "@/lib/auth";
+import { DATASETS } from "@/lib/datasets/registry";
+
+/** weather datasets an admin can edit (Admin → "Weather dashboard" group) */
+const WEATHER_DATASETS = DATASETS.filter((d) => d.group === "Weather dashboard");
 
 export const MONSOON_NAV = [
   { href: "/monsoon", label: "Summary", icon: "▦" },
@@ -22,7 +26,7 @@ export const MONSOON_NAV = [
 export function MonsoonShell({ children }: { children: React.ReactNode }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
-  const { username, logout } = useAuth();
+  const { username, logout, isAdmin } = useAuth();
 
   return (
     <div className="flex h-screen overflow-hidden bg-[hsl(222,47%,6%)] text-slate-200">
@@ -63,6 +67,29 @@ export function MonsoonShell({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+
+          {isAdmin ? (
+            <div className="pt-4">
+              <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-600">Admin · edit data</p>
+              {WEATHER_DATASETS.map((d) => (
+                <Link
+                  key={d.key}
+                  href={`/admin/${d.key}`}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-slate-400 transition-all hover:bg-slate-700/30 hover:text-slate-200"
+                >
+                  <span className="w-4 text-center" aria-hidden>✎</span>
+                  {d.label}
+                </Link>
+              ))}
+              <Link
+                href="/admin"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-slate-500 transition-all hover:bg-slate-700/30 hover:text-slate-200"
+              >
+                <span className="w-4 text-center" aria-hidden>⚙</span>
+                Admin panel &amp; users
+              </Link>
+            </div>
+          ) : null}
         </nav>
 
         <div className="space-y-1 border-t border-slate-700/50 p-3">
