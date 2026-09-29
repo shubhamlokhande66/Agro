@@ -61,6 +61,22 @@ export const DATASETS: DatasetMeta[] = [
   { key: "wasde", label: "WASDE", group: "Global", kind: "tree",
     description: "USDA world cotton balance by country.",
     route: "/wasde" },
+  // ── Weather (monsoon) dashboard ──
+  { key: "monsoonImd", label: "IMD Subdivision Rainfall", group: "Weather dashboard", kind: "records",
+    description: "Cumulative % departure for the 36 IMD subdivisions — auto-updated nightly from the IMD bulletin; correct or fill in here.",
+    route: "/monsoon/deficit" },
+  { key: "monsoonWeights", label: "Commodity Weights & Regions", group: "Weather dashboard", kind: "records",
+    description: "Crop production shares by state, state → subdivision mapping, exclusions and the central-India belt.",
+    route: "/monsoon/regional" },
+  { key: "monsoonPlanting", label: "Kharif Planting Progress", group: "Weather dashboard", kind: "records",
+    description: "Area sown by crop (lakh ha) vs normal and last year.",
+    route: "/monsoon/planting" },
+  { key: "monsoonHistory", label: "Historical Monsoon", group: "Weather dashboard", kind: "records",
+    description: "All-India monsoon departure by year (ENSO deep-dive heatmap).",
+    route: "/monsoon/enso" },
+  { key: "monsoonAlerts", label: "Weather Alerts", group: "Weather dashboard", kind: "records",
+    description: "Your own alerts / notes, pinned above IMD's press releases on Weather Reports.",
+    route: "/monsoon/weather" },
 ];
 
 export const DATASET_KEYS = DATASETS.map((d) => d.key);

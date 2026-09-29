@@ -2,6 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
 import type { Subdivision } from "@/lib/monsoon/constants";
+import type { AlertsBlob, HistoryBlob, WeightsBlob } from "@/lib/monsoon/config";
 
 export type MonthValue = { year: number; month: number; value: number };
 export type PlantingRow = {
@@ -15,7 +16,7 @@ export type PlantingRow = {
 };
 
 export type MonsoonData = {
-  imd: { subdivisions: Subdivision[]; source: string; asOfDate: string | null; fetchedAt: number } | null;
+  imd: { subdivisions: Subdivision[]; source: string; asOfDate: string | null } | null;
   enso: {
     nino: { monthly: MonthValue[]; latest: MonthValue | null; source: string };
     iod: { monthly: MonthValue[]; latest: MonthValue | null; source: string };
@@ -23,6 +24,10 @@ export type MonsoonData = {
     fetchedAt: number;
   } | null;
   planting: { asOnDate: string; source: string; rows: PlantingRow[] };
+  weights: WeightsBlob;
+  history: HistoryBlob;
+  alerts: AlertsBlob;
+  isAdmin: boolean;
 };
 
 type Ctx = { data: MonsoonData | null; loading: boolean; error: string | null; reload: () => void };

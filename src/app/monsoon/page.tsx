@@ -1,6 +1,7 @@
 "use client";
 
-import { DEFAULT_EXCLUSIONS, NINO_THRESHOLDS } from "@/lib/monsoon/constants";
+import { NINO_THRESHOLDS } from "@/lib/monsoon/constants";
+import { toRegionalConfig } from "@/lib/monsoon/config";
 import { commodityWeighted, rainfallSummary } from "@/lib/monsoon/metrics";
 import { riskBullets, type RiskSeverity } from "@/lib/monsoon/risk";
 import { isoDate, monthLabel, useMonsoon } from "@/components/monsoon/data";
@@ -40,8 +41,9 @@ function Summary() {
   const subs = data?.imd?.subdivisions ?? [];
   const nino = data?.enso?.nino.latest ?? null;
   const iod = data?.enso?.iod.latest ?? null;
-  const { allIndia, central, deficientCount, deficientNames } = rainfallSummary(subs);
-  const byCrop = Object.fromEntries(commodityWeighted(subs, DEFAULT_EXCLUSIONS).map((c) => [c.commodity, c.weightedDeparture]));
+  const cfg = toRegionalConfig(data?.weights);
+  const { allIndia, central, deficientCount, deficientNames } = rainfallSummary(subs, cfg);
+  const byCrop = Object.fromEntries(commodityWeighted(subs, cfg).map((c) => [c.commodity, c.weightedDeparture]));
 
   const ninoStatus = nino == null ? "Unknown" : nino.value >= NINO_THRESHOLDS.EL_NINO ? "El Niño" : nino.value <= NINO_THRESHOLDS.LA_NINA ? "La Niña" : "Neutral";
   const iodPhase = iod == null ? "Unknown" : iod.value > 0.4 ? "Positive" : iod.value < -0.4 ? "Negative" : "Neutral";

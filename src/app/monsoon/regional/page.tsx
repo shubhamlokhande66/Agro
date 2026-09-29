@@ -1,19 +1,24 @@
 "use client";
 
 import { Fragment, useMemo, useState } from "react";
-import { DEFAULT_EXCLUSIONS } from "@/lib/monsoon/constants";
+import { toRegionalConfig } from "@/lib/monsoon/config";
 import { commodityWeighted } from "@/lib/monsoon/metrics";
 import { isoDate, useMonsoon } from "@/components/monsoon/data";
 import { imdCategory, Loaded, PageTitle, PANEL, RefreshButton, signed } from "@/components/monsoon/ui";
 
-const EXCLUDABLE = ["Konkan & Goa", "South Interior Karnataka"];
 
 function Regional() {
   const { data } = useMonsoon();
   const subs = data?.imd?.subdivisions ?? [];
-  const [exclusions, setExclusions] = useState<string[]>([...DEFAULT_EXCLUSIONS]);
+  const cfg = useMemo(() => toRegionalConfig(data?.weights), [data?.weights]);
+  // the admin's default exclusions, toggleable here; plus any mapped subdivision can be toggled
+  const excludable = useMemo(
+    () => Array.from(new Set([...cfg.exclusions, "Konkan & Goa", "South Interior Karnataka"])),
+    [cfg.exclusions],
+  );
+  const [exclusions, setExclusions] = useState<string[]>(cfg.exclusions);
   const [expanded, setExpanded] = useState<string | null>(null);
-  const results = useMemo(() => commodityWeighted(subs, exclusions), [subs, exclusions]);
+  const results = useMemo(() => commodityWeighted(subs, cfg, exclusions), [subs, cfg, exclusions]);
   const toggle = (n: string) => setExclusions((p) => (p.includes(n) ? p.filter((x) => x !== n) : [...p, n]));
 
   return (
@@ -28,7 +33,7 @@ function Regional() {
       <div className={PANEL + " p-4"}>
         <p className="mb-2 text-xs font-medium text-slate-400">Subdivision exclusions:</p>
         <div className="flex flex-wrap gap-4">
-          {EXCLUDABLE.map((n) => (
+          {excludable.map((n) => (
             <label key={n} className="flex cursor-pointer items-center gap-2 text-xs text-slate-300">
               <input type="checkbox" checked={exclusions.includes(n)} onChange={() => toggle(n)} className="accent-emerald-500" />
               Exclude {n}

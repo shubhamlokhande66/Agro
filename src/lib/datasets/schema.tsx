@@ -16,6 +16,7 @@ import { KeyValueEditor, NumListEditor, StringListEditor } from "@/components/ad
 import { RecordManager, type RecordManagerHandle } from "@/components/admin/RecordManager";
 import { RecordTable } from "@/components/admin/RecordCards";
 import { WD_CATEGORIES } from "@/data/wasde";
+import { IMD_SUBDIVISIONS, SUBDIVISION_ZONES } from "@/lib/monsoon/constants";
 import {
   flattenCategoryYear,
   flattenMulti,
@@ -1216,7 +1217,246 @@ const wasdeSchema: EditorSection[] = [
 
 /* ================================================================== */
 
+/* ================================================================== */
+/*  Weather (monsoon) dashboard                                        */
+/* ================================================================== */
+
+const IMD_NAMES = [...IMD_SUBDIVISIONS];
+const IMD_ZONES = Array.from(new Set(Object.values(SUBDIVISION_ZONES))).sort();
+
+const monsoonImdSchema: EditorSection[] = [
+  {
+    id: "bulletin",
+    title: "Bulletin",
+    hint: "The nightly job fills this from IMD's cumulative subdivision bulletin whenever IMD publishes a complete one. Edit here to correct a value or enter a bulletin by hand.",
+    render: (d, set) => (
+      <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
+        <Labeled label="As of (bulletin period end)">
+          <DateInput value={d.asOfDate ?? ""} onChange={(v) => set({ ...d, asOfDate: v || null })} />
+        </Labeled>
+        <Labeled label="Source">
+          <TextInput value={d.source ?? ""} onChange={(v) => set({ ...d, source: v })} placeholder="IMD Hydromet Division — …" />
+        </Labeled>
+      </div>
+    ),
+  },
+  {
+    id: "subdivisions",
+    title: "Subdivisions",
+    hint: "Departure = cumulative % from normal since 1 June (IMD's rightmost bulletin column). Normal = Jun–Sep LPA in mm, used as the weight for All-India figures.",
+    primaryAdd: { label: "Add Subdivision" },
+    render: (d, set, adderRef) => (
+      <RecordManager<any>
+        ref={adderRef}
+        hideAddButton
+        value={d.subdivisions ?? []}
+        onChange={(subdivisions) => set({ ...d, subdivisions })}
+        itemName="subdivision"
+        groupBy="zone"
+        makeItem={() => ({ name: "", zone: "", normalRainfall: null, departure: null })}
+        columns={[
+          { key: "name", label: "Subdivision", type: "text" },
+          { key: "departure", label: "Departure %", type: "number" },
+          { key: "normalRainfall", label: "Normal (mm)", type: "number" },
+        ]}
+        fields={[
+          { key: "name", label: "Subdivision", type: "select", options: IMD_NAMES },
+          { key: "zone", label: "Zone", type: "select", options: IMD_ZONES },
+          { key: "departure", label: "Cumulative departure (%)", type: "number" },
+          { key: "normalRainfall", label: "Normal / LPA (mm)", type: "number" },
+        ]}
+      />
+    ),
+  },
+];
+
+const monsoonWeightsSchema: EditorSection[] = [
+  {
+    id: "weights",
+    title: "Commodity production weights",
+    hint: "Share of national production (%) by state for each crop. A crop's weighted departure combines its states by these shares.",
+    primaryAdd: { label: "Add Weight" },
+    render: (d, set, adderRef) => (
+      <RecordManager<any>
+        ref={adderRef}
+        hideAddButton
+        value={d.weights ?? []}
+        onChange={(weights) => set({ ...d, weights })}
+        itemName="weight"
+        groupBy="commodity"
+        makeItem={() => ({ commodity: "", state: "", weight: null })}
+        columns={[
+          { key: "state", label: "State", type: "text" },
+          { key: "weight", label: "Share %", type: "number" },
+        ]}
+        fields={[
+          { key: "commodity", label: "Commodity", type: "text", placeholder: "Cotton" },
+          { key: "state", label: "State", type: "text", placeholder: "Gujarat" },
+          { key: "weight", label: "Share of production (%)", type: "number" },
+        ]}
+      />
+    ),
+  },
+  {
+    id: "states",
+    title: "State → IMD subdivisions",
+    hint: "Which subdivisions make up each state (comma-separated, exact IMD names). A state's departure is the average of its subdivisions.",
+    render: (d, set) => (
+      <RecordManager<any>
+        value={d.states ?? []}
+        onChange={(states) => set({ ...d, states })}
+        itemName="state"
+        makeItem={() => ({ state: "", subdivisions: "" })}
+        columns={[
+          { key: "state", label: "State", type: "text" },
+          { key: "subdivisions", label: "Subdivisions", type: "text" },
+        ]}
+        fields={[
+          { key: "state", label: "State", type: "text" },
+          { key: "subdivisions", label: "Subdivisions (comma-separated)", type: "textarea", full: true },
+        ]}
+      />
+    ),
+  },
+  {
+    id: "exclusions",
+    title: "Default exclusions",
+    hint: "Subdivisions left out of the weighted averages by default (they can still be toggled on the Regional page).",
+    render: (d, set) => (
+      <StringListEditor value={d.exclusions ?? []} onChange={(exclusions) => set({ ...d, exclusions })} placeholder="Konkan & Goa" addLabel="+ Add exclusion" />
+    ),
+  },
+  {
+    id: "central",
+    title: "Central-India crop belt",
+    hint: "Subdivisions averaged (weighted by normal rainfall) for the Central India KPI on the Summary page.",
+    render: (d, set) => (
+      <StringListEditor value={d.centralIndia ?? []} onChange={(centralIndia) => set({ ...d, centralIndia })} placeholder="Vidarbha" addLabel="+ Add subdivision" />
+    ),
+  },
+];
+
+const monsoonPlantingSchema: EditorSection[] = [
+  {
+    id: "meta",
+    title: "Snapshot",
+    render: (d, set) => (
+      <div className="grid gap-3 sm:grid-cols-[180px_1fr]">
+        <Labeled label="As on">
+          <DateInput value={d.asOnDate ?? ""} onChange={(v) => set({ ...d, asOnDate: v })} />
+        </Labeled>
+        <Labeled label="Source">
+          <TextInput value={d.source ?? ""} onChange={(v) => set({ ...d, source: v })} placeholder="DA&FW — Kharif sowing progress" />
+        </Labeled>
+      </div>
+    ),
+  },
+  {
+    id: "rows",
+    title: "Area sown by crop (lakh ha)",
+    hint: "Difference and % change are recalculated from this year vs last year when a row is saved.",
+    primaryAdd: { label: "Add Crop" },
+    render: (d, set, adderRef) => (
+      <RecordManager<any>
+        ref={adderRef}
+        hideAddButton
+        value={d.rows ?? []}
+        onChange={(rows) =>
+          set({
+            ...d,
+            rows: rows.map((r: any) => {
+              const ty = num(r.thisYear) ?? 0;
+              const ly = num(r.lastYear) ?? 0;
+              return { ...r, difference: Math.round((ty - ly) * 10) / 10, pctChange: ly ? Math.round(((ty - ly) / ly) * 1000) / 10 : 0 };
+            }),
+          })
+        }
+        itemName="crop"
+        groupBy="category"
+        makeItem={() => ({ crop: "", category: "Oilseeds", normal: null, thisYear: null, lastYear: null })}
+        columns={[
+          { key: "crop", label: "Crop", type: "text" },
+          { key: "thisYear", label: "This year", type: "number" },
+          { key: "lastYear", label: "Last year", type: "number" },
+          { key: "normal", label: "Normal", type: "number" },
+        ]}
+        fields={[
+          { key: "crop", label: "Crop", type: "text" },
+          { key: "category", label: "Category", type: "select", options: ["Oilseeds", "Pulses", "Cereals", "Cash Crops"] },
+          { key: "normal", label: "Normal (lakh ha)", type: "number" },
+          { key: "thisYear", label: "This year (lakh ha)", type: "number" },
+          { key: "lastYear", label: "Last year (lakh ha)", type: "number" },
+        ]}
+      />
+    ),
+  },
+];
+
+const monsoonHistorySchema: EditorSection[] = [
+  {
+    id: "years",
+    title: "All-India monsoon departure by year",
+    hint: "Jun–Sep rainfall % from the long-period average. Add each season's final IMD figure after September.",
+    primaryAdd: { label: "Add Year" },
+    render: (d, set, adderRef) => (
+      <RecordManager<any>
+        ref={adderRef}
+        hideAddButton
+        value={[...(d.years ?? [])].sort((a: any, b: any) => (b.year ?? 0) - (a.year ?? 0))}
+        onChange={(years) => set({ ...d, years })}
+        itemName="year"
+        makeItem={() => ({ year: new Date().getFullYear(), departure: null })}
+        columns={[
+          { key: "year", label: "Year", type: "number" },
+          { key: "departure", label: "Departure %", type: "number" },
+        ]}
+        fields={[
+          { key: "year", label: "Year", type: "number" },
+          { key: "departure", label: "All-India departure (%)", type: "number" },
+        ]}
+      />
+    ),
+  },
+];
+
+const monsoonAlertsSchema: EditorSection[] = [
+  {
+    id: "items",
+    title: "Desk alerts",
+    hint: "Shown pinned above IMD's press releases on the Weather Reports page, newest first. Delete an alert when it no longer applies.",
+    primaryAdd: { label: "Add Alert" },
+    render: (d, set, adderRef) => (
+      <RecordManager<any>
+        ref={adderRef}
+        hideAddButton
+        value={d.items ?? []}
+        onChange={(items) =>
+          set({ ...d, items: [...items].sort((a: any, b: any) => String(b.date ?? "").localeCompare(String(a.date ?? ""))) })
+        }
+        itemName="alert"
+        makeItem={() => ({ date: new Date().toISOString().slice(0, 10), title: "", summary: "", severity: "Watch" })}
+        columns={[
+          { key: "date", label: "Date", type: "date" },
+          { key: "severity", label: "Severity", type: "text" },
+          { key: "title", label: "Title", type: "text" },
+        ]}
+        fields={[
+          { key: "date", label: "Date", type: "date" },
+          { key: "severity", label: "Severity", type: "select", options: ["Alert", "Warning", "Watch", "Normal"] },
+          { key: "title", label: "Title", type: "text", full: true },
+          { key: "summary", label: "Details", type: "textarea", full: true },
+        ]}
+      />
+    ),
+  },
+];
+
 export const SCHEMAS: Record<string, EditorSection[]> = {
+  monsoonImd: monsoonImdSchema,
+  monsoonWeights: monsoonWeightsSchema,
+  monsoonPlanting: monsoonPlantingSchema,
+  monsoonHistory: monsoonHistorySchema,
+  monsoonAlerts: monsoonAlertsSchema,
   prices: pricesSchema,
   international: internationalSchema,
   currency: currencySchema,

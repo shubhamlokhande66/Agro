@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import LineChart from "@/components/charts/LineChart";
-import { HISTORICAL_MONSOON_DEPARTURES } from "@/lib/monsoon/constants";
+import { toHistory } from "@/lib/monsoon/config";
 import { monthLabel, useMonsoon, type MonthValue } from "@/components/monsoon/data";
 import { Loaded, PageTitle, PANEL, RefreshButton, SegTabs, signed } from "@/components/monsoon/ui";
 
@@ -29,9 +29,10 @@ function Enso() {
   const iod = data?.enso?.iod.monthly ?? [];
   const year = data?.enso?.nino.latest?.year ?? new Date().getFullYear();
 
+  const history = useMemo(() => toHistory(data?.history), [data?.history]);
   const heatmap = useMemo(
     () =>
-      Object.entries(HISTORICAL_MONSOON_DEPARTURES)
+      Object.entries(history)
         .map(([y, dep]) => {
           const yr = Number(y);
           const n = jjasMean(nino, yr);
@@ -46,7 +47,7 @@ function Enso() {
           };
         })
         .sort((a, b) => b.year - a.year),
-    [nino, iod],
+    [history, nino, iod],
   );
 
   return (

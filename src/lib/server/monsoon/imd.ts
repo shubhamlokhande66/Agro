@@ -1,6 +1,7 @@
 import { inflateSync } from "node:zlib";
 import { IMD_SUBDIVISIONS, LPA_NORMALS, SUBDIVISION_ZONES, type Subdivision } from "@/lib/monsoon/constants";
-import { getCached, setCached } from "./cache";
+import { getDataset, putDataset } from "@/lib/server/datasets";
+import { MONSOON_KEYS, type ImdBlob } from "@/lib/monsoon/config";
 
 /**
  * IMD subdivision rainfall departures — from the official Hydromet cumulative bulletin
@@ -13,10 +14,7 @@ export const IMD_PDF_URL =
   "https://mausam.imd.gov.in/Rainfall/SUBDIVISION_RAINFALL_DEPARTURECUMULATIVE_COUNTRY_INDIA_c.pdf";
 const UA =
   "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36";
-export const IMD_CACHE_KEY = "imd_subdivisions";
 export const IMD_SOURCE = "IMD Hydromet Division — mausam.imd.gov.in (Subdivision Cumulative Departures bulletin)";
-
-export type ImdPayload = { subdivisions: Subdivision[] };
 
 /* ── name matching: PDF labels → canonical subdivision names ── */
 
@@ -167,7 +165,8 @@ export function parseImdBulletin(buf: Buffer): { rows: Subdivision[]; asOfDate: 
 
 export type ImdRefresh = { updated: boolean; rows: number; asOfDate: string | null; reason?: string };
 
-/** fetch + parse the live bulletin; stores it only when it is complete enough to trust */
+/** fetch + parse the live bulletin into the admin-editable `monsoonImd` dataset — only when it
+ *  is complete enough to trust and not older than what is stored */
 export async function refreshImd(): Promise<ImdRefresh> {
   const res = await fetch(IMD_PDF_URL, {
     headers: { "user-agent": UA, accept: "application/pdf,*/*" },
@@ -179,10 +178,15 @@ export async function refreshImd(): Promise<ImdRefresh> {
   if (rows.length < 30) {
     return { updated: false, rows: rows.length, asOfDate, reason: "bulletin has no complete subdivision table — kept last good data" };
   }
-  const prev = await getCached<ImdPayload>(IMD_CACHE_KEY);
-  if (prev?.asOfDate && asOfDate && asOfDate < prev.asOfDate) {
-    return { updated: false, rows: rows.length, asOfDate, reason: "bulletin is older than the stored data" };
+  const prev = (await getDataset(MONSOON_KEYS.imd))?.data as ImdBlob | undefined;
+  if (prev?.asOfDate && asOfDate && asOfDate <= prev.asOfDate) {
+    return { updated: false, rows: rows.length, asOfDate, reason: "no newer bulletin than the stored data" };
   }
-  await setCached<ImdPayload>(IMD_CACHE_KEY, { subdivisions: rows }, IMD_SOURCE, asOfDate);
+  const blob: ImdBlob = {
+    asOfDate,
+    source: IMD_SOURCE,
+    subdivisions: rows.map(({ name, zone, normalRainfall, departure }) => ({ name, zone, normalRainfall, departure })),
+  };
+  await putDataset(MONSOON_KEYS.imd, blob, "cron:imd", "imd-bulletin");
   return { updated: true, rows: rows.length, asOfDate };
 }
