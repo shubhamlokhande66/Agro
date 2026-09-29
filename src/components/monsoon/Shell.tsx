@@ -5,10 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
 import { useAuth } from "@/lib/auth";
-import { DATASETS } from "@/lib/datasets/registry";
-
-/** weather datasets an admin can edit (Admin → "Weather dashboard" group) */
-const WEATHER_DATASETS = DATASETS.filter((d) => d.group === "Weather dashboard");
+import { WEATHER_DATASETS } from "@/lib/datasets/registry";
 
 export const MONSOON_NAV = [
   { href: "/monsoon", label: "Summary", icon: "▦" },
@@ -70,11 +67,11 @@ export function MonsoonShell({ children }: { children: React.ReactNode }) {
 
           {isAdmin ? (
             <div className="pt-4">
-              <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-600">Admin · edit data</p>
+              <p className="px-3 pb-1.5 text-[10px] font-semibold uppercase tracking-wider text-slate-600">Weather admin</p>
               {WEATHER_DATASETS.map((d) => (
                 <Link
                   key={d.key}
-                  href={`/admin/${d.key}`}
+                  href={`/monsoon/admin/${d.key}`}
                   className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-slate-400 transition-all hover:bg-slate-700/30 hover:text-slate-200"
                 >
                   <span className="w-4 text-center" aria-hidden>✎</span>
@@ -82,11 +79,11 @@ export function MonsoonShell({ children }: { children: React.ReactNode }) {
                 </Link>
               ))}
               <Link
-                href="/admin"
-                className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-slate-500 transition-all hover:bg-slate-700/30 hover:text-slate-200"
+                href="/monsoon/admin/users"
+                className="flex items-center gap-3 rounded-lg px-3 py-2 text-[13px] text-slate-400 transition-all hover:bg-slate-700/30 hover:text-slate-200"
               >
-                <span className="w-4 text-center" aria-hidden>⚙</span>
-                Admin panel &amp; users
+                <span className="w-4 text-center" aria-hidden>◈</span>
+                Weather Users
               </Link>
             </div>
           ) : null}
@@ -116,10 +113,10 @@ export function MonsoonShell({ children }: { children: React.ReactNode }) {
           </h2>
           {isAdmin ? (
             <Link
-              href={`/admin/${WEATHER_DATASETS[0]?.key ?? ""}`}
+              href="/monsoon/admin"
               className="flex shrink-0 items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950 transition-colors hover:bg-emerald-400"
             >
-              ⚙ Admin · edit data
+              ⚙ Weather Admin
             </Link>
           ) : null}
           <span className="hidden items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs text-emerald-400 sm:flex">

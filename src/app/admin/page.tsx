@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { DATASETS } from "@/lib/datasets/registry";
+import { COTTON_DATASETS as DATASETS } from "@/lib/datasets/registry";
 import { useAdminMeta } from "@/lib/admin/context";
 import { timeAgo } from "@/lib/format";
 
@@ -144,7 +144,7 @@ export default function AdminPage() {
         </div>
 
         <Card>
-          <CardHeader title="Recent activity" sub="Latest edits across every dataset" />
+          <CardHeader title="Recent activity" sub="Latest edits across the cotton datasets" />
           {activity.length === 0 ? (
             <p className="text-[12px] text-ink-faint">No edits yet.</p>
           ) : (
