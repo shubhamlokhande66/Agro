@@ -58,6 +58,12 @@ export function clearSession(app: App = "cotton") {
   cookies().delete(COOKIES[app]);
 }
 
+/** the admin session for one dashboard's admin area, or null */
+export async function readAdmin(app: App = "cotton"): Promise<Session | null> {
+  const s = await readSession(app);
+  return s && s.role === "admin" ? s : null;
+}
+
 export async function requireAdmin(): Promise<Session> {
   const s = await readSession();
   if (!s || s.role !== "admin") {

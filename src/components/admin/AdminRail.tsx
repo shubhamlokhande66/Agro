@@ -4,7 +4,7 @@ import { useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { DATASETS } from "@/lib/datasets/registry";
+import { COTTON_DATASETS as DATASETS } from "@/lib/datasets/registry";
 import { useAdminMeta } from "@/lib/admin/context";
 import { timeAgo } from "@/lib/format";
 

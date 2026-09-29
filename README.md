@@ -68,13 +68,15 @@ Saving writes to MongoDB and is live for everyone immediately.
   maps, satellite, Windy forecasts and IMD press releases — weather accounts.
 
 A cotton login can't open the weather dashboard or vice versa. New weather users sign up
-from the weather sign-in screen; the admin approves them under **Admin → Users**, where each
-account's dashboard (Cotton / Weather) can also be changed. Admin accounts can sign in to
+from the weather sign-in screen and are approved in the weather admin area (**Weather Users**);
+an account that signed up on the wrong screen can be moved to the other dashboard there. Admin accounts can sign in to
 both dashboards.
 
-Weather data is edited like cotton data — **Admin → "Weather dashboard"** group (also linked
-from the weather sidebar for admins): IMD subdivision rainfall, commodity weights & regions,
-Kharif planting, historical monsoon, and desk alerts. The daily cron updates IMD rainfall when
+Each dashboard has its **own admin area**: cotton data and cotton accounts under `/admin`,
+weather data and weather accounts under `/monsoon/admin` (the **⚙ Weather Admin** button in the
+weather top bar). Saving needs an admin sign-in to that dashboard. Weather datasets: IMD
+subdivision rainfall, commodity weights & regions, Kharif planting, historical monsoon, and
+desk alerts — edited with the same forms as the cotton data. The daily cron updates IMD rainfall when
 IMD publishes a complete bulletin and refreshes NOAA ENSO/IOD and IMD press releases.
 `npx tsx scripts/seed-monsoon.ts` creates the weather datasets in an empty database.
 
