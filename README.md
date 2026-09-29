@@ -58,6 +58,21 @@ production, balanceSheet, trade, cop, calendar, rainfall, wasde.
 
 Saving writes to MongoDB and is live for everyone immediately.
 
+## Two dashboards
+
+`/` is a landing page with two dashboards, each with its **own sign-in and accounts**:
+
+- **Cotton Dashboard** (`/overview` and the rest of the app) — cotton accounts.
+- **Weather Dashboard** (`/monsoon`) — "Monsoon Rainfall Risk Monitor": IMD subdivision
+  rainfall & deficits, production-weighted regional departures, ENSO/IOD (NOAA), IMD
+  maps, satellite, Windy forecasts and IMD press releases — weather accounts.
+
+A cotton login can't open the weather dashboard or vice versa. New weather users sign up
+from the weather sign-in screen; the admin approves them under **Admin → Users**, where each
+account's dashboard (Cotton / Weather) can also be changed. Weather data refreshes in the
+daily cron; `npx tsx scripts/seed-monsoon.ts` loads the IMD snapshot in
+`seed/monsoon_imd.json` into an empty database.
+
 ## Login
 
 | Username | Password | Role |

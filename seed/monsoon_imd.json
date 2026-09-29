@@ -1,0 +1,259 @@
+{
+ "source": "IMD Hydromet Division — mausam.imd.gov.in (Subdivision Cumulative Departures bulletin)",
+ "asOfDate": "2026-09-16",
+ "note": "IMD cumulative subdivision departures as of the bulletin date — snapshot from the original Monsoon Monitor app; replaced by the daily IMD refresh once a complete bulletin is published.",
+ "subdivisions": [
+  {
+   "name": "Chhattisgarh",
+   "zone": "Central",
+   "normalRainfall": 1120,
+   "actualRainfall": 1075,
+   "departure": -4
+  },
+  {
+   "name": "East Madhya Pradesh",
+   "zone": "Central",
+   "normalRainfall": 1050,
+   "actualRainfall": 1029,
+   "departure": -2
+  },
+  {
+   "name": "Gujarat Region",
+   "zone": "West",
+   "normalRainfall": 1050,
+   "actualRainfall": 1061,
+   "departure": 1
+  },
+  {
+   "name": "Konkan & Goa",
+   "zone": "West",
+   "normalRainfall": 2710,
+   "actualRainfall": 2385,
+   "departure": -12
+  },
+  {
+   "name": "Madhya Maharashtra",
+   "zone": "West",
+   "normalRainfall": 710,
+   "actualRainfall": 710,
+   "departure": 0
+  },
+  {
+   "name": "Marathwada",
+   "zone": "Central",
+   "normalRainfall": 630,
+   "actualRainfall": 397,
+   "departure": -37
+  },
+  {
+   "name": "Orissa",
+   "zone": "East",
+   "normalRainfall": 1170,
+   "actualRainfall": 1404,
+   "departure": 20
+  },
+  {
+   "name": "Saurashtra-Kutch",
+   "zone": "West",
+   "normalRainfall": 470,
+   "actualRainfall": 367,
+   "departure": -22
+  },
+  {
+   "name": "Vidarbha",
+   "zone": "Central",
+   "normalRainfall": 880,
+   "actualRainfall": 634,
+   "departure": -28
+  },
+  {
+   "name": "West Madhya Pradesh",
+   "zone": "Central",
+   "normalRainfall": 870,
+   "actualRainfall": 774,
+   "departure": -11
+  },
+  {
+   "name": "Arunachal Pradesh",
+   "zone": "Northeast",
+   "normalRainfall": 1560,
+   "actualRainfall": 905,
+   "departure": -42
+  },
+  {
+   "name": "Assam & Meghalaya",
+   "zone": "Northeast",
+   "normalRainfall": 1640,
+   "actualRainfall": 1132,
+   "departure": -31
+  },
+  {
+   "name": "Bihar",
+   "zone": "East",
+   "normalRainfall": 1005,
+   "actualRainfall": 643,
+   "departure": -36
+  },
+  {
+   "name": "Gangetic West Bengal",
+   "zone": "East",
+   "normalRainfall": 1200,
+   "actualRainfall": 1272,
+   "departure": 6
+  },
+  {
+   "name": "Jharkhand",
+   "zone": "East",
+   "normalRainfall": 1050,
+   "actualRainfall": 976,
+   "departure": -7
+  },
+  {
+   "name": "Nagaland-Manipur-Mizoram-Tripura",
+   "zone": "Northeast",
+   "normalRainfall": 1430,
+   "actualRainfall": 1158,
+   "departure": -19
+  },
+  {
+   "name": "Sub-Himalayan West Bengal & Sikkim",
+   "zone": "East",
+   "normalRainfall": 2270,
+   "actualRainfall": 2020,
+   "departure": -11
+  },
+  {
+   "name": "Haryana-Chandigarh-Delhi",
+   "zone": "Northwest",
+   "normalRainfall": 490,
+   "actualRainfall": 382,
+   "departure": -22
+  },
+  {
+   "name": "East Rajasthan",
+   "zone": "Northwest",
+   "normalRainfall": 620,
+   "actualRainfall": 490,
+   "departure": -21
+  },
+  {
+   "name": "East Uttar Pradesh",
+   "zone": "Central",
+   "normalRainfall": 900,
+   "actualRainfall": 819,
+   "departure": -9
+  },
+  {
+   "name": "Himachal Pradesh",
+   "zone": "Northwest",
+   "normalRainfall": 810,
+   "actualRainfall": 729,
+   "departure": -10
+  },
+  {
+   "name": "Jammu & Kashmir",
+   "zone": "Northwest",
+   "normalRainfall": 570,
+   "actualRainfall": 559,
+   "departure": -2
+  },
+  {
+   "name": "Punjab",
+   "zone": "Northwest",
+   "normalRainfall": 500,
+   "actualRainfall": 300,
+   "departure": -40
+  },
+  {
+   "name": "Uttarakhand",
+   "zone": "Northwest",
+   "normalRainfall": 1170,
+   "actualRainfall": 1217,
+   "departure": 4
+  },
+  {
+   "name": "West Rajasthan",
+   "zone": "Northwest",
+   "normalRainfall": 250,
+   "actualRainfall": 170,
+   "departure": -32
+  },
+  {
+   "name": "West Uttar Pradesh",
+   "zone": "Central",
+   "normalRainfall": 770,
+   "actualRainfall": 809,
+   "departure": 5
+  },
+  {
+   "name": "Andaman & Nicobar Islands",
+   "zone": "Islands",
+   "normalRainfall": 1440,
+   "actualRainfall": 1526,
+   "departure": 6
+  },
+  {
+   "name": "Coastal Andhra Pradesh",
+   "zone": "South Peninsula",
+   "normalRainfall": 490,
+   "actualRainfall": 304,
+   "departure": -38
+  },
+  {
+   "name": "Coastal Karnataka",
+   "zone": "South Peninsula",
+   "normalRainfall": 2880,
+   "actualRainfall": 2074,
+   "departure": -28
+  },
+  {
+   "name": "Kerala",
+   "zone": "South Peninsula",
+   "normalRainfall": 2050,
+   "actualRainfall": 1497,
+   "departure": -27
+  },
+  {
+   "name": "Lakshadweep",
+   "zone": "Islands",
+   "normalRainfall": 1190,
+   "actualRainfall": 833,
+   "departure": -30
+  },
+  {
+   "name": "North Interior Karnataka",
+   "zone": "South Peninsula",
+   "normalRainfall": 510,
+   "actualRainfall": 357,
+   "departure": -30
+  },
+  {
+   "name": "Rayalaseema",
+   "zone": "South Peninsula",
+   "normalRainfall": 390,
+   "actualRainfall": 195,
+   "departure": -50
+  },
+  {
+   "name": "South Interior Karnataka",
+   "zone": "South Peninsula",
+   "normalRainfall": 660,
+   "actualRainfall": 455,
+   "departure": -31
+  },
+  {
+   "name": "Tamil Nadu & Pondicherry",
+   "zone": "South Peninsula",
+   "normalRainfall": 310,
+   "actualRainfall": 239,
+   "departure": -23
+  },
+  {
+   "name": "Telangana",
+   "zone": "South Peninsula",
+   "normalRainfall": 730,
+   "actualRainfall": 584,
+   "departure": -20
+  }
+ ]
+}

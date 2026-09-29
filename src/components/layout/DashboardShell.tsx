@@ -83,7 +83,7 @@ function Inner({ children }: { children: React.ReactNode }) {
         <nav className="print-hide fixed inset-x-0 bottom-0 z-30 grid grid-cols-4 border-t border-line bg-[var(--topbar-bg)] backdrop-blur-md lg:hidden">
           {QUICK_NAV.map((item) => {
             const active =
-              item.href === "/" ? pathname === "/" : pathname.startsWith(item.href);
+              pathname.startsWith(item.href);
             return (
               <Link
                 key={item.href}

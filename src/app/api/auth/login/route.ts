@@ -1,10 +1,11 @@
 import { NextResponse } from "next/server";
-import { checkPassword, getUserByUsername } from "@/lib/server/users";
-import { createSession } from "@/lib/server/session";
+import { checkPassword, getUserByUsername, userApp } from "@/lib/server/users";
+import { createSession, parseApp } from "@/lib/server/session";
 import { activeDeviceCount, createSessionRecord } from "@/lib/server/devices";
 
 export async function POST(req: Request) {
-  const { username, password, deviceId, deviceLabel } = await req.json().catch(() => ({}));
+  const { username, password, deviceId, deviceLabel, app: rawApp } = await req.json().catch(() => ({}));
+  const app = parseApp(rawApp);
   if (typeof username !== "string" || typeof password !== "string") {
     return NextResponse.json({ error: "Missing credentials" }, { status: 400 });
   }
@@ -13,7 +14,8 @@ export async function POST(req: Request) {
   }
 
   const user = await getUserByUsername(username);
-  if (!user || !checkPassword(user, password)) {
+  // accounts belong to one dashboard; a cotton login can't open the weather dashboard or vice versa
+  if (!user || !checkPassword(user, password) || userApp(user) !== app) {
     return NextResponse.json({ error: "Invalid username or password" }, { status: 401 });
   }
 
@@ -50,6 +52,6 @@ export async function POST(req: Request) {
     deviceId,
     deviceLabel: typeof deviceLabel === "string" && deviceLabel ? deviceLabel : "Unknown device",
   });
-  await createSession({ username: user.username, role: user.role, sessionId, deviceId });
+  await createSession({ username: user.username, role: user.role, sessionId, deviceId, app });
   return NextResponse.json({ username: user.username, role: user.role });
 }

@@ -11,6 +11,7 @@ type UserRow = {
   _id: string;
   username: string;
   role: "admin" | "client";
+  app?: "cotton" | "weather";
   status: "pending" | "approved" | "rejected";
   deviceLimit: number | null;
   createdAt: number;
@@ -18,6 +19,23 @@ type UserRow = {
   approvedBy: string | null;
   devices: Device[];
 };
+
+const APP_LABEL = { cotton: "Cotton", weather: "Weather" } as const;
+const appOf = (u: UserRow) => u.app ?? "cotton";
+
+function AppBadge({ u }: { u: UserRow }) {
+  const app = appOf(u);
+  return (
+    <span
+      className={
+        "rounded-md px-2 py-0.5 text-[10.5px] font-semibold " +
+        (app === "weather" ? "bg-info-soft text-info" : "bg-accent/10 text-accent")
+      }
+    >
+      {APP_LABEL[app]}
+    </span>
+  );
+}
 
 const STATUS_STYLE: Record<UserRow["status"], string> = {
   pending: "bg-warn-soft text-warn",
@@ -86,7 +104,9 @@ export default function UsersPage() {
                 className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-line bg-surface-2/40 p-3"
               >
                 <div>
-                  <div className="text-[12.5px] font-semibold text-ink">{u.username}</div>
+                  <div className="flex items-center gap-2 text-[12.5px] font-semibold text-ink">
+                    {u.username} <AppBadge u={u} />
+                  </div>
                   <div className="num text-[10.5px] text-ink-faint">requested {timeAgo(u.createdAt)}</div>
                 </div>
                 <div className="flex gap-2">
@@ -123,6 +143,7 @@ export default function UsersPage() {
               <thead>
                 <tr className="bg-surface-2 text-[10px] uppercase tracking-wide text-ink-faint">
                   <th className="border-b border-line px-2.5 py-2 text-left font-semibold">Username</th>
+                  <th className="border-b border-line px-2.5 py-2 text-left font-semibold">Dashboard</th>
                   <th className="border-b border-line px-2.5 py-2 text-left font-semibold">Role</th>
                   <th className="border-b border-line px-2.5 py-2 text-left font-semibold">Status</th>
                   <th className="border-b border-line px-2.5 py-2 text-left font-semibold">Device limit</th>
@@ -134,6 +155,7 @@ export default function UsersPage() {
                 {others.map((u) => (
                   <tr key={u._id} className="cursor-pointer hover:bg-surface-2/50" onClick={() => setModalUser(u)}>
                     <td className="border-b border-line/60 px-2.5 py-2 font-medium text-ink">{u.username}</td>
+                    <td className="border-b border-line/60 px-2.5 py-2"><AppBadge u={u} /></td>
                     <td className="border-b border-line/60 px-2.5 py-2 text-ink-soft">{u.role}</td>
                     <td className="border-b border-line/60 px-2.5 py-2">
                       <span className={"rounded-md px-2 py-0.5 text-[10.5px] font-semibold " + STATUS_STYLE[u.status]}>
@@ -185,10 +207,12 @@ function UserModal({
 }) {
   const [role, setRole] = useState(user.role);
   const [deviceLimit, setDeviceLimit] = useState<number | null>(user.deviceLimit);
+  const [app, setApp] = useState(appOf(user));
 
-  const dirty = role !== user.role || deviceLimit !== user.deviceLimit;
+  const dirty = role !== user.role || deviceLimit !== user.deviceLimit || app !== appOf(user);
 
   async function save() {
+    if (app !== appOf(user)) await act(user._id, "setApp", { app });
     if (role !== user.role) await act(user._id, "setRole", { role });
     if (deviceLimit !== user.deviceLimit) await act(user._id, "setDeviceLimit", { deviceLimit });
     onClose();
@@ -201,7 +225,14 @@ function UserModal({
       onSubmit={dirty ? save : undefined}
       submitLabel="Save"
     >
-      <div className="grid gap-3 sm:grid-cols-2">
+      <div className="grid gap-3 sm:grid-cols-3">
+        <Labeled label="Dashboard">
+          <SelectInput
+            value={APP_LABEL[app]}
+            options={["Cotton", "Weather"]}
+            onChange={(v) => setApp(v === "Weather" ? "weather" : "cotton")}
+          />
+        </Labeled>
         <Labeled label="Role">
           <SelectInput value={role} options={["client", "admin"]} onChange={(v) => setRole(v as "admin" | "client")} />
         </Labeled>

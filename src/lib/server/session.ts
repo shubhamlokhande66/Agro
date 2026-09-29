@@ -1,14 +1,17 @@
 import { cookies } from "next/headers";
 import { SignJWT, jwtVerify } from "jose";
-import type { Role } from "./users";
+import type { App, Role } from "./users";
 import { sessionExists, touchSession } from "./devices";
 
-const COOKIE = "cda_session";
+/** one session cookie per dashboard, so a browser can be signed in to both independently */
+const COOKIES: Record<App, string> = { cotton: "cda_session", weather: "wda_session" };
 const secretStr =
   process.env.AUTH_SECRET ?? "dev-insecure-secret-change-in-production-please";
 const secret = new TextEncoder().encode(secretStr);
 
-export type Session = { username: string; role: Role; sessionId: string; deviceId: string };
+export type Session = { username: string; role: Role; sessionId: string; deviceId: string; app: App };
+
+export const parseApp = (v: unknown): App => (v === "weather" ? "weather" : "cotton");
 
 export async function createSession(session: Session) {
   const token = await new SignJWT(session)
@@ -17,7 +20,7 @@ export async function createSession(session: Session) {
     .setExpirationTime("30d")
     .sign(secret);
 
-  cookies().set(COOKIE, token, {
+  cookies().set(COOKIES[session.app], token, {
     httpOnly: true,
     secure: process.env.NODE_ENV === "production",
     sameSite: "lax",
@@ -26,14 +29,16 @@ export async function createSession(session: Session) {
   });
 }
 
-/** Verifies the cookie's signature AND that the session hasn't been revoked
- *  (admin removed the device, or it was signed out) — so a revoked device
+/** Verifies the cookie's signature, that it belongs to `app`, AND that the session hasn't
+ *  been revoked (admin removed the device, or it was signed out) — so a revoked device
  *  stops working on its very next request, not just at its next login. */
-export async function readSession(): Promise<Session | null> {
-  const token = cookies().get(COOKIE)?.value;
+export async function readSession(app: App = "cotton"): Promise<Session | null> {
+  const token = cookies().get(COOKIES[app])?.value;
   if (!token) return null;
   try {
     const { payload } = await jwtVerify(token, secret);
+    // tokens issued before the weather dashboard existed carry no app — they're cotton
+    if (parseApp(payload.app) !== app) return null;
     const sessionId = payload.sessionId as string;
     if (!sessionId || !(await sessionExists(sessionId))) return null;
     touchSession(sessionId).catch(() => {});
@@ -42,14 +47,15 @@ export async function readSession(): Promise<Session | null> {
       role: payload.role as Role,
       sessionId,
       deviceId: payload.deviceId as string,
+      app,
     };
   } catch {
     return null;
   }
 }
 
-export function clearSession() {
-  cookies().delete(COOKIE);
+export function clearSession(app: App = "cotton") {
+  cookies().delete(COOKIES[app]);
 }
 
 export async function requireAdmin(): Promise<Session> {
