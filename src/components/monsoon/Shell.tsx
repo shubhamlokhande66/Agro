@@ -114,6 +114,14 @@ export function MonsoonShell({ children }: { children: React.ReactNode }) {
           <h2 className="min-w-0 flex-1 truncate text-base font-bold tracking-tight text-white">
             Monsoon {new Date().getFullYear()} — Rainfall Risk Monitor
           </h2>
+          {isAdmin ? (
+            <Link
+              href={`/admin/${WEATHER_DATASETS[0]?.key ?? ""}`}
+              className="flex shrink-0 items-center gap-1.5 rounded-lg bg-emerald-500 px-3 py-1.5 text-xs font-semibold text-slate-950 transition-colors hover:bg-emerald-400"
+            >
+              ⚙ Admin · edit data
+            </Link>
+          ) : null}
           <span className="hidden items-center gap-1.5 rounded-full bg-emerald-500/10 px-2.5 py-1 text-xs text-emerald-400 sm:flex">
             <span className="h-1.5 w-1.5 animate-pulse rounded-full bg-emerald-400" />
             Auto-updated daily
