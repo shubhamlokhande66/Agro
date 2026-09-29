@@ -243,21 +243,7 @@ body {
   animation: rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-/* ---- PDF export (ExportPdfButton) ----
-   html.printing is added just before window.print(): it lays the page out on screen at
-   A4-landscape width with the app chrome hidden, so Chart.js canvases redraw at print size. */
-html.printing .print-hide {
-  display: none !important;
-}
-html.printing .print-main {
-  padding: 0 !important;
-}
-html.printing .print-page {
-  width: 1040px !important;
-  max-width: 1040px !important;
-  margin: 0 auto;
-}
-
+/* ---- browser print (Ctrl+P): hide app chrome; "Download PDF" uses ExportPdfButton instead ---- */
 @media print {
   @page {
     size: A4 landscape;
