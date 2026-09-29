@@ -74,7 +74,7 @@ function Inner({ children }: { children: React.ReactNode }) {
           <MarketTicker />
         </div>
 
-        <main className="print-main flex-1 px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-16">
+        <main className="flex-1 px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-16">
           <div key={`${pathname}:${version}`} className="print-page mx-auto max-w-[1280px] animate-rise">
             {children}
           </div>
