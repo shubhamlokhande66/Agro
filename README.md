@@ -74,7 +74,7 @@ Saving writes to MongoDB and is live for everyone immediately.
    `DATABASE_URL="mongodb+srv://…" npm run db:seed`
 4. Deploy.
 5. Add a `CRON_SECRET` env var. `vercel.json` runs one job, `/api/cron/daily`, every day
-   at 6:00 PM IST (12:30 UTC). It runs each outside-data sync in turn:
+   at 7:00 PM IST (13:30 UTC), after CAI publishes (~6:40 PM). It runs each outside-data sync in turn:
    - CAI upcountry spot rates → Domestic Prices (Guj / MMA / CS / PHR varieties)
    - ICE Cotton No. 2 + ICE Brent settlements → International Prices
    - RBI USD/INR reference rate → Currency

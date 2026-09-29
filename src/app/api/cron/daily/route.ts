@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * The one daily job (Vercel Cron, 6:00 PM IST — see vercel.json): runs every outside-data
+ * The one daily job (Vercel Cron, 7:00 PM IST — see vercel.json): runs every outside-data
  * sync in turn — CAI domestic spot rates, ICE cotton + Brent futures, RBI USD/INR. Each
  * sync looks back several days, so anything published after a run is picked up by the next.
  * One failing source doesn't stop the others; the response reports each separately.
