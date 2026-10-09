@@ -4,10 +4,10 @@ import { useEffect, useMemo, useState } from "react";
 import AreaChart from "@/components/charts/AreaChart";
 import { GlobalPeriodTabs } from "@/components/ui/GlobalPeriodTabs";
 import { Delta } from "@/components/ui/ChangeBadge";
-import { sliceByPeriod, deltaOverPeriod, type GlobalPeriod } from "@/lib/period";
+import { sliceByPeriod, deltaOverPeriod, parseLabelDate, type GlobalPeriod } from "@/lib/period";
 import { VARIETIES, dailySeries } from "@/data/prices";
 import { ICE_D_L, ICE_D_V, BR_D_L, BR_D_V, BR_M_L, BR_M_V } from "@/data/international";
-import { USDINR_M_L, USDINR_M_V } from "@/data/currency";
+import { USDINR_M_L, USDINR_M_V, USDINR_1Y_L, USDINR_1Y_V } from "@/data/currency";
 import { inr, inrCompact } from "@/lib/format";
 
 export type HeroCategory = "domestic" | "cotton" | "kapas" | "cseed" | "yarn" | "coilc" | "inr" | "crude";
@@ -16,7 +16,21 @@ function varietyDaily(key: string) {
   return dailySeries(VARIETIES.find((x) => x.key === key));
 }
 
-export function seriesFor(cat: HeroCategory): {
+/** USD/INR for the selected period: the daily RBI rates up to 1Y (the monthly averages are too
+ *  coarse to show a 1W/1M change), and for 5Y the monthly averages ending on the latest daily
+ *  rate so the headline value stays the same across periods. */
+function usdInrSeries(period: GlobalPeriod): { labels: string[]; values: number[] } {
+  if (!USDINR_1Y_L.length) return { labels: USDINR_M_L, values: USDINR_M_V };
+  if (period !== "5y") return { labels: USDINR_1Y_L, values: USDINR_1Y_V };
+  const lastDaily = parseLabelDate(USDINR_1Y_L.at(-1)!);
+  const lastMonthly = USDINR_M_L.length ? parseLabelDate(USDINR_M_L.at(-1)!) : null;
+  if (lastDaily == null || (lastMonthly != null && lastDaily <= lastMonthly)) {
+    return { labels: USDINR_M_L, values: USDINR_M_V };
+  }
+  return { labels: [...USDINR_M_L, USDINR_1Y_L.at(-1)!], values: [...USDINR_M_V, USDINR_1Y_V.at(-1)!] };
+}
+
+export function seriesFor(cat: HeroCategory, period: GlobalPeriod): {
   title: string;
   labels: (string | number)[];
   values: (number | null)[];
@@ -39,7 +53,7 @@ export function seriesFor(cat: HeroCategory): {
     case "coilc":
       return { title: "Cotton Seed Oil Cake", ...varietyDaily("coilc"), unit: "₹/Quintal", headlineFmt: (v) => inr(v), axisFmt: inrCompact, tooltipFmt: (v) => inr(v) };
     case "inr":
-      return { title: "USD / INR", labels: USDINR_M_L, values: USDINR_M_V, unit: "₹ per $", headlineFmt: (v) => v.toFixed(2), axisFmt: (v) => v.toFixed(1), tooltipFmt: (v) => "₹" + v.toFixed(2) };
+      return { title: "USD / INR", ...usdInrSeries(period), unit: "₹ per $", headlineFmt: (v) => v.toFixed(2), axisFmt: (v) => v.toFixed(1), tooltipFmt: (v) => "₹" + v.toFixed(2) };
     case "crude":
       return { title: "Crude Oil (Brent)", labels: BR_D_L.length ? BR_D_L : BR_M_L, values: BR_D_V.length ? BR_D_V : BR_M_V, unit: "$/bbl", headlineFmt: (v) => v.toFixed(2), axisFmt: (v) => "$" + v, tooltipFmt: (v) => "$" + v + "/bbl" };
   }
@@ -57,7 +71,7 @@ export function HeroChart({
   period: GlobalPeriod;
   onPeriodChange: (p: GlobalPeriod) => void;
 }) {
-  const src = useMemo(() => seriesFor(category), [category]);
+  const src = useMemo(() => seriesFor(category, period), [category, period]);
   const sliced = useMemo(() => sliceByPeriod(src.labels, src.values, period), [src, period]);
   const delta = useMemo(() => deltaOverPeriod(src.labels, src.values, period), [src, period]);
   const last = src.values.at(-1) ?? null;

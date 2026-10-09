@@ -43,7 +43,7 @@ export function HeroCategoryRail({
   return (
     <div className="grid min-w-0 grid-cols-2 content-start gap-2 sm:grid-cols-4 lg:grid-cols-2">
       {HERO_CATEGORIES.map((c) => {
-        const src = seriesFor(c.value);
+        const src = seriesFor(c.value, period);
         let li = src.values.length - 1;
         while (li >= 0 && src.values[li] == null) li--;
         const last = li >= 0 ? src.values[li] : null;
