@@ -26,12 +26,6 @@ const SYNC_SOURCES: Record<string, { source: string; url: string; label: string;
     label: "⟳ Sync ICE cotton & Brent",
     title: "Fetch ICE Cotton No. 2 and Brent settlements (most-active contracts, last ~3 months) into the daily + monthly series",
   },
-  trade: {
-    source: "Commerce Ministry",
-    url: "/api/cron/tradestat",
-    label: "⟳ Sync from TradeStat",
-    title: "Fetch newly published monthly raw-cotton (HS 5201) imports and exports after the last actual month",
-  },
   cotlook: {
     source: "Cotlook / World Bank",
     url: "/api/cron/cotlook",
