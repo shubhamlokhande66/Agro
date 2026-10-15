@@ -368,41 +368,6 @@ const cciSchema: EditorSection[] = [
   },
 ];
 
-const newsSchema: EditorSection[] = [
-  {
-    id: "items",
-    title: "Headlines",
-    hint: "Click a headline to edit it, or add a new one. Tone controls the colour of the tag pill.",
-    primaryAdd: { label: "Add Headline" },
-    render: (d, set, adderRef) => (
-      <RecordManager<any>
-        ref={adderRef}
-        hideAddButton
-        value={d.items ?? []}
-        onChange={(items) => set({ ...d, items })}
-        itemName="headline"
-        makeItem={() => ({ tag: "NOTE", tone: "info", text: "", meta: "" })}
-        columns={[
-          { key: "tag", label: "Tag", type: "text" },
-          { key: "text", label: "Headline", type: "text" },
-          { key: "meta", label: "Meta", type: "text" },
-        ]}
-        fields={[
-          { key: "tag", label: "Tag", type: "text", placeholder: "INDIA" },
-          {
-            key: "tone",
-            label: "Tone",
-            type: "select",
-            options: ["accent", "info", "warn", "violet", "neg"],
-          },
-          { key: "text", label: "Headline text", type: "textarea", full: true },
-          { key: "meta", label: "Meta (source · date)", type: "text", placeholder: "Mar 2026 · CAI" },
-        ]}
-      />
-    ),
-  },
-];
-
 /* ================================================================== */
 /*  Fundamentals                                                       */
 /* ================================================================== */
@@ -1477,7 +1442,6 @@ export const SCHEMAS: Record<string, EditorSection[]> = {
   international: internationalSchema,
   currency: currencySchema,
   cci: cciSchema,
-  news: newsSchema,
   arrivals: arrivalsSchema,
   sowing: sowingSchema,
   production: productionSchema,

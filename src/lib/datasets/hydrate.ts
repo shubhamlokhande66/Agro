@@ -12,7 +12,6 @@ import { __hydrateRainfall } from "@/data/rainfall";
 import { __hydrateCop } from "@/data/cop";
 import { __hydrateCalendar } from "@/data/calendar";
 import { __hydrateWasde } from "@/data/wasde";
-import { __hydrateNews } from "@/data/news";
 import { __hydrateGroundReport } from "@/data/groundReport";
 
 const HYDRATORS: Record<string, (blob: any) => void> = {
@@ -30,7 +29,6 @@ const HYDRATORS: Record<string, (blob: any) => void> = {
   cop: __hydrateCop,
   calendar: __hydrateCalendar,
   wasde: __hydrateWasde,
-  news: __hydrateNews,
   groundReport: __hydrateGroundReport,
 };
 

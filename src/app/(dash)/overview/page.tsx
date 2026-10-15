@@ -4,6 +4,7 @@ import Link from "next/link";
 import { timeAgo } from "@/lib/format";
 import { HeroChart, type HeroCategory } from "@/components/overview/HeroChart";
 import { HeroCategoryRail } from "@/components/overview/HeroCategoryRail";
+import { CottonNewsBox } from "@/components/overview/CottonNewsBox";
 import { OverviewSections } from "@/components/overview/OverviewSections";
 import { CommentsPanel } from "@/components/ui/CommentsPanel";
 import { ExportPdfButton, type PdfReport } from "@/components/ui/ExportPdfButton";
@@ -60,10 +61,15 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
+      {/* wide screens: chart | price cards | news square, all one row; narrower: news goes below */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px] min-[1440px]:grid-cols-[minmax(0,1fr)_330px_300px]">
         <HeroChart category={heroCat} period={period} onPeriodChange={setPeriod} />
         <div className="flex min-w-0 flex-col gap-3">
           <HeroCategoryRail value={heroCat} onChange={setHeroCat} period={period} />
+        </div>
+        {/* the row's height comes from the chart and price cards; the news list scrolls inside */}
+        <div className="relative h-[340px] lg:col-span-2 min-[1440px]:col-span-1 min-[1440px]:h-auto">
+          <CottonNewsBox className="absolute inset-0" />
         </div>
       </div>
 
