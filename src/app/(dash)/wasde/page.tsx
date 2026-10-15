@@ -172,12 +172,12 @@ function IndiaRevisions({ report, prev, unit }: { report: WasdeReport; prev?: Wa
         <span className="text-[11px] text-ink-faint">{WASDE_UNITS.find((u) => u.value === unit)!.label}</span>
       </div>
       <div className="overflow-x-auto">
-        <table className="w-full min-w-[640px] border-collapse text-[12.5px]">
+        <table className="w-full min-w-[820px] border-collapse text-[12.5px]">
           <thead>
             <tr className="border-y border-line bg-surface-2 text-[10px] uppercase tracking-wide text-ink-faint">
               <th rowSpan={2} className="px-4 py-2 text-left font-semibold sm:px-5">India</th>
               {years.map((y) => (
-                <th key={y.year} colSpan={3} className="border-l border-line px-3 pt-2 text-center font-semibold text-ink">
+                <th key={y.year} colSpan={4} className="border-l border-line px-3 pt-2 text-center font-semibold text-ink">
                   {y.year} {statusLabel(y)}
                 </th>
               ))}
@@ -189,6 +189,9 @@ function IndiaRevisions({ report, prev, unit }: { report: WasdeReport; prev?: Wa
                   <th key={y.year + "p"} className="border-l border-line px-3 pb-2 text-right font-semibold">{p ? p.label : "Prev."}</th>,
                   <th key={y.year + "c"} className="px-3 pb-2 text-right font-semibold">{reportLabel(report.month).slice(0, 3)}</th>,
                   <th key={y.year + "d"} className="px-3 pb-2 text-right font-semibold">Change</th>,
+                  <th key={y.year + "y"} className="px-3 pb-2 text-right font-semibold" title={`vs ${priorYear(report, y.year) ?? "previous year"}`}>
+                    YoY{priorYear(report, y.year) ? ` vs ${priorYear(report, y.year)!.slice(2)}` : ""}
+                  </th>,
                 ];
               })}
             </tr>
@@ -208,6 +211,7 @@ function IndiaRevisions({ report, prev, unit }: { report: WasdeReport; prev?: Wa
                     <td key={y.year + "d"} className={clsx("num px-3 py-2 text-right font-semibold", ch == null || zero ? "text-ink-faint" : ch > 0 ? "text-pos" : "text-neg")}>
                       {ch == null ? "new" : zero ? "—" : `${ch > 0 ? "+" : "−"}${Math.abs(ch).toFixed(d)}`}
                     </td>,
+                    <YoyCell key={y.year + "y"} now={now} before={priorValue(report, y.year, a.key)} unit={unit} />,
                   ];
                 })}
               </tr>
@@ -216,6 +220,31 @@ function IndiaRevisions({ report, prev, unit }: { report: WasdeReport; prev?: Wa
         </table>
       </div>
     </section>
+  );
+}
+
+/** the marketing year before `year` in the same report ("2025/26" → "2024/25"), if the report has it */
+function priorYear(report: WasdeReport, year: string): string | null {
+  const i = report.years.findIndex((y) => y.year === year);
+  return i > 0 ? report.years[i - 1].year : null;
+}
+function priorValue(report: WasdeReport, year: string, key: keyof WasdeRow): number | null {
+  const py = priorYear(report, year);
+  return py ? report.years.find((y) => y.year === py)?.countries.India?.current[key] ?? null : null;
+}
+
+/** year-on-year change, with % underneath */
+function YoyCell({ now, before, unit }: { now: number | undefined; before: number | null; unit: WasdeUnit }) {
+  const d = wasdeDigits(unit);
+  if (now == null || before == null) return <td className="num px-3 py-2 text-right text-ink-faint">—</td>;
+  const ch = convertWasde(now, unit) - convertWasde(before, unit);
+  const pct = before !== 0 ? ((now - before) / Math.abs(before)) * 100 : null;
+  const zero = Math.abs(ch) < 10 ** -d / 2;
+  return (
+    <td className={clsx("num px-3 py-1.5 text-right align-middle", zero ? "text-ink-faint" : ch > 0 ? "text-pos" : "text-neg")}>
+      <div className="font-semibold">{zero ? "—" : `${ch > 0 ? "+" : "−"}${Math.abs(ch).toFixed(d)}`}</div>
+      {pct != null && !zero ? <div className="text-[10px]">{`${pct > 0 ? "+" : "−"}${Math.abs(pct).toFixed(1)}%`}</div> : null}
+    </td>
   );
 }
 
