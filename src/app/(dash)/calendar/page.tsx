@@ -3,8 +3,6 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { DataMissing } from "@/components/ui/DataGuard";
-import { STAGE_INFO } from "@/components/calendar/cropStages";
-import { StageTimeline } from "@/components/calendar/StageTimeline";
 import {
   CAL_MONTHS,
   CROP_STATES,
@@ -28,8 +26,6 @@ export default function CalendarPage() {
         sub="State-wise cotton phase timeline · May → Feb · sowing to picking"
         dataset="calendar"
       />
-
-      <StageTimeline />
 
       {/* legend */}
       <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2">
@@ -149,27 +145,6 @@ export default function CalendarPage() {
           </div>
         ))}
       </div>
-
-      <p className="mt-5 text-[10.5px] leading-relaxed text-ink-faint">
-        Photos via Wikimedia Commons:{" "}
-        {Object.entries(PHASE_META).map(([key, m], i, all) => {
-          const p = STAGE_INFO[key]?.photo;
-          if (!p) return null;
-          return (
-            <span key={key}>
-              {m.label} —{" "}
-              <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline">
-                {p.author}
-              </a>{" "}
-              (
-              <a href={p.licenseUrl} target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline">
-                {p.license}
-              </a>
-              ){i < all.length - 1 ? "; " : "."}
-            </span>
-          );
-        })}
-      </p>
     </div>
   );
 }
