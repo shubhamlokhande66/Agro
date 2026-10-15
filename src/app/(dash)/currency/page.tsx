@@ -5,9 +5,7 @@ import { PageHeader } from "@/components/ui/PageHeader";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Kpi, KpiRow } from "@/components/ui/Kpi";
 import { Tabs } from "@/components/ui/Tabs";
-import { Field, ResultTile, btnPrimary } from "@/components/ui/Field";
 import AreaChart from "@/components/charts/AreaChart";
-import { inr } from "@/lib/format";
 import { sliceByDays, deltaOverPeriod, type GlobalPeriod } from "@/lib/period";
 import { GlobalPeriodTabs } from "@/components/ui/GlobalPeriodTabs";
 import * as FX from "@/data/currency";
@@ -36,22 +34,9 @@ function pick(pair: "inr" | "cny", p: P) {
 }
 
 export default function CurrencyPage() {
-  const [rate, setRate] = useState(FX.USDINR_LATEST != null ? FX.USDINR_LATEST.toFixed(2) : "");
-  const [ice, setIce] = useState("");
-  const [res, setRes] = useState<null | { candy: number; kg: number }>(null);
   const [inrP, setInrP] = useState<P>("6m");
   const [cnyP, setCnyP] = useState<P>("6m");
   const [period, setPeriod] = useState<GlobalPeriod>("6m");
-
-  function convert() {
-    const r = parseFloat(rate) || FX.USDINR_LATEST || 0;
-    const c = parseFloat(ice);
-    if (!c) return;
-    setRes({
-      candy: (c / 100) * r * 785,
-      kg: (c / 100) * r * 2.20462,
-    });
-  }
 
   const inrD = pick("inr", inrP);
   const cnyD = pick("cny", cnyP);
@@ -89,27 +74,6 @@ export default function CurrencyPage() {
         />
       </KpiRow>
 
-      <Card className="mt-5 max-w-lg">
-        <CardHeader title="USD ↔ INR · ICE price converter" />
-        <div className="grid grid-cols-2 gap-3">
-          <Field label="USD/INR Rate" value={rate} onChange={setRate} step="0.1" />
-          <Field label="ICE Price (¢/lb)" value={ice} onChange={setIce} placeholder="e.g. 67.50" step="0.01" />
-        </div>
-        <button type="button" onClick={convert} className={btnPrimary() + " mt-4"}>
-          Convert
-        </button>
-        {res ? (
-          <>
-            <div className="mt-4 grid grid-cols-2 gap-2.5">
-              <ResultTile label="ICE in ₹/Candy" value={inr(res.candy)} tone="green" />
-              <ResultTile label="ICE in ₹/Kg" value={"₹" + res.kg.toFixed(2)} tone="blue" />
-            </div>
-            <p className="mt-2 text-center text-[11px] text-ink-faint">
-              {ice}¢/lb × {rate} USD/INR × 785 lbs/Candy = {inr(res.candy)}/Candy
-            </p>
-          </>
-        ) : null}
-      </Card>
 
       <div className="mt-5 grid grid-cols-1 gap-3.5 lg:grid-cols-2">
         <Card>
