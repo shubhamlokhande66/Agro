@@ -1462,7 +1462,7 @@ const groundReportSchema: EditorSection[] = [
   {
     id: "reports",
     title: "Field Pulse — weekly reports",
-    hint: "One report per week. Each state: crop stage, condition, rainfall, up to 3 photos, commentary and a trader view.",
+    hint: "One report per week. Each state: crop stage, condition, rainfall, up to 3 photos and commentary.",
     render: (d, set) => <GroundReportEditor data={d} set={set} />,
   },
 ];

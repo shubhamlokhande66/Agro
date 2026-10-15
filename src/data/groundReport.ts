@@ -11,8 +11,6 @@ export type StateReport = {
   condition: string;
   rainfall: string;
   commentary: string;
-  /** what it means for the market — arrivals, quality, yield, pricing */
-  traderView: string;
   photos: GroundPhoto[];
 };
 
@@ -29,18 +27,16 @@ export type GroundReport = {
 
 export type GroundReportBlob = { reports: GroundReport[] };
 
-/** the cotton states covered — the production table's states, without Others / All India */
+/** the cotton states covered — the production table's major states (not MP, Tamil Nadu, Others, All India) */
 export const GROUND_STATES: { code: string; label: string }[] = [
   { code: "GUJARAT", label: "Gujarat" },
   { code: "MAHARASHTRA", label: "Maharashtra" },
   { code: "TELANGANA", label: "Telangana" },
   { code: "RAJASTHAN", label: "Rajasthan" },
   { code: "KARNATAKA", label: "Karnataka" },
-  { code: "MP", label: "Madhya Pradesh" },
   { code: "HARYANA", label: "Haryana" },
   { code: "AP", label: "Andhra Pradesh" },
   { code: "PUNJAB", label: "Punjab" },
-  { code: "TNADU", label: "Tamil Nadu" },
 ];
 
 export const CROP_STAGES = [

@@ -27,7 +27,6 @@ const emptyState = (state: string): StateReport => ({
   condition: "",
   rainfall: "",
   commentary: "",
-  traderView: "",
   photos: [],
 });
 
@@ -62,7 +61,7 @@ const weekText = (date: string) => {
 
 /**
  * Admin editor for Field Pulse, the weekly ground report: pick or start a week's report, then fill each
- * state's stage / condition / rainfall, commentary, trader view and up to three photos.
+ * state's stage / condition / rainfall, commentary and up to three photos.
  * Edits autosave through the dataset editor; photos upload as soon as they're picked.
  */
 export function GroundReportEditor({ data, set }: { data: GroundReportBlob; set: (next: GroundReportBlob) => void }) {
@@ -235,9 +234,6 @@ export function GroundReportEditor({ data, set }: { data: GroundReportBlob; set:
                       <PhotoSlots photos={st.photos} onChange={(photos) => patchState(s.code, { photos })} />
                       <Field label="Ground commentary — crop stage, crop status, rainfall, pests, picking">
                         <TextArea rows={5} value={st.commentary} onChange={(commentary) => patchState(s.code, { commentary })} />
-                      </Field>
-                      <Field label="Trader view — what it means for arrivals, quality, yield and prices">
-                        <TextArea rows={2} value={st.traderView} onChange={(traderView) => patchState(s.code, { traderView })} />
                       </Field>
                     </div>
                   ) : null}

@@ -70,7 +70,7 @@ export default function FieldPulsePage() {
           <div className="text-sm font-semibold text-ink">The first Field Pulse report is on its way</div>
           <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-ink-soft">
             Each week this page carries photographs and crop notes from the major cotton states — crop stage, crop
-            condition, rainfall and what it means for the market.
+            condition and rainfall.
           </p>
           {isAdmin ? (
             <Link
@@ -222,13 +222,6 @@ export default function FieldPulsePage() {
                       ))}
                   </div>
                 ) : null}
-
-                {r.traderView ? (
-                  <div className="mt-4 rounded-xl border-l-[3px] border-accent bg-accent-soft/40 px-3.5 py-2.5">
-                    <div className="text-[10px] font-bold uppercase tracking-wide text-accent">Trader view</div>
-                    <p className="mt-0.5 text-[13px] leading-relaxed text-ink">{r.traderView}</p>
-                  </div>
-                ) : null}
               </section>
             );
           })}
@@ -245,5 +238,5 @@ export default function FieldPulsePage() {
 }
 
 function hasContent(r: StateReport) {
-  return !!(r.stage || r.condition || r.rainfall || r.commentary || r.traderView || r.photos.length);
+  return !!(r.stage || r.condition || r.rainfall || r.commentary || r.photos.length);
 }

@@ -19,7 +19,7 @@ export type DatasetMeta = {
 
 export const DATASETS: DatasetMeta[] = [
   { key: "groundReport", label: "Field Pulse", group: "Field Pulse", kind: "records",
-    description: "Weekly field photos and crop notes per state — stage, condition, rainfall, trader view.",
+    description: "Weekly field photos and crop notes per state — stage, condition, rainfall, commentary.",
     route: "/field-pulse" },
   { key: "prices", label: "Domestic Prices", group: "Markets", kind: "tree",
     description: "Cotton variety price series — annual averages + last month of daily quotes.",
