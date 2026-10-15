@@ -29,6 +29,7 @@ export const NAV: NavGroup[] = [
   {
     heading: "Fundamentals",
     items: [
+      { href: "/ground-report", label: "Ground Report", icon: "⌖" },
       { href: "/arrivals", label: "Cotton Arrivals", icon: "▨" },
       { href: "/sowing", label: "Cotton Sowing", icon: "❊" },
       { href: "/production", label: "Domestic Production", icon: "▤" },

@@ -33,4 +33,5 @@ export const COLLECTIONS = {
   users: "users",
   sessions: "sessions",
   comments: "comments",
+  groundImages: "ground_images",
 } as const;

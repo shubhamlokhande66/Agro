@@ -16,6 +16,7 @@ import { KeyValueEditor, NumListEditor, StringListEditor } from "@/components/ad
 import { RecordManager, type RecordManagerHandle } from "@/components/admin/RecordManager";
 import { RecordTable } from "@/components/admin/RecordCards";
 import { WeeklyPriceFill } from "@/components/admin/WeeklyPriceFill";
+import { GroundReportEditor } from "@/components/admin/GroundReportEditor";
 import { WD_CATEGORIES } from "@/data/wasde";
 import { IMD_SUBDIVISIONS, SUBDIVISION_ZONES } from "@/lib/monsoon/constants";
 import {
@@ -1457,6 +1458,15 @@ const monsoonAlertsSchema: EditorSection[] = [
   },
 ];
 
+const groundReportSchema: EditorSection[] = [
+  {
+    id: "reports",
+    title: "Weekly ground reports",
+    hint: "One report per week. Each state: crop stage, condition, rainfall, up to 3 photos, commentary and a trader view.",
+    render: (d, set) => <GroundReportEditor data={d} set={set} />,
+  },
+];
+
 export const SCHEMAS: Record<string, EditorSection[]> = {
   monsoonImd: monsoonImdSchema,
   monsoonWeights: monsoonWeightsSchema,
@@ -1476,6 +1486,7 @@ export const SCHEMAS: Record<string, EditorSection[]> = {
   trade: tradeSchema,
   cop: copSchema,
   calendar: calendarSchema,
+  groundReport: groundReportSchema,
   rainfall: rainfallSchema,
   wasde: wasdeSchema,
 };
