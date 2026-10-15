@@ -26,6 +26,12 @@ const SYNC_SOURCES: Record<string, { source: string; url: string; label: string;
     label: "⟳ Sync ICE cotton & Brent",
     title: "Fetch ICE Cotton No. 2 and Brent settlements (most-active contracts, last ~3 months) into the daily + monthly series",
   },
+  exportSales: {
+    source: "USDA FAS",
+    url: "/api/cron/export-sales",
+    label: "⟳ Sync export sales",
+    title: "Fetch the latest USDA weekly export sales for US upland cotton",
+  },
   wasdeReports: {
     source: "USDA WASDE",
     url: "/api/cron/wasde",

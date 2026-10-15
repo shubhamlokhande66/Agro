@@ -50,7 +50,7 @@ export const NAV: NavGroup[] = [
     items: [
       { href: "/wasde", label: "WASDE", icon: "🌐" },
       { href: "/cftc", label: "CFTC", icon: "◔", soon: true },
-      { href: "/usda", label: "USDA Export Sales", icon: "◕", soon: true },
+      { href: "/usda", label: "USDA Export Sales", icon: "◕" },
       { href: "/benchmarks", label: "Benchmarks", icon: "◑", soon: true },
       { href: "/cotton-maps", label: "India Cotton Maps", icon: "◐", soon: true },
     ],
