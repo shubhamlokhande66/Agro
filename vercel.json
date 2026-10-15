@@ -1,5 +1,6 @@
 {
   "crons": [
-    { "path": "/api/cron/daily", "schedule": "30 13 * * *" }
+    { "path": "/api/cron/daily", "schedule": "30 13 * * *" },
+    { "path": "/api/cron/ncdex-spot", "schedule": "30 11 * * *" }
   ]
 }

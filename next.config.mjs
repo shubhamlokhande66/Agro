@@ -6,7 +6,11 @@ const nextConfig = {
   // Windows build box races with antivirus on .next, so don't block on it
   typescript: { ignoreBuildErrors: true },
   experimental: {
-    serverComponentsExternalPackages: ["mongodb"],
+    serverComponentsExternalPackages: ["mongodb", "puppeteer-core", "@sparticuz/chromium"],
+    // the headless Chrome binary the NCDEX sync launches isn't import-traced, so ship it explicitly
+    outputFileTracingIncludes: {
+      "/api/cron/ncdex-spot": ["./node_modules/@sparticuz/chromium/bin/**"],
+    },
     webpackBuildWorker: false,
   },
 };

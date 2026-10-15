@@ -11,10 +11,12 @@
     "sync:cai": "tsx scripts/sync-cai.ts",
     "sync:ice": "tsx scripts/sync-ice.ts",
     "sync:rbi": "tsx scripts/sync-rbi.ts",
+    "sync:ncdex": "tsx scripts/sync-ncdex.ts",
     "import:snd": "tsx scripts/import-balance-sheet.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@sparticuz/chromium": "153.0.0",
     "chart.js": "4.4.4",
     "clsx": "2.1.1",
     "html2canvas-pro": "^2.4.5",
@@ -22,6 +24,7 @@
     "jspdf": "^4.2.1",
     "mongodb": "^7.6.0",
     "next": "^14.2.33",
+    "puppeteer-core": "25.12.0",
     "react": "18.3.1",
     "react-chartjs-2": "5.2.0",
     "react-dom": "18.3.1",
