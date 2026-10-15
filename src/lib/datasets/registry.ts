@@ -18,6 +18,9 @@ export type DatasetMeta = {
 };
 
 export const DATASETS: DatasetMeta[] = [
+  { key: "groundReport", label: "Field Pulse", group: "Field Pulse", kind: "records",
+    description: "Weekly field photos and crop notes per state — stage, condition, rainfall, trader view.",
+    route: "/field-pulse" },
   { key: "prices", label: "Domestic Prices", group: "Markets", kind: "tree",
     description: "Cotton variety price series — annual averages + last month of daily quotes.",
     route: "/prices" },
@@ -54,9 +57,6 @@ export const DATASETS: DatasetMeta[] = [
   { key: "cop", label: "COP & ROI", group: "Fundamentals", kind: "tree",
     description: "Cost of production and returns by crop.",
     route: "/cop-roi" },
-  { key: "groundReport", label: "Ground Report", group: "Fundamentals", kind: "records",
-    description: "Weekly field photos and crop notes per state — stage, condition, rainfall, trader view.",
-    route: "/ground-report" },
   { key: "calendar", label: "Crop Calendar", group: "Fundamentals", kind: "records",
     description: "State-wise cotton phase timeline.",
     route: "/calendar" },

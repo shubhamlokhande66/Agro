@@ -8,7 +8,7 @@ type ImageDoc = { _id: string; contentType: string; data: { buffer: Uint8Array }
 
 const validId = (id: string) => /^[a-f0-9]{24}$/.test(id);
 
-/** a Ground Report photo; ids are random and never reused, so it can be cached for good */
+/** a Field Pulse photo; ids are random and never reused, so it can be cached for good */
 export async function GET(_req: Request, { params }: { params: { id: string } }) {
   if (!validId(params.id)) return NextResponse.json({ error: "Not found" }, { status: 404 });
   const db = await getDb();

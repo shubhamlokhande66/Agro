@@ -17,6 +17,10 @@ export const NAV: NavGroup[] = [
     items: [{ href: "/overview", label: "Market Overview", icon: "◎" }],
   },
   {
+    heading: "Field Pulse",
+    items: [{ href: "/field-pulse", label: "Field Pulse", icon: "⌖" }],
+  },
+  {
     heading: "Markets",
     items: [
       { href: "/prices", label: "Prices", icon: "₹" },
@@ -29,7 +33,6 @@ export const NAV: NavGroup[] = [
   {
     heading: "Fundamentals",
     items: [
-      { href: "/ground-report", label: "Ground Report", icon: "⌖" },
       { href: "/arrivals", label: "Cotton Arrivals", icon: "▨" },
       { href: "/sowing", label: "Cotton Sowing", icon: "❊" },
       { href: "/production", label: "Domestic Production", icon: "▤" },

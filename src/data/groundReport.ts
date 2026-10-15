@@ -1,4 +1,4 @@
-/** Weekly ground report — field photographs and crop notes per cotton state, loaded from the
+/** Field Pulse, the weekly ground report — field photographs and crop notes per cotton state, loaded from the
  *  database. Photos live in their own collection (see /api/ground/images); a report only holds
  *  their ids. */
 

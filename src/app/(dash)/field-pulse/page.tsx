@@ -43,7 +43,7 @@ function productionShares(): { season: string | null; share: Record<string, numb
   return { season, share };
 }
 
-export default function GroundReportPage() {
+export default function FieldPulsePage() {
   const { isAdmin } = useAuth();
   const reports = GROUND_REPORTS;
   const [reportId, setReportId] = useState<string | null>(null);
@@ -64,10 +64,10 @@ export default function GroundReportPage() {
   if (!report) {
     return (
       <div>
-        <PageHeader title="Ground Report" icon="⌖" sub="Field photographs and crop notes from India's cotton belt · updated weekly" />
+        <PageHeader title="Field Pulse" icon="⌖" sub="Live from the fields · photographs and crop notes from India's cotton belt, updated weekly" />
         <div className="panel mx-auto max-w-lg p-8 text-center">
           <div className="mx-auto mb-3 grid h-12 w-12 place-items-center rounded-2xl bg-accent-soft text-xl">⌖</div>
-          <div className="text-sm font-semibold text-ink">The first ground report is on its way</div>
+          <div className="text-sm font-semibold text-ink">The first Field Pulse report is on its way</div>
           <p className="mx-auto mt-2 max-w-sm text-[13px] leading-relaxed text-ink-soft">
             Each week this page carries photographs and crop notes from the major cotton states — crop stage, crop
             condition, rainfall and what it means for the market.
@@ -93,9 +93,9 @@ export default function GroundReportPage() {
   return (
     <div>
       <PageHeader
-        title="Ground Report"
+        title="Field Pulse"
         icon="⌖"
-        sub="Field photographs and crop notes from India's cotton belt · updated weekly"
+        sub="Live from the fields · photographs and crop notes from India's cotton belt, updated weekly"
         dataset="groundReport"
         right={
           <label className="flex items-center gap-2 text-[11px] text-ink-faint">

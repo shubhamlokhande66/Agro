@@ -11,7 +11,7 @@ const TYPES = ["image/jpeg", "image/png", "image/webp"];
 const MAX_BYTES = 3 * 1024 * 1024;
 
 /**
- * Upload one Ground Report photo (cotton admin only). The body is the raw image bytes with
+ * Upload one Field Pulse photo (cotton admin only). The body is the raw image bytes with
  * its Content-Type; returns { id } for the report to reference (served by ./[id]).
  */
 export async function POST(req: Request) {

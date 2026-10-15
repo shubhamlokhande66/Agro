@@ -61,7 +61,7 @@ const weekText = (date: string) => {
 };
 
 /**
- * Admin editor for the weekly Ground Report: pick or start a week's report, then fill each
+ * Admin editor for Field Pulse, the weekly ground report: pick or start a week's report, then fill each
  * state's stage / condition / rainfall, commentary, trader view and up to three photos.
  * Edits autosave through the dataset editor; photos upload as soon as they're picked.
  */

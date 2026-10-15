@@ -1461,7 +1461,7 @@ const monsoonAlertsSchema: EditorSection[] = [
 const groundReportSchema: EditorSection[] = [
   {
     id: "reports",
-    title: "Weekly ground reports",
+    title: "Field Pulse — weekly reports",
     hint: "One report per week. Each state: crop stage, condition, rainfall, up to 3 photos, commentary and a trader view.",
     render: (d, set) => <GroundReportEditor data={d} set={set} />,
   },
