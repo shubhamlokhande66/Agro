@@ -45,7 +45,7 @@ export function seriesFor(cat: HeroCategory, period: GlobalPeriod): {
     case "cotton":
       return { title: "Global Cotton (ICE #2)", labels: ICE_D_L, values: ICE_D_V, unit: "¢/lb", headlineFmt: (v) => v.toFixed(2), axisFmt: (v) => v + "¢", tooltipFmt: (v) => v + "¢/lb" };
     case "kapas":
-      return { title: "Kapas (Raw Cotton)", ...varietyDaily("kapas"), unit: "₹/Candy", headlineFmt: (v) => inr(v), axisFmt: inrCompact, tooltipFmt: (v) => inr(v) };
+      return { title: "Kapas (Raw Cotton)", ...varietyDaily("kapas"), unit: "₹/Quintal", headlineFmt: (v) => inr(v), axisFmt: inrCompact, tooltipFmt: (v) => inr(v) };
     case "cseed":
       return { title: "Cotton Seed", ...varietyDaily("cseed"), unit: "₹/Quintal", headlineFmt: (v) => inr(v), axisFmt: inrCompact, tooltipFmt: (v) => inr(v) };
     case "yarn":

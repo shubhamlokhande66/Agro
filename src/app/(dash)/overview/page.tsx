@@ -1,9 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { timeAgo } from "@/lib/format";
 import { HeroChart, type HeroCategory } from "@/components/overview/HeroChart";
 import { HeroCategoryRail } from "@/components/overview/HeroCategoryRail";
+import { PriceTable } from "@/components/overview/PriceTable";
 import { OverviewSections } from "@/components/overview/OverviewSections";
 import { CommentsPanel } from "@/components/ui/CommentsPanel";
 import { ExportPdfButton, type PdfReport } from "@/components/ui/ExportPdfButton";
@@ -32,6 +32,7 @@ export default function OverviewPage() {
 
   const [period, setPeriod] = useState<GlobalPeriod>("6m");
   const [heroCat, setHeroCat] = useState<HeroCategory>("domestic");
+  const [view, setView] = useState<"chart" | "table">("chart");
 
   return (
     <div>
@@ -51,21 +52,36 @@ export default function OverviewPage() {
             fileName={`Agrolytix Market Overview ${new Date().toISOString().slice(0, 10)}`}
             reports={overviewReports()}
           />
-          <Link
-            href="/prices"
-            className="focusable print-hide rounded-xl bg-accent px-4 py-2.5 text-[12.5px] font-semibold text-accent-contrast transition-colors hover:bg-accent-strong"
-          >
-            Open Prices →
-          </Link>
+          <div className="print-hide flex rounded-xl bg-surface-2 p-1" role="tablist" aria-label="View">
+            {(["chart", "table"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={view === v}
+                onClick={() => setView(v)}
+                className={
+                  "focusable rounded-lg px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors " +
+                  (view === v ? "bg-accent text-accent-contrast" : "text-ink-faint hover:text-ink")
+                }
+              >
+                {v === "chart" ? "Chart view" : "Table view"}
+              </button>
+            ))}
+          </div>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
-        <HeroChart category={heroCat} period={period} onPeriodChange={setPeriod} />
-        <div className="flex min-w-0 flex-col gap-3">
-          <HeroCategoryRail value={heroCat} onChange={setHeroCat} period={period} />
+      {view === "table" ? (
+        <PriceTable />
+      ) : (
+        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
+          <HeroChart category={heroCat} period={period} onPeriodChange={setPeriod} />
+          <div className="flex min-w-0 flex-col gap-3">
+            <HeroCategoryRail value={heroCat} onChange={setHeroCat} period={period} />
+          </div>
         </div>
-      </div>
+      )}
 
       <div className="mt-4">
         <CommentsPanel section="overview" title="Summary (Prices)" minHeight={120} rows={5} />
