@@ -26,6 +26,12 @@ const SYNC_SOURCES: Record<string, { source: string; url: string; label: string;
     label: "⟳ Sync ICE cotton & Brent",
     title: "Fetch ICE Cotton No. 2 and Brent settlements (most-active contracts, last ~3 months) into the daily + monthly series",
   },
+  cotlook: {
+    source: "Cotlook / World Bank",
+    url: "/api/cron/cotlook",
+    label: "⟳ Sync Cotlook A Index",
+    title: "Fetch today's Cotlook A Index and refresh the World Bank monthly history",
+  },
   currency: {
     source: "RBI",
     url: "/api/cron/rbi-usd",

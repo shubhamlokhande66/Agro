@@ -13,6 +13,7 @@ import { __hydrateCop } from "@/data/cop";
 import { __hydrateCalendar } from "@/data/calendar";
 import { __hydrateWasde } from "@/data/wasde";
 import { __hydrateGroundReport } from "@/data/groundReport";
+import { __hydrateCotlook } from "@/data/cotlook";
 
 const HYDRATORS: Record<string, (blob: any) => void> = {
   prices: __hydratePrices,
@@ -30,6 +31,7 @@ const HYDRATORS: Record<string, (blob: any) => void> = {
   calendar: __hydrateCalendar,
   wasde: __hydrateWasde,
   groundReport: __hydrateGroundReport,
+  cotlook: __hydrateCotlook,
 };
 
 export function hydrateAll(blobs: Record<string, unknown>) {

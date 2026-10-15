@@ -1423,6 +1423,43 @@ const monsoonAlertsSchema: EditorSection[] = [
   },
 ];
 
+const cotlookSchema: EditorSection[] = [
+  {
+    id: "daily",
+    title: "Daily A Index (¢/lb)",
+    hint: "Synced each day from Cotlook's homepage — correct or fill in missed days here.",
+    render: (d, set) => (
+      <RecordTable<any>
+        value={d.daily ?? []}
+        onChange={(daily) => set({ ...d, daily })}
+        itemName="day"
+        makeItem={() => ({ date: new Date().toISOString().slice(0, 10), value: null })}
+        fields={[
+          { key: "date", label: "Date", type: "date" },
+          { key: "value", label: "A Index (¢/lb)", type: "number" },
+        ]}
+      />
+    ),
+  },
+  {
+    id: "monthly",
+    title: "Monthly A Index (¢/lb) — World Bank",
+    hint: "Monthly averages from the World Bank Pink Sheet, refreshed by the same sync. Month as YYYY-MM.",
+    render: (d, set) => (
+      <RecordTable<any>
+        value={d.monthly ?? []}
+        onChange={(monthly) => set({ ...d, monthly })}
+        itemName="month"
+        makeItem={() => ({ month: new Date().toISOString().slice(0, 7), value: null })}
+        fields={[
+          { key: "month", label: "Month (YYYY-MM)", type: "text", placeholder: "2026-09" },
+          { key: "value", label: "A Index (¢/lb)", type: "number" },
+        ]}
+      />
+    ),
+  },
+];
+
 const groundReportSchema: EditorSection[] = [
   {
     id: "reports",
@@ -1451,6 +1488,7 @@ export const SCHEMAS: Record<string, EditorSection[]> = {
   cop: copSchema,
   calendar: calendarSchema,
   groundReport: groundReportSchema,
+  cotlook: cotlookSchema,
   rainfall: rainfallSchema,
   wasde: wasdeSchema,
 };
