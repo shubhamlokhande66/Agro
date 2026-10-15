@@ -63,8 +63,8 @@ export const DATASETS: DatasetMeta[] = [
   { key: "rainfall", label: "Weather & Rainfall", group: "Global", kind: "tree",
     description: "IMD subdivision rainfall for the cotton belt.",
     route: "/weather" },
-  { key: "wasde", label: "WASDE", group: "Global", kind: "tree",
-    description: "USDA world cotton balance by country.",
+  { key: "wasdeReports", label: "WASDE", group: "Global", kind: "tree",
+    description: "USDA WASDE world cotton supply & use — one snapshot per monthly report, synced automatically from USDA.",
     route: "/wasde" },
   // ── Weather (monsoon) dashboard ──
   { key: "monsoonImd", label: "IMD Subdivision Rainfall", group: "Weather dashboard", kind: "records", app: "weather",

@@ -17,7 +17,6 @@ import { RecordManager, type RecordManagerHandle } from "@/components/admin/Reco
 import { RecordTable } from "@/components/admin/RecordCards";
 import { WeeklyPriceFill } from "@/components/admin/WeeklyPriceFill";
 import { GroundReportEditor } from "@/components/admin/GroundReportEditor";
-import { WD_CATEGORIES } from "@/data/wasde";
 import { IMD_SUBDIVISIONS, SUBDIVISION_ZONES } from "@/lib/monsoon/constants";
 import {
   flattenCategoryYear,
@@ -1089,101 +1088,38 @@ const rainfallSchema: EditorSection[] = [
   },
 ];
 
-const wasdeSchema: EditorSection[] = [
+const wasdeReportsSchema: EditorSection[] = [
   {
-    id: "meta",
-    title: "Report metadata",
-    render: (d, set) => {
-      const meta: Record<string, any> = d.meta ?? {};
-      const KNOWN = ["latest_report", "latest_date", "next_report", "release_dates_2026", "unit", "marketing_year", "note"];
-      const extra: Record<string, unknown> = {};
-      for (const [k, v] of Object.entries(meta)) if (!KNOWN.includes(k) && !Array.isArray(v)) extra[k] = v;
-      const setMeta = (patch: Record<string, unknown>) => set({ ...d, meta: { ...meta, ...patch } });
-      return (
-        <div className="space-y-4">
-          <div className="grid gap-3 sm:grid-cols-2">
-            <Labeled label="Latest report">
-              <TextInput value={meta.latest_report ?? ""} onChange={(v) => setMeta({ latest_report: v })} placeholder="January 2026" />
-            </Labeled>
-            <Labeled label="Latest report date">
-              <DateInput value={meta.latest_date ?? ""} onChange={(v) => setMeta({ latest_date: v })} />
-            </Labeled>
-            <Labeled label="Next report date">
-              <DateInput value={meta.next_report ?? ""} onChange={(v) => setMeta({ next_report: v })} />
-            </Labeled>
-            <Labeled label="Unit">
-              <TextInput value={meta.unit ?? ""} onChange={(v) => setMeta({ unit: v })} placeholder="1000 MT (KMT)" />
-            </Labeled>
-            <Labeled label="Marketing year">
-              <TextInput value={meta.marketing_year ?? ""} onChange={(v) => setMeta({ marketing_year: v })} placeholder="August-July" />
-            </Labeled>
-          </div>
-          <Labeled label="Note">
-            <TextArea value={meta.note ?? ""} onChange={(v) => setMeta({ note: v })} />
-          </Labeled>
-          <Labeled label="2026 release dates">
-            <StringListEditor
-              value={meta.release_dates_2026 ?? []}
-              itemType="date"
-              onChange={(release_dates_2026) => setMeta({ release_dates_2026 })}
-            />
-          </Labeled>
-          {Object.keys(extra).length ? (
-            <Labeled label="Other fields">
-              <KeyValueEditor value={extra} kind="text" onChange={(next) => setMeta(next)} />
-            </Labeled>
-          ) : null}
-        </div>
-      );
-    },
-  },
-  {
-    id: "years",
-    title: "Report columns (years)",
-    render: (d, set) => (
-      <StringListEditor value={d.years ?? []} onChange={(years) => set({ ...d, years })} placeholder="2025/26 Jan" />
+    id: "reports",
+    title: "Stored WASDE reports",
+    hint: "Synced automatically from USDA every day (new reports arrive around the 9th–12th). Use the Sync button above to fetch now.",
+    render: (d) => (
+      <div className="overflow-hidden rounded-xl border border-line">
+        <table className="w-full text-[12px]">
+          <thead>
+            <tr className="bg-surface-2 text-left text-[10px] uppercase tracking-wide text-ink-faint">
+              <th className="px-3 py-2">Report</th>
+              <th className="px-3 py-2">Released</th>
+              <th className="px-3 py-2">Marketing years</th>
+              <th className="px-3 py-2 text-right">India ending stocks (latest year, mn bales)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {(d.reports ?? []).map((r: any) => {
+              const last = r.years?.at(-1);
+              return (
+                <tr key={r.month} className="border-t border-line">
+                  <td className="px-3 py-1.5 font-medium text-ink">{r.title}</td>
+                  <td className="num px-3 py-1.5 text-ink-soft">{r.released}</td>
+                  <td className="px-3 py-1.5 text-ink-soft">{(r.years ?? []).map((y: any) => y.year + (y.status === "proj" ? " proj" : y.status === "est" ? " est" : "")).join(" · ")}</td>
+                  <td className="num px-3 py-1.5 text-right text-ink">{last?.countries?.India?.current?.endingStocks ?? "—"}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     ),
-  },
-  {
-    id: "data",
-    title: "World cotton balance (1000 MT)",
-    hint: "Click an entry to edit it, or add a new one.",
-    primaryAdd: { label: "Add Entry" },
-    render: (d, set, adderRef) => {
-      const catKeys = WD_CATEGORIES.map((c) => c.key);
-      const cats: Record<string, any> = {};
-      for (const c of catKeys) cats[c] = d[c];
-      const rows = flattenCategoryYear(cats, d.years ?? []);
-      return (
-        <RecordManager<any>
-          ref={adderRef}
-          hideAddButton
-          value={rows}
-          onChange={(next) => {
-            const { years, cats: nextCats } = unflattenCategoryYear(next, catKeys, d.years ?? []);
-            set({ ...d, years, ...nextCats });
-          }}
-          itemName="entry"
-          makeItem={() =>
-            Object.fromEntries([
-              ["country", ""],
-              ["year", (d.years ?? [])[0] ?? ""],
-              ...catKeys.map((k) => [k, null]),
-            ])
-          }
-          columns={[
-            { key: "country", label: "Country", type: "text" },
-            { key: "year", label: "Year", type: "text" },
-            ...WD_CATEGORIES.map((c) => ({ key: c.key, label: c.label, type: "number" as const })),
-          ]}
-          fields={[
-            { key: "country", label: "Country", type: "text", placeholder: "Brazil" },
-            { key: "year", label: "Year", type: "select", options: d.years ?? [] },
-            ...WD_CATEGORIES.map((c) => ({ key: c.key, label: c.label, type: "number" as const })),
-          ]}
-        />
-      );
-    },
   },
 ];
 
@@ -1490,5 +1426,5 @@ export const SCHEMAS: Record<string, EditorSection[]> = {
   groundReport: groundReportSchema,
   cotlook: cotlookSchema,
   rainfall: rainfallSchema,
-  wasde: wasdeSchema,
+  wasdeReports: wasdeReportsSchema,
 };

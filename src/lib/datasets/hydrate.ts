@@ -29,7 +29,7 @@ const HYDRATORS: Record<string, (blob: any) => void> = {
   rainfall: __hydrateRainfall,
   cop: __hydrateCop,
   calendar: __hydrateCalendar,
-  wasde: __hydrateWasde,
+  wasdeReports: __hydrateWasde,
   groundReport: __hydrateGroundReport,
   cotlook: __hydrateCotlook,
 };
