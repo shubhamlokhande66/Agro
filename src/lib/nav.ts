@@ -57,10 +57,10 @@ export const NAV: NavGroup[] = [
     items: [{ href: "/news", label: "News Feed", icon: "❒" }],
   },
   {
-    heading: "Tools",
+    heading: "Margins Calculator",
     items: [
-      { href: "/tools/margin", label: "Margin Calculator", icon: "∑" },
-      { href: "/tools/break-even", label: "Break-Even Calc", icon: "◇" },
+      { href: "/margins/ginners", label: "Ginner's Margin", icon: "∑" },
+      { href: "/margins/spinners", label: "Spinner's Margin", icon: "∑", soon: true },
     ],
   },
   {

@@ -32,7 +32,7 @@ function priceOn(v: Variety | undefined, date: string, maxDays = 7): number | nu
 
 type Num = string; // inputs are kept as typed text
 
-export default function MarginPage() {
+export default function GinnersMarginPage() {
   const latest = useMemo(() => {
     const k = variety("kapas");
     const s = variety("cseed");
@@ -101,17 +101,10 @@ export default function MarginPage() {
   return (
     <div>
       <PageHeader
-        title="Margin Calculator"
+        title="Ginner's Margin"
         icon="∑"
-        sub="Ginner's margin from live market prices · per tonne of kapas ginned"
+        sub="Margins Calculator · from live market prices · per tonne of kapas ginned"
       />
-
-      <div className="mb-4 flex gap-1.5">
-        <span className="rounded-lg bg-accent px-3 py-1.5 text-[12px] font-semibold text-accent-contrast">Ginner&apos;s margin</span>
-        <span className="cursor-not-allowed rounded-lg border border-line px-3 py-1.5 text-[12px] font-medium text-ink-faint" title="Coming next">
-          Spinner&apos;s margin · soon
-        </span>
-      </div>
 
       {/* headline result */}
       <section className="panel mb-4 grid gap-px overflow-hidden bg-line sm:grid-cols-2 lg:grid-cols-4">
