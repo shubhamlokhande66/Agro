@@ -1088,6 +1088,50 @@ const rainfallSchema: EditorSection[] = [
   },
 ];
 
+const benchmarksSchema: EditorSection[] = [
+  {
+    id: "seasons",
+    title: "Seasons compared",
+    hint: "The two cotton seasons shown on the Benchmarks page (Agrolytix and USDA figures for them are picked up automatically).",
+    render: (d, set) => (
+      <div className="grid max-w-md grid-cols-2 gap-3">
+        {[0, 1].map((i) => (
+          <Labeled key={i} label={i === 0 ? "Previous season" : "Current season"}>
+            <TextInput
+              value={d.seasons?.[i] ?? ""}
+              onChange={(v) => {
+                const seasons = [...(d.seasons ?? ["2025/26", "2026/27"])];
+                seasons[i] = v;
+                set({ ...d, seasons });
+              }}
+              placeholder={i === 0 ? "2025/26" : "2026/27"}
+            />
+          </Labeled>
+        ))}
+      </div>
+    ),
+  },
+  {
+    id: "houses",
+    title: "Trade estimates (lakh bales of 170 kg)",
+    hint: "One row per trade house. Leave a season blank if the house hasn't published it.",
+    render: (d, set) => (
+      <RecordTable<any>
+        value={d.houses ?? []}
+        onChange={(houses) => set({ ...d, houses })}
+        itemName="estimate"
+        makeItem={() => ({ source: "", a: null, b: null, asOf: "" })}
+        fields={[
+          { key: "source", label: "Trade house", type: "text", placeholder: "COFCO" },
+          { key: "a", label: `${d.seasons?.[0] ?? "Previous"} (lakh bales)`, type: "number" },
+          { key: "b", label: `${d.seasons?.[1] ?? "Current"} (lakh bales)`, type: "number" },
+          { key: "asOf", label: "As of", type: "text", placeholder: "Oct 2026" },
+        ]}
+      />
+    ),
+  },
+];
+
 const wasdeReportsSchema: EditorSection[] = [
   {
     id: "reports",
@@ -1427,4 +1471,5 @@ export const SCHEMAS: Record<string, EditorSection[]> = {
   cotlook: cotlookSchema,
   rainfall: rainfallSchema,
   wasdeReports: wasdeReportsSchema,
+  benchmarks: benchmarksSchema,
 };

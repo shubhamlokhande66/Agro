@@ -51,7 +51,7 @@ export const NAV: NavGroup[] = [
       { href: "/wasde", label: "WASDE", icon: "🌐" },
       { href: "/cftc", label: "CFTC", icon: "◔" },
       { href: "/usda", label: "USDA Export Sales", icon: "◕" },
-      { href: "/benchmarks", label: "Benchmarks", icon: "◑", soon: true },
+      { href: "/benchmarks", label: "Benchmarks", icon: "◑" },
       { href: "/cotton-maps", label: "India Cotton Maps", icon: "◐", soon: true },
     ],
   },
