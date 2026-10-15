@@ -298,12 +298,12 @@ function Positioning({ w }: { w: CotWeek }) {
 
 /* ------------------------------------------------------------------ */
 
-/** admin-only: pull the latest COT now (the same sync the daily job runs), then reload */
+/** signed-in users: pull the latest COT now (the same sync the daily job runs), then reload */
 function RefreshButton() {
-  const { isAdmin } = useAuth();
+  const { authed } = useAuth();
   const { refresh } = useDatasets();
   const [state, setState] = useState<{ busy: boolean; msg: string; err?: boolean }>({ busy: false, msg: "" });
-  if (!isAdmin) return null;
+  if (!authed) return null;
   async function run() {
     setState({ busy: true, msg: "Fetching from the CFTC…" });
     try {
@@ -311,8 +311,9 @@ function RefreshButton() {
       const out = await res.json().catch(() => ({}));
       if (!res.ok || !out.ok) throw new Error(out.error ?? `Refresh failed (${res.status})`);
       const added = (out.dates ?? []).length;
+      const recent = !!out.recent;
       await refresh();
-      setState({ busy: false, msg: added ? `Updated · ${added} new week${added > 1 ? "s" : ""}` : `Up to date · latest ${fmtDay(out.latestWeek)}` });
+      setState({ busy: false, msg: added ? `Updated · ${added} new week${added > 1 ? "s" : ""}` : `${recent ? "Checked a few minutes ago" : "Up to date"} · latest ${fmtDay(out.latestWeek)}` });
     } catch (e) {
       setState({ busy: false, msg: e instanceof Error ? e.message : "Refresh failed", err: true });
     }
