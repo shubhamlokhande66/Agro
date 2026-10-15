@@ -21,6 +21,10 @@ export const NAV: NavGroup[] = [
     items: [{ href: "/field-pulse", label: "Field Pulse", icon: "⌖" }],
   },
   {
+    heading: "Weather & Rainfall",
+    items: [{ href: "/weather", label: "Weather & Rainfall", icon: "☂" }],
+  },
+  {
     heading: "Markets",
     items: [
       { href: "/prices", label: "Prices", icon: "₹" },
@@ -44,7 +48,6 @@ export const NAV: NavGroup[] = [
   {
     heading: "Global",
     items: [
-      { href: "/weather", label: "Weather & Rainfall", icon: "☂" },
       { href: "/wasde", label: "WASDE", icon: "🌐" },
       { href: "/cftc", label: "CFTC", icon: "◔", soon: true },
       { href: "/usda", label: "USDA Export Sales", icon: "◕", soon: true },
