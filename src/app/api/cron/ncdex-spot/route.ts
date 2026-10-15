@@ -1,15 +1,16 @@
 import { NextResponse } from "next/server";
 import { readSession } from "@/lib/server/session";
-import { syncNcdexSeedPrices } from "@/lib/server/ncdexSpot";
+import { syncNcdexSpotPrices } from "@/lib/server/ncdexSpot";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
 
 /**
- * Pulls the NCDEX Akola evening oilcake price into Cotton Seed Oil Cake and Cotton Seed
- * (+12%). Called every day at 5 PM IST by Vercel Cron (see vercel.json), which sends
- * `Authorization: Bearer $CRON_SECRET`; an admin session can also trigger it by hand.
- *   ?days=N  look-back window (default 7, max 30)
+ * Pulls NCDEX evening spot prices into the Domestic Prices dataset: Akola oilcake into Cotton
+ * Seed Oil Cake and Cotton Seed (+12%), Rajkot kapas into Kapas (× 5, man → quintal). Called
+ * every day at 5 PM IST by Vercel Cron (see vercel.json), which sends `Authorization: Bearer $CRON_SECRET`;
+ * an admin session can also trigger it by hand.
+ *   ?days=N  look-back window (default 7, max 31 — NCDEX keeps about a month)
  */
 export async function GET(req: Request) {
   const secret = process.env.CRON_SECRET;
@@ -21,9 +22,9 @@ export async function GET(req: Request) {
     }
   }
 
-  const days = Math.min(Math.max(Number(new URL(req.url).searchParams.get("days")) || 7, 1), 30);
+  const days = Math.min(Math.max(Number(new URL(req.url).searchParams.get("days")) || 7, 1), 31);
   try {
-    const report = await syncNcdexSeedPrices({ days });
+    const report = await syncNcdexSpotPrices({ days });
     return NextResponse.json({ ok: true, ...report });
   } catch (err) {
     return NextResponse.json(
