@@ -1,6 +1,6 @@
 /** USD/INR and USD/CNY FX series — loaded from the database at runtime.
  *  USD/INR is synced daily from the RBI reference rate (src/lib/server/rbiUsd.ts);
- *  USD/CNY is entered by hand and has its own label axes. */
+ *  USD/CNY daily from the ECB reference rate (src/lib/server/cnyUsd.ts), on its own label axes. */
 
 export type CurrencyBlob = {
   monthsL: string[]; usdinrM: number[];
@@ -25,6 +25,8 @@ export let USDINR_5Y_V: number[] = [];
 export let USDCNY_5Y_V: number[] = [];
 /** latest daily USD/INR reference rate (falls back to the latest monthly value) */
 export let USDINR_LATEST: number | null = null;
+/** latest daily USD/CNY reference rate (falls back to the latest monthly value) */
+export let USDCNY_LATEST: number | null = null;
 
 /** pair labels with values, dropping entries with no number (e.g. blank admin cells) */
 function pairs(labels: string[] | undefined, values: number[] | undefined): [string[], number[]] {
@@ -48,4 +50,5 @@ export function __hydrateCurrency(b: CurrencyBlob) {
   [USDCNY_1Y_L, USDCNY_1Y_V] = pairs(b.usdcny1yL ?? b.usdinr1yL, b.usdcny1yV);
   [USDCNY_5Y_L, USDCNY_5Y_V] = pairs(b.usdcny5yL ?? b.usdinr5yL, b.usdcny5yV);
   USDINR_LATEST = USDINR_1Y_V.at(-1) ?? USDINR_M_V.at(-1) ?? null;
+  USDCNY_LATEST = USDCNY_1Y_V.at(-1) ?? USDCNY_M_V.at(-1) ?? null;
 }

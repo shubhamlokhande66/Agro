@@ -33,10 +33,10 @@ const SYNC_SOURCES: Record<string, { source: string; url: string; label: string;
     title: "Fetch today's Cotlook A Index and refresh the World Bank monthly history",
   },
   currency: {
-    source: "RBI",
-    url: "/api/cron/rbi-usd",
-    label: "⟳ Sync RBI USD/INR",
-    title: "Fetch the RBI USD/INR reference rate (last ~400 days) and rebuild the daily + monthly USD/INR series",
+    source: "RBI + ECB",
+    url: "/api/cron/fx",
+    label: "⟳ Sync USD/INR & USD/CNY",
+    title: "Fetch the RBI USD/INR and ECB USD/CNY reference rates (last ~400 days) and rebuild the daily + monthly series",
   },
 };
 

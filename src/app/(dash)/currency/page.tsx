@@ -56,8 +56,14 @@ export default function CurrencyPage() {
   const inrD = pick("inr", inrP);
   const cnyD = pick("cny", cnyP);
 
-  const inrPeriodDelta = deltaOverPeriod(FX.USDINR_5Y_L, FX.USDINR_5Y_V, period).pct;
-  const cnyPeriodDelta = deltaOverPeriod(FX.USDCNY_5Y_L, FX.USDCNY_5Y_V, period).pct;
+  // daily rates up to 1Y (monthly points are too coarse for a 1W/1M change); monthly for 5Y
+  const inrPeriodDelta = (period === "5y"
+    ? deltaOverPeriod(FX.USDINR_5Y_L, FX.USDINR_5Y_V, period)
+    : deltaOverPeriod(FX.USDINR_1Y_L, FX.USDINR_1Y_V, period)).pct;
+  const cnyPeriodDelta = (period === "5y"
+    ? deltaOverPeriod(FX.USDCNY_5Y_L, FX.USDCNY_5Y_V, period)
+    : deltaOverPeriod(FX.USDCNY_1Y_L, FX.USDCNY_1Y_V, period)).pct;
+  const cnyYearStart = FX.USDCNY_1Y_V[0];
 
   return (
     <div>
@@ -77,7 +83,7 @@ export default function CurrencyPage() {
         />
         <Kpi
           label={`USD/CNY · ${period.toUpperCase()} change`}
-          value={FX.USDCNY_M_V.at(-1) != null ? "¥" + FX.USDCNY_M_V.at(-1)!.toFixed(2) : "—"}
+          value={FX.USDCNY_LATEST != null ? "¥" + FX.USDCNY_LATEST.toFixed(4) : "—"}
           unit={cnyPeriodDelta != null ? (cnyPeriodDelta >= 0 ? "+" : "") + cnyPeriodDelta.toFixed(2) + "%" : undefined}
           accent="blue"
         />
@@ -136,12 +142,16 @@ export default function CurrencyPage() {
             data={cnyD.v}
             color="#f59e0b"
             height={200}
-            yFmt={(v) => "¥" + v.toFixed(1)}
-            tooltipLabel={(y) => "¥" + y.toFixed(2)}
+            yFmt={(v) => "¥" + v.toFixed(2)}
+            tooltipLabel={(y) => "¥" + y.toFixed(4)}
           />
           <p className="mt-2 text-[11px] italic text-ink-faint">
-            Source: FRED (EXCHUS). Yuan strengthened ¥7.30 → ¥6.89 over the past year —
-            stronger yuan supports Chinese mill buying of global cotton.
+            Source: European Central Bank reference rate, synced daily
+            {FX.USDCNY_1Y_L.length ? ` (latest ${FX.USDCNY_1Y_L.at(-1)})` : ""}.
+            {cnyYearStart != null && FX.USDCNY_LATEST != null
+              ? ` Yuan ${FX.USDCNY_LATEST < cnyYearStart ? "strengthened" : "weakened"} ¥${cnyYearStart.toFixed(2)} → ¥${FX.USDCNY_LATEST.toFixed(2)} over the past year — `
+              : " "}
+            a stronger yuan supports Chinese mill buying of global cotton.
           </p>
         </Card>
       </div>
