@@ -15,6 +15,7 @@ import { DateInput, Labeled, NumInput, NumberFieldStack, SelectInput, TextArea, 
 import { KeyValueEditor, NumListEditor, StringListEditor } from "@/components/admin/collections";
 import { RecordManager, type RecordManagerHandle } from "@/components/admin/RecordManager";
 import { RecordTable } from "@/components/admin/RecordCards";
+import { WeeklyPriceFill } from "@/components/admin/WeeklyPriceFill";
 import { WD_CATEGORIES } from "@/data/wasde";
 import { IMD_SUBDIVISIONS, SUBDIVISION_ZONES } from "@/lib/monsoon/constants";
 import {
@@ -131,6 +132,11 @@ const pricesSchema: EditorSection[] = [
                   ]}
                 />
               </Labeled>
+              <WeeklyPriceFill
+                daily={v.daily ?? []}
+                onChange={(daily) => patch({ daily } as any)}
+                unit={String(v.sub ?? "").split("·").at(-1)?.trim() || "₹"}
+              />
               <Labeled label="Daily price history — pick the date, enter the price">
                 <RecordTable<any>
                   value={v.daily ?? []}
