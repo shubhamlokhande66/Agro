@@ -3,6 +3,7 @@
 import { PageHeader } from "@/components/ui/PageHeader";
 import { Card } from "@/components/ui/Card";
 import { DataMissing } from "@/components/ui/DataGuard";
+import { STAGE_INFO } from "@/components/calendar/cropStages";
 import {
   CAL_MONTHS,
   CROP_STATES,
@@ -26,6 +27,52 @@ export default function CalendarPage() {
         sub="State-wise cotton phase timeline · May → Feb · sowing to picking"
         dataset="calendar"
       />
+
+      {/* crop stages, in field photographs */}
+      <section className="mb-5">
+        <div className="mb-2.5 flex flex-wrap items-baseline justify-between gap-2">
+          <h2 className="text-[13.5px] font-semibold tracking-tight text-ink">Cotton crop stages</h2>
+          <span className="text-[11px] text-ink-faint">Typical months across the cotton belt · colours match the timeline below</span>
+        </div>
+        <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+          {Object.entries(PHASE_META).map(([key, m], i) => {
+            const info = STAGE_INFO[key];
+            const span = stageMonths(key);
+            return (
+              <article key={key} className="panel overflow-hidden">
+                <div className="relative">
+                  {info ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={info.photo.src} alt={info.photo.caption} loading="lazy" className="aspect-[4/3] w-full object-cover" />
+                  ) : (
+                    <div className="aspect-[4/3] w-full bg-surface-2" />
+                  )}
+                  <span className="num absolute left-2 top-2 grid h-6 w-6 place-items-center rounded-full bg-black/55 text-[11px] font-semibold text-white backdrop-blur-sm">
+                    {i + 1}
+                  </span>
+                  {span ? (
+                    <span className="num absolute right-2 top-2 rounded-md bg-black/55 px-1.5 py-0.5 text-[10px] font-semibold text-white backdrop-blur-sm">
+                      {span}
+                    </span>
+                  ) : null}
+                  <span className="absolute inset-x-0 bottom-0 h-1" style={{ background: m.color }} />
+                </div>
+                <div className="p-3">
+                  <div className="text-[12.5px] font-semibold leading-tight text-ink">{m.label}</div>
+                  {info ? (
+                    <>
+                      <p className="mt-1 text-[11px] leading-snug text-ink-soft">{info.blurb}</p>
+                      <p className="mt-1.5 truncate text-[10px] text-ink-faint" title={`${info.photo.caption} · ${info.photo.place}`}>
+                        {info.photo.caption} · {info.photo.place}
+                      </p>
+                    </>
+                  ) : null}
+                </div>
+              </article>
+            );
+          })}
+        </div>
+      </section>
 
       {/* legend */}
       <div className="mb-4 flex flex-wrap gap-x-4 gap-y-2">
@@ -145,8 +192,46 @@ export default function CalendarPage() {
           </div>
         ))}
       </div>
+
+      <p className="mt-5 text-[10.5px] leading-relaxed text-ink-faint">
+        Photos via Wikimedia Commons:{" "}
+        {Object.entries(PHASE_META).map(([key, m], i, all) => {
+          const p = STAGE_INFO[key]?.photo;
+          if (!p) return null;
+          return (
+            <span key={key}>
+              {m.label} —{" "}
+              <a href={p.sourceUrl} target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline">
+                {p.author}
+              </a>{" "}
+              (
+              <a href={p.licenseUrl} target="_blank" rel="noopener noreferrer" className="hover:text-accent hover:underline">
+                {p.license}
+              </a>
+              ){i < all.length - 1 ? "; " : "."}
+            </span>
+          );
+        })}
+      </p>
     </div>
   );
+}
+
+/** "Jun–Aug": the earliest start to the latest end of a phase across the states */
+function stageMonths(key: string): string | null {
+  let start = Infinity;
+  let end = -Infinity;
+  for (const s of CROP_STATES) {
+    for (const p of s.phases) {
+      if (p.key !== key) continue;
+      start = Math.min(start, p.start);
+      end = Math.max(end, p.end);
+    }
+  }
+  if (!Number.isFinite(start)) return null;
+  const a = CAL_MONTHS[Math.floor(start)];
+  const b = CAL_MONTHS[Math.min(CAL_MONTHS.length - 1, Math.ceil(end) - 1)];
+  return a && b ? (a === b ? a : `${a}–${b}`) : null;
 }
 
 function Row({ k, v }: { k: string; v: string }) {
