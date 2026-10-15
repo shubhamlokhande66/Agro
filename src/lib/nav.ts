@@ -27,7 +27,6 @@ export const NAV: NavGroup[] = [
       { href: "/currency", label: "Currency", icon: "$" },
       { href: "/basis", label: "Cotton Basis", icon: "≈" },
       { href: "/cci", label: "CCI Updates", icon: "🏛" },
-      { href: "/news", label: "News Feed", icon: "❒" },
     ],
   },
   {
@@ -52,6 +51,10 @@ export const NAV: NavGroup[] = [
       { href: "/benchmarks", label: "Benchmarks", icon: "◑", soon: true },
       { href: "/cotton-maps", label: "India Cotton Maps", icon: "◐", soon: true },
     ],
+  },
+  {
+    heading: "News Feed",
+    items: [{ href: "/news", label: "News Feed", icon: "❒" }],
   },
   {
     heading: "Tools",
