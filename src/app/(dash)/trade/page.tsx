@@ -72,7 +72,11 @@ export default function TradePage() {
     <div>
       <PageHeader
         title="Imports & Exports" icon="⇄"
-        sub="Monthly 2007-08 → 2026-27 · cotton year Oct–Sep · actuals to Jan 2026"
+        sub={`Monthly ${seasons[0] ?? ""} → ${seasons.at(-1) ?? ""} · cotton year Oct–Sep · actuals to ${
+          cutoff.month && cutoff.season
+            ? `${cutoff.month} ${["Oct", "Nov", "Dec"].includes(cutoff.month) ? cutoff.season.slice(0, 4) : Number(cutoff.season.slice(0, 4)) + 1}`
+            : "—"
+        } (Commerce Ministry, HS 5201)`}
         dataset="trade"
       />
 
