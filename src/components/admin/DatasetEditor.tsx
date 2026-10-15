@@ -26,6 +26,12 @@ const SYNC_SOURCES: Record<string, { source: string; url: string; label: string;
     label: "⟳ Sync ICE cotton & Brent",
     title: "Fetch ICE Cotton No. 2 and Brent settlements (most-active contracts, last ~3 months) into the daily + monthly series",
   },
+  cftc: {
+    source: "CFTC",
+    url: "/api/cron/cftc",
+    label: "⟳ Sync CFTC COT",
+    title: "Fetch the latest CFTC Commitments of Traders for ICE cotton",
+  },
   exportSales: {
     source: "USDA FAS",
     url: "/api/cron/export-sales",

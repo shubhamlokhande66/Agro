@@ -49,7 +49,7 @@ export const NAV: NavGroup[] = [
     heading: "Global",
     items: [
       { href: "/wasde", label: "WASDE", icon: "🌐" },
-      { href: "/cftc", label: "CFTC", icon: "◔", soon: true },
+      { href: "/cftc", label: "CFTC", icon: "◔" },
       { href: "/usda", label: "USDA Export Sales", icon: "◕" },
       { href: "/benchmarks", label: "Benchmarks", icon: "◑", soon: true },
       { href: "/cotton-maps", label: "India Cotton Maps", icon: "◐", soon: true },

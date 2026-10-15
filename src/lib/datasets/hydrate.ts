@@ -13,6 +13,7 @@ import { __hydrateCop } from "@/data/cop";
 import { __hydrateCalendar } from "@/data/calendar";
 import { __hydrateWasde } from "@/data/wasde";
 import { __hydrateExportSales } from "@/data/exportSales";
+import { __hydrateCftc } from "@/data/cftc";
 import { __hydrateGroundReport } from "@/data/groundReport";
 import { __hydrateCotlook } from "@/data/cotlook";
 
@@ -32,6 +33,7 @@ const HYDRATORS: Record<string, (blob: any) => void> = {
   calendar: __hydrateCalendar,
   wasdeReports: __hydrateWasde,
   exportSales: __hydrateExportSales,
+  cftc: __hydrateCftc,
   groundReport: __hydrateGroundReport,
   cotlook: __hydrateCotlook,
 };
