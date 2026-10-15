@@ -27,6 +27,7 @@ export const NAV: NavGroup[] = [
       { href: "/currency", label: "Currency", icon: "$" },
       { href: "/basis", label: "Cotton Basis", icon: "≈" },
       { href: "/cci", label: "CCI Updates", icon: "🏛" },
+      { href: "/news", label: "News Feed", icon: "❒" },
     ],
   },
   {

@@ -1,5 +1,5 @@
 /**
- * India cotton headlines for the Overview news box, from Google News' public RSS search.
+ * India cotton headlines for the News Feed page, from Google News' public RSS search.
  * Only headlines, sources, times and links are kept (readers click through to the publisher).
  * Filtered to India cotton / kapas stories from the last 5 days, de-duplicated, newest first, and
  * cached in memory for an hour so the feed is fetched at most once an hour per server.

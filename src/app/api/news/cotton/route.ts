@@ -3,7 +3,7 @@ import { getCottonNews } from "@/lib/server/cottonNews";
 
 export const dynamic = "force-dynamic";
 
-/** India cotton headlines from the last 5 days, for the Overview news box (refreshed hourly) */
+/** India cotton headlines from the last 5 days, for the News Feed page (refreshed hourly) */
 export async function GET() {
   try {
     const data = await getCottonNews();
