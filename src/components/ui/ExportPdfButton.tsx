@@ -194,6 +194,31 @@ export async function drawCover(pdf: jsPDF, report: PdfReport) {
  * in half. Controls marked `.print-hide` (buttons, nav) are left out.
  * With `reports`, the button opens a menu of report types, each adding its own cover page.
  */
+/** the downloaded report stays under this size (email attachment limits) */
+const MAX_PDF_BYTES = 4.6 * 1024 * 1024;
+/** page images are stored at most this wide — ~190 dpi across A4, sharp in print */
+const PAGE_PX = 1400;
+
+/** a captured page as a JPEG within `budget` bytes: scaled to PAGE_PX wide, then quality stepped
+ *  down only as far as needed */
+function compressPage(canvas: HTMLCanvasElement, budget: number): string {
+  let src = canvas;
+  if (canvas.width > PAGE_PX) {
+    src = document.createElement("canvas");
+    src.width = PAGE_PX;
+    src.height = Math.round((canvas.height * PAGE_PX) / canvas.width);
+    const ctx = src.getContext("2d")!;
+    ctx.imageSmoothingQuality = "high";
+    ctx.drawImage(canvas, 0, 0, src.width, src.height);
+  }
+  let data = "";
+  for (const q of [0.82, 0.72, 0.62, 0.52, 0.42]) {
+    data = src.toDataURL("image/jpeg", q);
+    if (data.length * 0.75 <= budget) break; // base64 → bytes
+  }
+  return data;
+}
+
 /** waits for every image in `el` to finish loading (or fail), at most 20 s */
 function imagesLoaded(el: HTMLElement) {
   const pending = Array.from(el.querySelectorAll("img")).filter((img) => !img.complete);
@@ -270,16 +295,25 @@ export function ExportPdfButton({
           first = false;
         }
 
-        // one capture per PDF page: a long report (field photos and all) in a single canvas would
-        // pass the browser's canvas size limit
-        let y = 0;
-        while (y < box.height - 2) {
+        // where each page starts and ends (CSS px) — worked out first, so the size budget is known
+        const pages: [number, number][] = [];
+        for (let y = 0; y < box.height - 2; ) {
           let end = Math.min(y + sliceH, box.height);
           if (end < box.height) {
             // prefer the lowest card edge on this page, as long as it uses at least 40% of it
             const cut = breaks.filter((b) => b > y + sliceH * 0.4 && b <= end).pop();
             if (cut) end = cut;
           }
+          pages.push([y, end]);
+          y = end;
+        }
+        // keep the whole file under ~5 MB: what's left after the cover, shared out per page
+        const used = first ? 0 : pdf.output("arraybuffer").byteLength;
+        const perPage = Math.max(120_000, (MAX_PDF_BYTES - used) / Math.max(1, pages.length));
+
+        // one capture per PDF page: a long report (field photos and all) in a single canvas would
+        // pass the browser's canvas size limit
+        for (const [y, end] of pages) {
           const part = await html2canvas(target, {
             scale: 2,
             backgroundColor: bg,
@@ -305,8 +339,7 @@ export function ExportPdfButton({
           first = false;
           pdf.setFillColor(bg);
           pdf.rect(0, 0, pageW, pageH, "F");
-          pdf.addImage(part.toDataURL("image/jpeg", 0.9), "JPEG", margin, margin, pageW - margin * 2, (end - y) * ptPerCss);
-          y = end;
+          pdf.addImage(compressPage(part, perPage), "JPEG", margin, margin, pageW - margin * 2, (end - y) * ptPerCss);
         }
       } finally {
         root.classList.remove("pdf-capture", `pdf-${report?.key ?? "page"}`);
