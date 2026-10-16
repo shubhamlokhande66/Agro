@@ -18,11 +18,14 @@ export function CommentsPanel({
   title = "Notes & commentary",
   minHeight = 320,
   rows = 20,
+  autoWrite,
 }: {
   section: Section;
   title?: string;
   minHeight?: number;
   rows?: number;
+  /** writes the summary from the latest data — shows a "✨ Auto-write" button to signed-in users */
+  autoWrite?: () => Promise<string | null>;
 }) {
   const { authed, username } = useAuth();
   const [text, setText] = useState("");
@@ -33,6 +36,9 @@ export function CommentsPanel({
   });
   const [status, setStatus] = useState<"idle" | "saving" | "ok" | "err">("idle");
   const [open, setOpen] = useState(false);
+  const [writing, setWriting] = useState(false);
+  const [undo, setUndo] = useState<string | null>(null);
+  const [autoErr, setAutoErr] = useState<string | null>(null);
 
   const textRef = useRef(text);
   const origRef = useRef(orig);
@@ -90,6 +96,52 @@ export function CommentsPanel({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [section]);
 
+  async function runAutoWrite() {
+    if (!autoWrite || writing) return;
+    setWriting(true);
+    setAutoErr(null);
+    try {
+      const t = await autoWrite();
+      if (t) {
+        setUndo(text);
+        setText(t);
+      } else setAutoErr("Nothing to summarise yet");
+    } catch {
+      setAutoErr("Couldn't load the latest data — try again");
+    } finally {
+      setWriting(false);
+    }
+  }
+
+  // auto-write (and undo it) — signed-in users only, never in the PDF
+  const autoButtons =
+    authed && autoWrite ? (
+      <span className="print-hide flex shrink-0 items-center gap-1.5">
+        {autoErr ? <span className="text-[11px] text-neg">{autoErr}</span> : null}
+        {undo != null && !writing ? (
+          <button
+            type="button"
+            onClick={() => {
+              setText(undo);
+              setUndo(null);
+            }}
+            className="focusable rounded-lg border border-line px-2.5 py-1 text-[11.5px] font-semibold text-ink-soft hover:bg-surface-2"
+          >
+            ↶ Undo
+          </button>
+        ) : null}
+        <button
+          type="button"
+          onClick={runAutoWrite}
+          disabled={writing}
+          title="Write this summary from the latest data (you can edit it afterwards)"
+          className="focusable rounded-lg border border-line px-2.5 py-1 text-[11.5px] font-semibold text-accent hover:bg-surface-2 disabled:opacity-60"
+        >
+          {writing ? "Writing…" : "✨ Auto-write"}
+        </button>
+      </span>
+    ) : null;
+
   const lastEdited =
     meta.updatedAt != null
       ? `Last edited ${timeAgo(meta.updatedAt)}${meta.updatedBy ? ` by ${meta.updatedBy}` : ""}`
@@ -109,6 +161,8 @@ export function CommentsPanel({
               <span className="print-hide block truncate text-[11px] text-ink-faint">{lastEdited}</span>
             </span>
           </span>
+          <span className="flex shrink-0 items-center gap-1.5">
+          {autoButtons}
           <button
             type="button"
             onClick={() => setOpen(true)}
@@ -117,6 +171,7 @@ export function CommentsPanel({
           >
             {authed ? (hasText ? "Edit ▾" : "Add commentary ▾") : "Show ▾"}
           </button>
+          </span>
         </div>
         {hasText ? <p className="mt-2 whitespace-pre-wrap text-[12.5px] leading-relaxed text-ink">{text}</p> : null}
       </div>
@@ -144,6 +199,7 @@ export function CommentsPanel({
           >
             {status === "saving" ? "Saving…" : status === "ok" ? "✓ Saved" : status === "err" ? "⚠ Save failed" : "·"}
           </span>
+          {autoButtons}
           <button
             type="button"
             onClick={() => setOpen(false)}

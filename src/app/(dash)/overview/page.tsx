@@ -6,6 +6,7 @@ import { HeroCategoryRail } from "@/components/overview/HeroCategoryRail";
 import { PriceTable } from "@/components/overview/PriceTable";
 import { OverviewSections } from "@/components/overview/OverviewSections";
 import { CommentsPanel } from "@/components/ui/CommentsPanel";
+import { autoCommentary } from "@/lib/autoCommentary";
 import { ExportPdfButton, type PdfReport } from "@/components/ui/ExportPdfButton";
 import { GlobalPeriodTabs } from "@/components/ui/GlobalPeriodTabs";
 import { type GlobalPeriod } from "@/lib/period";
@@ -85,7 +86,7 @@ export default function OverviewPage() {
       )}
 
       <div className="mt-4">
-        <CommentsPanel section="overview" title="Summary (Prices)" minHeight={120} rows={5} />
+        <CommentsPanel section="overview" title="Summary (Prices)" minHeight={120} rows={5} autoWrite={() => autoCommentary("overview")} />
       </div>
 
       <OverviewSections />

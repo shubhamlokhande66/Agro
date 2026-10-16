@@ -7,6 +7,8 @@ import { Delta } from "@/components/ui/ChangeBadge";
 import { Tabs } from "@/components/ui/Tabs";
 import { Table, TableWrap, Td, Th } from "@/components/ui/DataTable";
 import { CommentsPanel } from "@/components/ui/CommentsPanel";
+import { CottonBeltRain } from "./CottonBeltRain";
+import { autoCommentary } from "@/lib/autoCommentary";
 import LineChart, { type LineSeries } from "@/components/charts/LineChart";
 import BarChart from "@/components/charts/BarChart";
 import { RF_ALL_YEARS, RF_COMPOSITE_T, RF_JJAS, RF_MONTHS_L, jjas, pctDeviation } from "@/data/rainfall";
@@ -685,30 +687,31 @@ export function OverviewSections() {
   return (
     <div className="mt-4 space-y-4">
       <WeatherSection />
-      <CommentsPanel section="overviewWeather" title="Summary (Weather & Rainfall · India)" minHeight={100} rows={4} />
+      <CottonBeltRain />
+      <CommentsPanel section="overviewWeather" title="Summary (Weather & Rainfall · India)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewWeather")} />
       <div className="grid gap-4 lg:grid-cols-2">
         <SowingSection />
         <ArrivalsSection />
       </div>
-      <CommentsPanel section="overviewSowing" title="Summary (Cotton Sowing & Arrivals)" minHeight={100} rows={4} />
+      <CommentsPanel section="overviewSowing" title="Summary (Cotton Sowing & Arrivals)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewSowing")} />
       <ProductionSection />
-      <CommentsPanel section="overviewProduction" title="Summary (Domestic production)" minHeight={100} rows={4} />
+      <CommentsPanel section="overviewProduction" title="Summary (Domestic production)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewProduction")} />
       <CciSection />
-      <CommentsPanel section="overviewCci" title="Summary (CCI updates)" minHeight={100} rows={4} />
+      <CommentsPanel section="overviewCci" title="Summary (CCI updates)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewCci")} />
       <BalanceSheetSection />
-      <CommentsPanel section="overviewBalance" title="Summary (Balance Sheet)" minHeight={100} rows={4} />
+      <CommentsPanel section="overviewBalance" title="Summary (Balance Sheet)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewBalance")} />
       <div className="grid gap-4 lg:grid-cols-2">
         <TradeSection />
         <BasisSection />
       </div>
-      <CommentsPanel section="overviewTradeBasis" title="Summary (Cotton imports & basis)" minHeight={100} rows={4} />
+      <CommentsPanel section="overviewTradeBasis" title="Summary (Cotton imports & basis)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewTradeBasis")} />
       <WasdeSection />
-      <CommentsPanel section="overviewWasde" title="Summary (WASDE)" minHeight={100} rows={4} />
+      <CommentsPanel section="overviewWasde" title="Summary (WASDE)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewWasde")} />
       <div className="grid gap-4 lg:grid-cols-2">
         <CftcSection />
         <ExportSalesSection />
       </div>
-      <CommentsPanel section="overviewCftc" title="Summary (CFTC & USDA export sales)" minHeight={100} rows={4} />
+      <CommentsPanel section="overviewCftc" title="Summary (CFTC & USDA export sales)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewCftc")} />
     </div>
   );
 }

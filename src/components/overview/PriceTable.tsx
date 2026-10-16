@@ -70,7 +70,7 @@ function changeOver(pts: Pt[], days: number, slackDays: number, last: Pt): numbe
   return ((last.v - base.v) / Math.abs(base.v)) * 100;
 }
 
-type TableRow = { label: string; unit: string; close: string; date: number | null; changes: (number | null)[] };
+export type TableRow = { label: string; unit: string; close: string; date: number | null; changes: (number | null)[] };
 
 function buildRow(d: RowDef): TableRow {
   let labels: (string | number)[] = [];
@@ -99,6 +99,11 @@ function buildRow(d: RowDef): TableRow {
     return monthly.length ? changeOver(monthly, p.days, 31, last) : null;
   });
   return { label: d.label, unit: d.unit, close: last ? fmt(last.v) : "—", date: last?.t ?? null, changes };
+}
+
+/** every row of the table (domestic, then global) — also read by the auto-written price summary */
+export function priceTableRows(): TableRow[] {
+  return [...DOMESTIC, ...GLOBAL].map(buildRow);
 }
 
 const pctText = (v: number | null) => (v == null ? "—" : `${v < -0.05 ? "-" : ""}${Math.abs(v).toFixed(1)}%`);
