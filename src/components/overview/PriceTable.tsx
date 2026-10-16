@@ -20,8 +20,6 @@ type RowDef = { label: string; unit: string; src: Source; monthly?: () => { l: s
 const CANDY = "₹ per candy (356 kg)";
 const DOMESTIC: RowDef[] = [
   { label: "North 28 mm", unit: CANDY, src: { kind: "variety", key: "phr28" } },
-  { label: "Gujarat 28 mm", unit: CANDY, src: { kind: "variety", key: "guj28" } },
-  { label: "Central India 28 mm", unit: CANDY, src: { kind: "variety", key: "mma28" } },
   { label: "Gujarat 29 mm", unit: CANDY, src: { kind: "variety", key: "guj29" } },
   { label: "Central India 29 mm", unit: CANDY, src: { kind: "variety", key: "mmak29" } },
   { label: "Central India 30 mm", unit: CANDY, src: { kind: "variety", key: "cs30" } },
