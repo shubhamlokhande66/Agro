@@ -17,7 +17,7 @@ export type PdfReport = {
 
 const COMPANY = "Agrolytix Research";
 const LOGO_SRC = "/agrolytix-logo.jpg";
-const BRAND_GREEN = "#558b3d"; // the logo's green
+const BANNER_SRC = "/report-banner.jpg";
 
 async function loadImage(src: string): Promise<{ data: string; w: number; h: number }> {
   const blob = await (await fetch(src)).blob();
@@ -33,7 +33,11 @@ async function loadImage(src: string): Promise<{ data: string; w: number; h: num
   return { data, w: img.naturalWidth, h: img.naturalHeight };
 }
 
-/** White, letterhead-style first page (white in both themes — the logo has a white background). */
+/**
+ * First page in the style of the weekly report clients already receive: the field-to-mill photo
+ * banner across the top, the report title and date in a rounded box mid-page, the logo at the foot.
+ * White in both themes.
+ */
 async function drawCover(pdf: jsPDF, report: PdfReport) {
   const pageW = pdf.internal.pageSize.getWidth();
   const pageH = pdf.internal.pageSize.getHeight();
@@ -41,43 +45,40 @@ async function drawCover(pdf: jsPDF, report: PdfReport) {
 
   pdf.setFillColor("#ffffff");
   pdf.rect(0, 0, pageW, pageH, "F");
-  pdf.setFillColor(BRAND_GREEN);
-  pdf.rect(0, 0, pageW, 10, "F");
-  pdf.rect(0, pageH - 10, pageW, 10, "F");
 
-  const logo = await loadImage(LOGO_SRC);
-  const logoW = pageW * 0.62;
-  const logoH = (logoW * logo.h) / logo.w;
-  pdf.addImage(logo.data, "JPEG", cx - logoW / 2, 150, logoW, logoH);
-
-  let y = 150 + logoH + 60;
-  pdf.setDrawColor(BRAND_GREEN);
-  pdf.setLineWidth(1.5);
-  pdf.line(cx - 60, y, cx + 60, y);
-
-  y += 70;
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(28);
-  pdf.setTextColor("#191b18");
-  for (const line of pdf.splitTextToSize(report.title, pageW - 120) as string[]) {
-    pdf.text(line, cx, y, { align: "center" });
-    y += 36;
+  // photo banner, edge to edge
+  try {
+    const banner = await loadImage(BANNER_SRC);
+    pdf.addImage(banner.data, "JPEG", 0, 0, pageW, (pageW * banner.h) / banner.w);
+  } catch {
+    // the cover still works without the banner
   }
 
-  y += 6;
+  // title box
+  const boxW = 330;
+  const boxH = 82;
+  const boxY = pageH * 0.36;
+  pdf.setDrawColor("#1f2a44");
+  pdf.setLineWidth(1.2);
+  pdf.roundedRect(cx - boxW / 2, boxY, boxW, boxH, 16, 16, "S");
   pdf.setFont("helvetica", "normal");
-  pdf.setFontSize(15);
-  pdf.setTextColor(BRAND_GREEN);
-  pdf.text(report.dateLine, cx, y, { align: "center" });
+  pdf.setTextColor("#111111");
+  pdf.setFontSize(21);
+  pdf.text(report.title, cx, boxY + 34, { align: "center" });
+  pdf.text(report.dateLine, cx, boxY + 62, { align: "center" });
 
-  pdf.setFont("helvetica", "bold");
-  pdf.setFontSize(12);
-  pdf.setTextColor("#191b18");
-  pdf.text(COMPANY, cx, pageH - 70, { align: "center" });
+  // brand at the foot
+  try {
+    const logo = await loadImage(LOGO_SRC);
+    const logoW = 150;
+    pdf.addImage(logo.data, "JPEG", cx - logoW / 2, pageH - 120, logoW, (logoW * logo.h) / logo.w);
+  } catch {
+    // no logo — the company line below still names the publisher
+  }
   pdf.setFont("helvetica", "normal");
   pdf.setFontSize(9);
   pdf.setTextColor("#8f9389");
-  pdf.text("India Cotton Market Intelligence", cx, pageH - 54, { align: "center" });
+  pdf.text(`${COMPANY} · India Cotton Market Intelligence`, cx, pageH - 40, { align: "center" });
 }
 
 /**

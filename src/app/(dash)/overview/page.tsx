@@ -13,12 +13,13 @@ import { useDatasetMeta } from "@/lib/meta/context";
 import { useState } from "react";
 
 function overviewReports(now = new Date()): PdfReport[] {
-  const day = now.toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  const dd = (n: number) => String(n).padStart(2, "0");
+  const day = `${dd(now.getDate())}.${dd(now.getMonth() + 1)}.${now.getFullYear()}`; // 16.10.2026, as on the weekly report
   const month = now.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
   const iso = now.toISOString().slice(0, 10);
   return [
-    { key: "weekly", label: "Weekly report", title: "India Cotton Weekly Report", dateLine: day, fileName: `Agrolytix India Cotton Weekly Report ${iso}` },
-    { key: "monthly", label: "Monthly report", title: "India Monthly Cotton Report", dateLine: month, fileName: `Agrolytix India Monthly Cotton Report ${iso.slice(0, 7)}` },
+    { key: "weekly", label: "Weekly report", title: "INDIA COTTON: Weekly Report", dateLine: day, fileName: `Agrolytix India Cotton Weekly Report ${iso}` },
+    { key: "monthly", label: "Monthly report", title: "INDIA COTTON: Monthly Report", dateLine: month, fileName: `Agrolytix India Cotton Monthly Report ${iso.slice(0, 7)}` },
   ];
 }
 
