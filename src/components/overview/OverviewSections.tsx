@@ -17,6 +17,7 @@ import { ARRIVALS, ARRIVAL_SEASONS, ARRIVAL_WEEKS } from "@/data/arrivals";
 import { SOWING_SERIES, SOWING_WEEKS } from "@/data/sowing";
 import { DP_DATA, DP_REGIONS, DP_SEASONS, DP_STATE_LABELS, dpValue, type DpMetric } from "@/data/production";
 import { SND } from "@/data/balanceSheet";
+import { SND_MONTHS_INDIA, currentSndMonth, sndAnnual, sndMonthsTo, sndPeriod, type SndRow } from "@/lib/snd";
 import { CCI, cciWeekly } from "@/data/cci";
 import { WASDE_REPORTS, convertWasde, type WasdeRow } from "@/data/wasde";
 import { COT_WEEKS, cotNet, cotNetChg } from "@/data/cftc";
@@ -402,56 +403,103 @@ function ProductionSection() {
   );
 }
 
-const BS_ROWS: { key: string; label: string; bold?: boolean }[] = [
+const BS_ROWS: { key: string; label: string; bold?: boolean; indent?: boolean }[] = [
   { key: "opening_stocks", label: "Opening stocks" },
-  { key: "crop_size", label: "Crop size" },
-  { key: "imports", label: "Imports" },
+  { key: "crop_size", label: "Crop size", indent: true },
+  { key: "farmer_selling", label: "Farmer selling", indent: true },
+  { key: "imports", label: "Imports", indent: true },
   { key: "total_supply", label: "Total supply", bold: true },
-  { key: "domestic_cons", label: "Domestic consumption" },
-  { key: "exports", label: "Exports" },
+  { key: "domestic_cons", label: "Domestic consumption", indent: true },
+  { key: "exports", label: "Exports", indent: true },
   { key: "total_demand", label: "Total demand", bold: true },
+  { key: "stocks_govt", label: "Stock with CCI" },
   { key: "closing_stocks", label: "Closing stocks", bold: true },
 ];
 
 function BalanceSheetSection() {
-  // newest first by the season's starting year ("2026/27" > "2025/26 (F)"), whatever order admin stored them in
+  // newest first by the season's starting year
   const seasons = [...(SND.annual_seasons ?? [])].sort((x, y) => parseInt(y, 10) - parseInt(x, 10));
-  const latest = seasons[0];
-  const prev = seasons[1];
-  const a = latest ? SND.annual?.[latest] : undefined;
-  if (!a) return null;
-  const p = (prev ? SND.annual?.[prev] : undefined) ?? a;
-  const get = (o: typeof a, k: string) => (o as unknown as Record<string, number | null>)[k] ?? null;
+  const [pair, setPair] = useState(0); // 0: latest vs the one before; 1: one season back
+  const [month, setMonth] = useState(currentSndMonth);
+  const cur = seasons[pair];
+  const prev = seasons[pair + 1];
+  if (!cur || !prev) return null;
+
+  const months = sndMonthsTo(month);
+  const ytdCur = sndPeriod(cur, months);
+  const ytdPrev = sndPeriod(prev, months);
+  const annCur = sndAnnual(cur);
+  const annPrev = sndAnnual(prev);
+  const span = month === "Oct" ? "Oct" : `Oct–${month}`;
+  const pairLabel = (i: number) => `${seasons[i]} vs ${seasons[i + 1]}`;
+  const v = (r: SndRow, k: string) => r[k] ?? null;
+  const td = "px-2 py-1 text-[11.5px] leading-5";
+  const th = "px-2 py-1.5 text-[9.5px]";
 
   return (
     <Card>
       <CardHeader
-        title={`Balance Sheet · ${latest}`}
-        sub={`India supply & demand · lakh bales · ${latest} vs ${prev}`}
+        title={`Balance Sheet · ${cur} vs ${prev}`}
+        sub={`India supply & demand · lakh bales · cumulative ${span} and full season (Oct–Sep)`}
         right={<More href="/balance-sheet" label="Full balance sheet" />}
       />
+      <div className="print-hide mb-2.5 flex flex-wrap items-center gap-2">
+        {seasons.length > 2 ? (
+          <Tabs options={[0, 1].filter((i) => seasons[i + 1]).map((i) => ({ value: String(i), label: pairLabel(i) }))} value={String(pair)} onChange={(x) => setPair(Number(x))} />
+        ) : null}
+        <span className="flex-1" />
+        <span className="text-[11px] text-ink-faint">Cumulative to</span>
+        <select
+          value={month}
+          onChange={(e) => setMonth(e.target.value)}
+          className="rounded-lg border border-line bg-surface px-2 py-1 text-[12px] text-ink"
+        >
+          {SND_MONTHS_INDIA.map((m) => (
+            <option key={m} value={m}>
+              {m === "Oct" ? "Oct" : `Oct–${m}`}
+            </option>
+          ))}
+        </select>
+      </div>
       <TableWrap>
         <Table>
           <thead>
             <tr>
-              <Th>Item (lakh bales)</Th>
-              <Th align="right">{prev}</Th>
-              <Th align="right">{latest}</Th>
-              <Th align="right">YoY</Th>
+              <Th rowSpan={2} className={th}>Lakh bales</Th>
+              <Th colSpan={3} align="center" className={th + " border-l border-line"}>
+                <span className="normal-case">Cumulative {span}</span>
+              </Th>
+              <Th colSpan={3} align="center" className={th + " border-l border-line"}>
+                <span className="normal-case">Annual (Oct–Sep)</span>
+              </Th>
+            </tr>
+            <tr>
+              <Th align="right" className={th + " border-l border-line"}>{cur}</Th>
+              <Th align="right" className={th}>{prev}</Th>
+              <Th align="right" className={th}>Δ</Th>
+              <Th align="right" className={th + " border-l border-line"}>{cur}</Th>
+              <Th align="right" className={th}>{prev}</Th>
+              <Th align="right" className={th}>Δ</Th>
             </tr>
           </thead>
           <tbody>
-            {BS_ROWS.map((r) => (
-              <tr key={r.key} className={r.bold ? "font-semibold" : ""}>
-                <Td>{r.label}</Td>
-                <Td align="right" mono>{num(get(p, r.key), 1)}</Td>
-                <Td align="right" mono>{num(get(a, r.key), 1)}</Td>
-                <Td align="right"><Delta value={pctChange(get(a, r.key), get(p, r.key))} /></Td>
+            {BS_ROWS.map((r, i) => (
+              <tr key={r.key} className={r.bold ? "bg-accent/10 font-semibold" : i % 2 === 1 ? "bg-surface-2/50" : undefined}>
+                <Td className={td + " whitespace-nowrap" + (r.indent ? " pl-5" : "")}>{r.label}</Td>
+                <Td align="right" mono className={td + " border-l border-line/70"}>{num(v(ytdCur, r.key), 1)}</Td>
+                <Td align="right" mono className={td + " text-ink-soft"}>{num(v(ytdPrev, r.key), 1)}</Td>
+                <Td align="right" className={td}><DeltaText value={pctChange(v(ytdCur, r.key), v(ytdPrev, r.key))} /></Td>
+                <Td align="right" mono className={td + " border-l border-line/70"}>{num(v(annCur, r.key), 1)}</Td>
+                <Td align="right" mono className={td + " text-ink-soft"}>{num(v(annPrev, r.key), 1)}</Td>
+                <Td align="right" className={td}><DeltaText value={pctChange(v(annCur, r.key), v(annPrev, r.key))} /></Td>
               </tr>
             ))}
           </tbody>
         </Table>
       </TableWrap>
+      <p className="mt-1.5 text-[10.5px] text-ink-faint">
+        Cumulative: opening stock at 1 Oct, flows summed Oct to the selected month, closing stock at its end · crop is the full-season estimate
+      </p>
     </Card>
   );
 }

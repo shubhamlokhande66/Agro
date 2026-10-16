@@ -6,6 +6,7 @@ import { Tabs } from "@/components/ui/Tabs";
 import { Table, TableWrap, Td, Th } from "@/components/ui/DataTable";
 import { SND } from "@/data/balanceSheet";
 import { signedPct } from "@/lib/format";
+import { SND_MONTHS_GLOBAL, SND_MONTHS_INDIA, prevSeasonOf, sndAnnual, sndPeriod, type SndRow, type SndYearType } from "@/lib/snd";
 
 /**
  * India cotton SND (supply & demand) balance sheet — the operator's original dashboard
@@ -15,13 +16,11 @@ import { signedPct } from "@/lib/format";
  * LATEST DASHBOARD.xlsx — scripts/import-balance-sheet.ts).
  */
 
-type YearType = "india" | "global";
-type Row = Record<string, number | null | undefined>;
+type YearType = SndYearType;
+type Row = SndRow;
 
-const MONTHS_INDIA = ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep"];
-const MONTHS_GLOBAL = ["Jul", "Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr", "May", "Jun"];
-/** in a Jul–Jun year these months belong to the previous Oct–Sep season */
-const PREV_SEASON_MONTHS = ["Jul", "Aug", "Sep"];
+const MONTHS_INDIA = SND_MONTHS_INDIA;
+const MONTHS_GLOBAL = SND_MONTHS_GLOBAL;
 
 const BS_ROWS: { key: string; label: string; section?: string; indent?: boolean; total?: boolean; ratio?: boolean }[] = [
   { key: "opening_stocks", label: "Opening Stocks", section: "SUPPLY" },
@@ -50,55 +49,8 @@ const MON_COLS = [
   { key: "closing", label: "Closing" },
 ];
 
-/** "2025/26" -> "2024/25" */
-const prevSeasonOf = (s: string) => {
-  const y = parseInt(s, 10);
-  return `${y - 1}/${String(y).slice(2)}`;
-};
-
-const monthRow = (season: string, m: string, yt: YearType): Row => {
-  const s = yt === "global" && PREV_SEASON_MONTHS.includes(m) ? prevSeasonOf(season) : season;
-  return ((SND.monthly?.[s] ?? {}) as Record<string, Row>)[m] ?? {};
-};
-
-/** SND over a run of months — same arithmetic as the annual sheet, so Oct→Sep equals the annual column */
-function calcPeriod(season: string, months: string[], yt: YearType): Row {
-  const rows = months.map((m) => monthRow(season, m, yt));
-  const sum = (k: string) => rows.reduce((a, r) => a + (r[k] ?? 0), 0);
-  const first = rows[0] ?? {};
-  const last = rows.at(-1) ?? {};
-  // crop is entered once, in October
-  const oct = rows[months.indexOf("Oct")] ?? {};
-  const opening = first.opening ?? null;
-  const farmerSelling = sum("farmer_sell");
-  const imports = sum("imports");
-  const domCons = sum("total_cons");
-  const exports = sum("exports");
-  const closing = last.closing ?? null;
-  const govt = last.stock_cci ?? null;
-  const totalDemand = domCons + exports;
-  return {
-    opening_stocks: opening,
-    crop_size: oct.crop ?? null,
-    farmer_selling: farmerSelling,
-    imports,
-    // supply that has actually reached the market in the period
-    total_supply: (opening ?? 0) + farmerSelling + imports,
-    msp_procurement: sum("cci_proc"),
-    msp_auctions: sum("cci_sell"),
-    stocks_govt: govt,
-    domestic_cons: domCons,
-    exports,
-    total_demand: totalDemand,
-    closing_stocks: closing,
-    sur_free_mkt: closing != null && totalDemand ? (closing - (govt ?? 0)) / totalDemand : null,
-    total_sur: closing != null && totalDemand ? closing / totalDemand : null,
-  };
-}
-
-/** full-year SND: the stored Oct–Sep annual figures, or computed from months for Jul–Jun */
-const annualOf = (season: string, yt: YearType): Row =>
-  yt === "india" ? ((SND.annual?.[season] ?? {}) as unknown as Row) : calcPeriod(season, MONTHS_GLOBAL, yt);
+const calcPeriod = sndPeriod;
+const annualOf = sndAnnual;
 
 const fmt = (v: number | null | undefined, ratio?: boolean) =>
   v == null || Number.isNaN(v) ? "—" : ratio ? v.toFixed(3) : v.toFixed(2);
