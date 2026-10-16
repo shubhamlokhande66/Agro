@@ -14,6 +14,14 @@ import { ARRIVALS, ARRIVAL_SEASONS, ARRIVAL_WEEKS } from "@/data/arrivals";
 import { SOWING_SERIES, SOWING_WEEKS } from "@/data/sowing";
 import { DP_DATA, DP_REGIONS, DP_SEASONS, DP_STATE_LABELS, dpValue, type DpMetric } from "@/data/production";
 import { SND } from "@/data/balanceSheet";
+import { CCI } from "@/data/cci";
+import { IE } from "@/data/trade";
+import { WASDE_REPORTS, convertWasde, type WasdeRow } from "@/data/wasde";
+import { COT_WEEKS, cotNet, cotNetChg } from "@/data/cftc";
+import { ES_YEARS } from "@/data/exportSales";
+import { icePriceOn } from "@/data/international";
+import { monthlyBasis } from "@/lib/basis";
+import ComboChart from "@/components/charts/ComboChart";
 import { num, pctChange, shortDate, signedPct } from "@/lib/format";
 
 const lastNum = (a: (number | null)[] | undefined) =>
@@ -446,8 +454,231 @@ function BalanceSheetSection() {
   );
 }
 
-/** Compact previews of the Weather, Arrivals, Sowing, Production and Balance Sheet tabs so
- *  clients landing on Overview see the headline picture without opening each tab. */
+/* ---- CCI, imports & basis, WASDE, CFTC and USDA export sales (report summaries) ---- */
+
+function CciSection() {
+  const seasons = Object.keys(CCI.proc_annual ?? {}).sort().slice(-8);
+  const latest = seasons.at(-1);
+  if (!latest) return null;
+  const prices = (CCI.datewise ?? []).filter((d) => d.p != null).slice(-120);
+  return (
+    <Card>
+      <CardHeader title={`CCI Updates · ${latest}`} sub="Cotton Corporation of India · lakh bales" right={<More href="/cci" label="CCI updates" />} />
+      <StatStrip>
+        <Stat label={`Procurement ${latest}`} value={`${num(CCI.proc_annual[latest], 1)} lb`} />
+        <Stat label={`OMSS sales ${latest}`} value={`${num(CCI.sell_annual[latest], 1)} lb`} />
+        <Stat label={`Closing stock ${latest}`} value={`${num(CCI.stock_annual?.[latest] ?? null, 1)} lb`} />
+      </StatStrip>
+      <div className="grid gap-4 md:grid-cols-2">
+        <div>
+          <div className="mb-1 text-[11px] font-semibold text-ink-soft">Procurement vs OMSS sales</div>
+          <BarChart
+            labels={seasons}
+            legend
+            height={200}
+            series={[
+              { label: "Procurement", color: "#0f9d63", data: seasons.map((x) => CCI.proc_annual[x] ?? null) },
+              { label: "OMSS sales", color: "#2563c9", data: seasons.map((x) => CCI.sell_annual[x] ?? null) },
+            ]}
+          />
+        </div>
+        <div>
+          <div className="mb-1 text-[11px] font-semibold text-ink-soft">CCI sale price · ₹/candy</div>
+          <LineChart
+            labels={prices.map((d) => d.d)}
+            height={200}
+            xTicks={5}
+            series={[{ label: "CCI price", color: "#d97706", data: prices.map((d) => d.p) }]}
+            yFmt={(v) => `₹${Math.round(v / 1000)}k`}
+          />
+        </div>
+      </div>
+    </Card>
+  );
+}
+
+function TradeSection() {
+  const seasons = (IE.seasons ?? []).slice(-8);
+  const latest = IE.actual_cutoff?.season || seasons.at(-1);
+  if (!latest || !seasons.length) return null;
+  const imp = IE.import_totals?.[latest] ?? null;
+  const exp = IE.export_totals?.[latest] ?? null;
+  return (
+    <Card>
+      <CardHeader title="Cotton Imports & Exports" sub="India · lakh bales · cotton year Oct–Sep" right={<More href="/trade" label="Import & export" />} />
+      <StatStrip>
+        <Stat label={`Imports ${latest}`} value={`${num(imp, 1)} lb`} />
+        <Stat label={`Exports ${latest}`} value={`${num(exp, 1)} lb`} />
+        <Stat label="Net imports" value={imp != null && exp != null ? `${num(imp - exp, 1)} lb` : "—"} />
+      </StatStrip>
+      <BarChart
+        labels={seasons}
+        legend
+        height={200}
+        series={[
+          { label: "Imports", color: "#2563c9", data: seasons.map((x) => IE.import_totals?.[x] ?? null) },
+          { label: "Exports", color: "#0f9d63", data: seasons.map((x) => IE.export_totals?.[x] ?? null) },
+        ]}
+      />
+    </Card>
+  );
+}
+
+function BasisSection() {
+  const rows = monthlyBasis().slice(-12);
+  const last = rows.at(-1);
+  if (!last) return null;
+  return (
+    <Card>
+      <CardHeader title="Cotton Basis" sub="Guj-29 minus Cotlook A Index · US ¢/lb · monthly" right={<More href="/basis" label="Cotton basis" />} />
+      <StatStrip>
+        <Stat label={`Basis ${last.month}`} value={`${last.basis >= 0 ? "+" : ""}${last.basis.toFixed(2)}¢`} tone={last.basis >= 0 ? "neg" : "pos"} />
+        <Stat label="Guj-29" value={`${last.gujCents.toFixed(2)}¢/lb`} />
+        <Stat label="Cotlook A" value={`${last.aIndex.toFixed(2)}¢/lb`} />
+      </StatStrip>
+      <BarChart
+        labels={rows.map((r) => r.month)}
+        smartX
+        height={200}
+        series={[{ label: "Basis", data: rows.map((r) => Math.round(r.basis * 100) / 100), colors: rows.map((r) => (r.basis >= 0 ? "#d84a3c" : "#0f9d63")) }]}
+        yFmt={(v) => `${v}¢`}
+      />
+      <p className="mt-1 text-[10.5px] text-ink-faint">Red: India at a premium to the A Index · green: at a discount</p>
+    </Card>
+  );
+}
+
+const WASDE_INDIA: { key: keyof WasdeRow; label: string }[] = [
+  { key: "production", label: "Production" },
+  { key: "imports", label: "Imports" },
+  { key: "domesticUse", label: "Domestic use" },
+  { key: "exports", label: "Exports" },
+  { key: "endingStocks", label: "Ending stocks" },
+];
+
+function WasdeSection() {
+  const r = WASDE_REPORTS[0];
+  const prev = WASDE_REPORTS[1];
+  if (!r) return null;
+  const years = r.years.slice(-2);
+  const proj = years.at(-1)!;
+  const lb = (v: number | undefined | null) => (v == null ? null : convertWasde(v, "lakh"));
+  const kmt = (v: number | undefined | null) => (v == null ? "—" : Math.round(convertWasde(v, "kmt")).toLocaleString("en-IN"));
+  const prevOf = (year: string, k: keyof WasdeRow) => {
+    const c = r.years.find((y) => y.year === year)?.countries.India;
+    return c?.prevMonth?.[k] ?? prev?.years.find((y) => y.year === year)?.countries.India?.current[k] ?? null;
+  };
+  return (
+    <Card>
+      <CardHeader title={`WASDE · USDA ${r.title}`} sub="India cotton balance · lakh bales (170 kg) · change vs previous report" right={<More href="/wasde" label="WASDE" />} />
+      <StatStrip>
+        <Stat label={`World production ${proj.year}`} value={`${kmt(proj.countries.World?.current.production)} KMT`} />
+        <Stat label={`World ending stocks ${proj.year}`} value={`${kmt(proj.countries.World?.current.endingStocks)} KMT`} />
+        <Stat label={`India ending stocks ${proj.year}`} value={`${num(lb(proj.countries.India?.current.endingStocks), 1)} lb`} />
+      </StatStrip>
+      <TableWrap>
+        <Table>
+          <thead>
+            <tr>
+              <Th>India (lakh bales)</Th>
+              {years.map((y) => (
+                <Fragment key={y.year}>
+                  <Th align="right">{`${y.year}${y.status === "proj" ? " proj." : y.status === "est" ? " est." : ""}`}</Th>
+                  <Th align="right">Δ m/m</Th>
+                </Fragment>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {WASDE_INDIA.map((row) => (
+              <tr key={row.key} className={row.key === "production" || row.key === "endingStocks" ? "font-semibold" : ""}>
+                <Td>{row.label}</Td>
+                {years.map((y) => {
+                  const now = lb(y.countries.India?.current[row.key]);
+                  const was = lb(prevOf(y.year, row.key));
+                  const d = now != null && was != null ? now - was : null;
+                  return (
+                    <Fragment key={y.year}>
+                      <Td align="right" mono>{num(now, 1)}</Td>
+                      <Td align="right" mono>
+                        <span className={d == null || Math.abs(d) < 0.05 ? "text-ink-faint" : d > 0 ? "text-pos" : "text-neg"}>
+                          {d == null ? "—" : Math.abs(d) < 0.05 ? "0.0" : `${d > 0 ? "+" : "−"}${Math.abs(d).toFixed(1)}`}
+                        </span>
+                      </Td>
+                    </Fragment>
+                  );
+                })}
+              </tr>
+            ))}
+          </tbody>
+        </Table>
+      </TableWrap>
+    </Card>
+  );
+}
+
+function CftcSection() {
+  const weeks = COT_WEEKS.slice(-52);
+  const w = weeks.at(-1);
+  if (!w) return null;
+  const net = cotNet(w, "mm");
+  const chg = cotNetChg(w, "mm");
+  const short = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" });
+  return (
+    <Card>
+      <CardHeader title="CFTC · Commitments of Traders" sub={`ICE cotton · positions as of ${short(w.date)} · contracts`} right={<More href="/cftc" label="CFTC" />} />
+      <StatStrip>
+        <Stat label="Managed money net" value={`${net >= 0 ? "+" : "−"}${Math.abs(net).toLocaleString("en-US")}`} tone={net >= 0 ? "pos" : "neg"} />
+        <Stat label="Change on week" value={`${chg >= 0 ? "+" : "−"}${Math.abs(chg).toLocaleString("en-US")}`} tone={chg >= 0 ? "pos" : "neg"} />
+        <Stat label="Open interest" value={w.oi.toLocaleString("en-US")} />
+      </StatStrip>
+      <ComboChart
+        labels={weeks.map((x) => short(x.date))}
+        height={210}
+        xTicks={6}
+        left={{ label: "Funds net", data: weeks.map((x) => cotNet(x, "mm")), color: "#2563c9", fmt: (v) => `${Math.round(v / 1000)}k` }}
+        right={{ label: "ICE ¢/lb", data: weeks.map((x) => icePriceOn(x.date)), color: "#d97706", fmt: (v) => `${v.toFixed(0)}¢` }}
+      />
+    </Card>
+  );
+}
+
+function ExportSalesSection() {
+  const cur = ES_YEARS[0];
+  const prev = ES_YEARS[1];
+  const w = cur?.weeks.at(-1);
+  if (!cur || !prev || !w) return null;
+  const i = cur.weeks.length - 1;
+  const ly = prev.weeks[i];
+  const n = Math.max(cur.weeks.length, prev.weeks.length);
+  const k = (v: number) => Math.round(v / 1000);
+  const yoy = (a: number, b?: number) => (b ? ((a - b) / b) * 100 : null);
+  return (
+    <Card>
+      <CardHeader title={`USDA Export Sales · ${cur.year}`} sub={`US upland cotton · week ending ${shortDate(w.week)} · thousand running bales`} right={<More href="/usda" label="Export sales" />} />
+      <StatStrip>
+        <Stat label="Net sales · week" value={`${k(w.netSales).toLocaleString("en-IN")}k`} />
+        <Stat label="Commitments · YoY" value={`${k(w.commitment).toLocaleString("en-IN")}k · ${signedPct(yoy(w.commitment, ly?.commitment), 1)}`} tone={toneOf(yoy(w.commitment, ly?.commitment))} />
+        <Stat label="Exports so far · YoY" value={`${k(w.accExports).toLocaleString("en-IN")}k · ${signedPct(yoy(w.accExports, ly?.accExports), 1)}`} tone={toneOf(yoy(w.accExports, ly?.accExports))} />
+      </StatStrip>
+      <LineChart
+        labels={Array.from({ length: n }, (_, j) => `Wk ${j + 1}`)}
+        legend
+        height={210}
+        xTicks={8}
+        series={[
+          { label: `${cur.year} commitments`, color: "#0f9d63", data: Array.from({ length: n }, (_, j) => (cur.weeks[j] ? k(cur.weeks[j].commitment) : null)) },
+          { label: `${prev.year} commitments`, color: "#94a3b8", data: Array.from({ length: n }, (_, j) => (prev.weeks[j] ? k(prev.weeks[j].commitment) : null)) },
+        ]}
+        yFmt={(v) => `${(v / 1000).toFixed(1)}M`}
+      />
+    </Card>
+  );
+}
+
+/** Compact previews of each dashboard area — weather, sowing & arrivals, production, CCI, balance
+ *  sheet, imports & basis, WASDE, CFTC and USDA export sales — each followed by a commentary
+ *  panel, so Overview (and its PDF report) gives the headline picture without opening each tab. */
 export function OverviewSections() {
   return (
     <div className="mt-4 space-y-4">
@@ -460,8 +691,22 @@ export function OverviewSections() {
       <CommentsPanel section="overviewSowing" title="Summary (Cotton Sowing & Arrivals)" minHeight={100} rows={4} />
       <ProductionSection />
       <CommentsPanel section="overviewProduction" title="Summary (Domestic production)" minHeight={100} rows={4} />
+      <CciSection />
+      <CommentsPanel section="overviewCci" title="Summary (CCI updates)" minHeight={100} rows={4} />
       <BalanceSheetSection />
       <CommentsPanel section="overviewBalance" title="Summary (Balance Sheet)" minHeight={100} rows={4} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <TradeSection />
+        <BasisSection />
+      </div>
+      <CommentsPanel section="overviewTradeBasis" title="Summary (Cotton imports & basis)" minHeight={100} rows={4} />
+      <WasdeSection />
+      <CommentsPanel section="overviewWasde" title="Summary (WASDE)" minHeight={100} rows={4} />
+      <div className="grid gap-4 lg:grid-cols-2">
+        <CftcSection />
+        <ExportSalesSection />
+      </div>
+      <CommentsPanel section="overviewCftc" title="Summary (CFTC & USDA export sales)" minHeight={100} rows={4} />
     </div>
   );
 }

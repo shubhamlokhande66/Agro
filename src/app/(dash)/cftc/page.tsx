@@ -7,7 +7,7 @@ import ComboChart from "@/components/charts/ComboChart";
 import LineChart from "@/components/charts/LineChart";
 import BarChart from "@/components/charts/BarChart";
 import { COT_GROUPS, COT_WEEKS, cotLong, cotNet, cotNetChg, cotShort, cotSpread, type CotWeek } from "@/data/cftc";
-import { ICE_D_L, ICE_D_V, ICE_M_L, ICE_M_V } from "@/data/international";
+import { icePriceOn } from "@/data/international";
 import { useAuth } from "@/lib/auth";
 import { useDatasets } from "@/lib/datasets/provider";
 
@@ -25,21 +25,6 @@ const signed = (v: number) => `${v > 0 ? "+" : v < 0 ? "−" : ""}${fmtN(Math.ab
 const fmtDay = (iso: string | null | undefined) =>
   iso ? new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }) : "—";
 const shortDay = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" });
-
-/** ICE cotton (¢/lb) on a COT Tuesday: that day's settlement (or the last one before), else the month's average */
-function icePrice(date: string): number | null {
-  const iso = (l: string) => `20${l.slice(6, 8)}-${l.slice(3, 5)}-${l.slice(0, 2)}`;
-  for (let i = ICE_D_L.length - 1; i >= 0; i--) {
-    const d = iso(ICE_D_L[i]);
-    if (d <= date) {
-      const gap = (Date.parse(date) - Date.parse(d)) / 86400000;
-      if (gap <= 5) return ICE_D_V[i];
-      break;
-    }
-  }
-  const m = ICE_M_L.indexOf(date.slice(0, 7));
-  return m >= 0 ? ICE_M_V[m] : null;
-}
 
 export default function CftcPage() {
   const [tab, setTab] = useState<Tab>("overview");
@@ -107,7 +92,7 @@ function Overview({ weeks, shown }: { weeks: CotWeek[]; shown: CotWeek[] }) {
   const lo = Math.min(...last3y);
   const hi = Math.max(...last3y);
   const pctile = hi > lo ? Math.round(((mmNet - lo) / (hi - lo)) * 100) : null;
-  const price = shown.map((x) => icePrice(x.date));
+  const price = shown.map((x) => icePriceOn(x.date));
 
   return (
     <>
@@ -204,7 +189,7 @@ function WeeklyTable({ shown }: { shown: CotWeek[] }) {
           </thead>
           <tbody>
             {rows.map((x) => {
-              const p = icePrice(x.date);
+              const p = icePriceOn(x.date);
               return (
                 <tr key={x.date} className="num border-b border-line text-right last:border-0 hover:bg-surface-2/60">
                   <td className="whitespace-nowrap px-4 py-1.5 text-left font-sans font-medium text-ink sm:px-5">{fmtDay(x.date)}</td>

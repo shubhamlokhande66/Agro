@@ -7,7 +7,7 @@ import { timeAgo } from "@/lib/format";
 
 const AUTOSAVE_DEBOUNCE_MS = 600;
 
-type Section = "overview" | "overviewWeather" | "overviewSowing" | "overviewProduction" | "overviewBalance" | "sowing" | "production" | "weather" | "balanceSheet" | "cci";
+type Section = "overview" | "overviewWeather" | "overviewSowing" | "overviewProduction" | "overviewBalance" | "sowing" | "production" | "weather" | "balanceSheet" | "cci" | "overviewCci" | "overviewTradeBasis" | "overviewWasde" | "overviewCftc";
 
 /** A persisted free-text notes panel — "add commentary below the chart" from the
  *  requirements doc. One blob of text per section, shared by everyone who opens the page,
@@ -96,24 +96,30 @@ export function CommentsPanel({
       : "No notes yet";
 
   if (!open) {
+    // the written commentary is shown as-is (it goes into the PDF report too); an empty panel is
+    // left out of the PDF
+    const hasText = text.trim().length > 0;
     return (
-      <button
-        type="button"
-        onClick={() => setOpen(true)}
-        aria-expanded={false}
-        className="panel panel-hover focusable flex w-full items-center justify-between gap-3 px-4 py-3 text-left"
-      >
-        <span className="flex min-w-0 items-center gap-2.5">
-          <span aria-hidden className="text-[14px]">📝</span>
-          <span className="min-w-0">
-            <span className="block text-[13px] font-semibold tracking-tight text-ink">{title}</span>
-            <span className="block truncate text-[11px] text-ink-faint">{lastEdited}</span>
+      <div className={"panel px-4 py-3" + (hasText ? "" : " print-hide")}>
+        <div className="flex items-center justify-between gap-3">
+          <span className="flex min-w-0 items-center gap-2.5">
+            <span aria-hidden className="text-[14px]">📝</span>
+            <span className="min-w-0">
+              <span className="block text-[13px] font-semibold tracking-tight text-ink">{title}</span>
+              <span className="print-hide block truncate text-[11px] text-ink-faint">{lastEdited}</span>
+            </span>
           </span>
-        </span>
-        <span className="shrink-0 rounded-lg border border-line px-2.5 py-1 text-[11.5px] font-semibold text-accent">
-          Show ▾
-        </span>
-      </button>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            aria-expanded={false}
+            className="focusable print-hide shrink-0 rounded-lg border border-line px-2.5 py-1 text-[11.5px] font-semibold text-accent hover:bg-surface-2"
+          >
+            {authed ? (hasText ? "Edit ▾" : "Add commentary ▾") : "Show ▾"}
+          </button>
+        </div>
+        {hasText ? <p className="mt-2 whitespace-pre-wrap text-[12.5px] leading-relaxed text-ink">{text}</p> : null}
+      </div>
     );
   }
 

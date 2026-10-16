@@ -39,3 +39,18 @@ export function __hydrateInternational(b: IntlBlob) {
   BR_D_L = b.brDL ?? [];
   BR_D_V = b.brDV ?? [];
 }
+
+/** ICE cotton (¢/lb) on a date: that day's settlement (or the last one within 5 days before),
+ *  else that month's average — e.g. to pair a weekly COT report with the price */
+export function icePriceOn(date: string): number | null {
+  const iso = (l: string) => `20${l.slice(6, 8)}-${l.slice(3, 5)}-${l.slice(0, 2)}`;
+  for (let i = ICE_D_L.length - 1; i >= 0; i--) {
+    const d = iso(ICE_D_L[i]);
+    if (d <= date) {
+      if ((Date.parse(date) - Date.parse(d)) / 86400000 <= 5) return ICE_D_V[i];
+      break;
+    }
+  }
+  const m = ICE_M_L.indexOf(date.slice(0, 7));
+  return m >= 0 ? ICE_M_V[m] : null;
+}
