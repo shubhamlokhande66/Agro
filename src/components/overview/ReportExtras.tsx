@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useEffect, useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
 import BarChart from "@/components/charts/BarChart";
 import { StatusChip } from "@/components/ground/GroundUi";
@@ -74,9 +75,40 @@ const fmtDay = (iso: string, withYear = true) =>
 const hasContent = (r: StateReport) => !!(r.stage || r.condition || r.rainfall || r.commentary || r.photos.length);
 
 /** the latest Field Pulse report — takeaways, then each state's crop notes and field photographs */
+/** states hidden from the Overview / PDF for a Field Pulse report — kept in this browser */
+const hiddenKey = (reportId: string) => `fieldPulseHidden:${reportId}`;
+export function fieldPulseHidden(reportId: string): string[] {
+  try {
+    const v = JSON.parse(localStorage.getItem(hiddenKey(reportId)) ?? "[]");
+    return Array.isArray(v) ? v : [];
+  } catch {
+    return [];
+  }
+}
+function saveHidden(reportId: string, codes: string[]) {
+  try {
+    localStorage.setItem(hiddenKey(reportId), JSON.stringify(codes));
+  } catch {
+    // storage unavailable — the choice lasts until the page reloads
+  }
+}
+
 export function FieldPulseSection() {
   const report = GROUND_REPORTS[0];
+  const [hidden, setHidden] = useState<string[]>([]);
+  useEffect(() => {
+    if (report) setHidden(fieldPulseHidden(report.id));
+  }, [report]);
   if (!report) return null;
+  const hide = (code: string) => {
+    const next = [...new Set([...hidden, code])];
+    setHidden(next);
+    saveHidden(report.id, next);
+  };
+  const showAll = () => {
+    setHidden([]);
+    saveHidden(report.id, []);
+  };
   const w = reportWeek(report.date);
   // states in order of production share (as on the Field Pulse page)
   const season = [...DP_SEASONS].reverse().find((s) => (dpValue("prod", s, "ALL_INDIA") ?? 0) > 0);
@@ -85,7 +117,10 @@ export function FieldPulseSection() {
   const states = [...GROUND_STATES]
     .sort((a, b) => share(b.code) - share(a.code))
     .map((s) => ({ ...s, r: byState.get(s.code) }))
-    .filter((x): x is typeof x & { r: StateReport } => !!x.r && hasContent(x.r));
+    // states without photographs are left out; so are the ones hidden with the Hide button
+    .filter((x): x is typeof x & { r: StateReport } => !!x.r && hasContent(x.r) && x.r.photos.length > 0);
+  const shown = states.filter((x) => !hidden.includes(x.code));
+  const hiddenLabels = states.filter((x) => hidden.includes(x.code)).map((x) => x.label);
   const takeaways = report.summary
     .split("\n")
     .map((l) => l.replace(/^[\s•\-*]+/, "").trim())
@@ -111,11 +146,28 @@ export function FieldPulseSection() {
       </Card>
 
       {/* one card per state, so the PDF breaks pages between states, never through a photo */}
-      {states.map((x) => (
+      {hiddenLabels.length ? (
+        <div className="print-hide flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-line px-3 py-2 text-[11.5px] text-ink-faint">
+          <span>Hidden from the report: {hiddenLabels.join(", ")}</span>
+          <button type="button" onClick={showAll} className="focusable font-semibold text-accent hover:underline">
+            Show all
+          </button>
+        </div>
+      ) : null}
+
+      {shown.map((x) => (
         <section key={x.code} className="panel p-4 sm:p-5">
           <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
             <h3 className="text-[14.5px] font-semibold tracking-tight text-ink">{x.label}</h3>
-            <div className="flex flex-wrap gap-1.5">
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => hide(x.code)}
+                title="Leave this state out of the Overview and the PDF report"
+                className="focusable print-hide rounded-lg border border-line px-2 py-0.5 text-[11px] font-semibold text-ink-soft hover:bg-surface-2"
+              >
+                Hide
+              </button>
               {x.r.stage ? <StatusChip label="Stage" value={x.r.stage} tone="flat" /> : null}
               {x.r.condition ? <StatusChip label="Crop" value={x.r.condition} tone={toneOf(CONDITIONS, x.r.condition)} /> : null}
               {x.r.rainfall ? <StatusChip label="Rain" value={x.r.rainfall} tone={toneOf(RAINFALL, x.r.rainfall)} /> : null}

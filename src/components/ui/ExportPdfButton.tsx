@@ -15,8 +15,8 @@ export type PdfReport = {
   fileName: string;
   /** "Inside this report" list on the cover */
   contents?: string[];
-  /** field photographs for the cover (same-origin URLs) */
-  photos?: { src: string; caption: string }[];
+  /** field photographs for the cover (same-origin URLs) — a function is read when the PDF is made */
+  photos?: { src: string; caption: string }[] | (() => { src: string; caption: string }[]);
 };
 
 const COMPANY = "Agrolytix Research";
@@ -118,7 +118,7 @@ export async function drawCover(pdf: jsPDF, report: PdfReport) {
   };
 
   // this week's field photographs
-  const photos = (report.photos ?? []).slice(0, 3);
+  const photos = (typeof report.photos === "function" ? report.photos() : (report.photos ?? [])).slice(0, 3);
   if (photos.length) {
     label("FROM THE FIELDS", y);
     y += 12;

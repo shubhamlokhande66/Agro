@@ -8,6 +8,7 @@ import { OverviewSections } from "@/components/overview/OverviewSections";
 import { CommentsPanel } from "@/components/ui/CommentsPanel";
 import { autoCommentary } from "@/lib/autoCommentary";
 import { ReportHeading } from "@/components/overview/ReportHeading";
+import { fieldPulseHidden } from "@/components/overview/ReportExtras";
 import { GROUND_REPORTS, GROUND_STATES, imageUrl } from "@/data/groundReport";
 import { ExportPdfButton, type PdfReport } from "@/components/ui/ExportPdfButton";
 import { GlobalPeriodTabs } from "@/components/ui/GlobalPeriodTabs";
@@ -29,13 +30,14 @@ const WEEKLY_CONTENTS = [
 ];
 const MONTHLY_CONTENTS = [...WEEKLY_CONTENTS.slice(0, 5), "India Balance Sheet", ...WEEKLY_CONTENTS.slice(5, 8), "Production Benchmarks", WEEKLY_CONTENTS[8]];
 
-/** up to three photographs from the latest Field Pulse report, one per state, for the cover */
+/** up to three photographs from the latest Field Pulse report, one per state, for the cover (not from states hidden on the Overview) */
 function coverPhotos(): { src: string; caption: string }[] {
   const r = GROUND_REPORTS[0];
   if (!r) return [];
   const label = (code: string) => GROUND_STATES.find((s) => s.code === code)?.label ?? code;
+  const hidden = fieldPulseHidden(r.id);
   return r.states
-    .filter((s) => s.photos.length)
+    .filter((s) => s.photos.length && !hidden.includes(s.state))
     .slice(0, 3)
     .map((s) => ({ src: imageUrl(s.photos[0].id), caption: [label(s.state), s.photos[0].location].filter(Boolean).join(" · ") }));
 }
@@ -45,10 +47,9 @@ function overviewReports(now = new Date()): PdfReport[] {
   const day = `${dd(now.getDate())}.${dd(now.getMonth() + 1)}.${now.getFullYear()}`; // 16.10.2026, as on the weekly report
   const month = now.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
   const iso = now.toISOString().slice(0, 10);
-  const photos = coverPhotos();
   return [
-    { key: "weekly", label: "Weekly report", title: "INDIA COTTON: Weekly Report", dateLine: day, fileName: `Agrolytix India Cotton Weekly Report ${iso}`, contents: WEEKLY_CONTENTS, photos },
-    { key: "monthly", label: "Monthly report", title: "INDIA COTTON: Monthly Report", dateLine: month, fileName: `Agrolytix India Cotton Monthly Report ${iso.slice(0, 7)}`, contents: MONTHLY_CONTENTS, photos },
+    { key: "weekly", label: "Weekly report", title: "INDIA COTTON: Weekly Report", dateLine: day, fileName: `Agrolytix India Cotton Weekly Report ${iso}`, contents: WEEKLY_CONTENTS, photos: coverPhotos },
+    { key: "monthly", label: "Monthly report", title: "INDIA COTTON: Monthly Report", dateLine: month, fileName: `Agrolytix India Cotton Monthly Report ${iso.slice(0, 7)}`, contents: MONTHLY_CONTENTS, photos: coverPhotos },
   ];
 }
 
