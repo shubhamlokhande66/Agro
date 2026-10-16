@@ -52,7 +52,6 @@ export const NAV: NavGroup[] = [
       { href: "/cftc", label: "CFTC", icon: "◔" },
       { href: "/usda", label: "USDA Export Sales", icon: "◕" },
       { href: "/benchmarks", label: "Benchmarks", icon: "◑" },
-      { href: "/cotton-maps", label: "India Cotton Maps", icon: "◐", soon: true },
     ],
   },
   {
