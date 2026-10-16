@@ -49,7 +49,9 @@ export default function OverviewPage() {
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2.5">
-          <GlobalPeriodTabs value={period} onChange={setPeriod} />
+          <span className="print-hide">
+            <GlobalPeriodTabs value={period} onChange={setPeriod} />
+          </span>
           <ExportPdfButton
             fileName={`Agrolytix Market Overview ${new Date().toISOString().slice(0, 10)}`}
             reports={overviewReports()}
@@ -74,16 +76,19 @@ export default function OverviewPage() {
         </div>
       </div>
 
-      {view === "table" ? (
+      {/* the PDF report always carries the price table, never the chart — in chart view the table is
+          kept hidden on screen and swapped in while the PDF is captured */}
+      <div className={view === "table" ? undefined : "pdf-only"}>
         <PriceTable />
-      ) : (
-        <div className="grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
+      </div>
+      {view === "chart" ? (
+        <div className="print-hide grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_340px] xl:grid-cols-[minmax(0,1fr)_380px]">
           <HeroChart category={heroCat} period={period} onPeriodChange={setPeriod} />
           <div className="flex min-w-0 flex-col gap-3">
             <HeroCategoryRail value={heroCat} onChange={setHeroCat} period={period} />
           </div>
         </div>
-      )}
+      ) : null}
 
       <div className="mt-4">
         <CommentsPanel section="overview" title="Summary (Prices)" minHeight={120} rows={5} autoWrite={() => autoCommentary("overview")} />

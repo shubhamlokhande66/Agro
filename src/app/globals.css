@@ -260,6 +260,9 @@ body {
   .print-hide {
     display: none !important;
   }
+  .pdf-only {
+    display: block !important;
+  }
   .panel {
     break-inside: avoid;
     box-shadow: none !important;
@@ -272,6 +275,13 @@ body {
 /* while a PDF is being captured (ExportPdfButton): the live page takes the PDF layout */
 .pdf-capture .print-hide:not(.pdf-keep-live) {
   display: none !important;
+}
+/* shown only in the PDF (e.g. the Overview's price table while the chart view is on screen) */
+.pdf-only {
+  display: none;
+}
+.pdf-capture .pdf-only {
+  display: block !important;
 }
 .pdf-capture .pdf-full-row {
   grid-column: 1 / -1 !important;
