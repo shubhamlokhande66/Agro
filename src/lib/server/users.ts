@@ -4,8 +4,8 @@ import { listDevices, type SessionDoc } from "./devices";
 
 export type Role = "admin" | "client";
 /** which dashboard an account signs in to — accounts are never shared between the two */
-export type App = "cotton" | "weather";
-export const APPS: App[] = ["cotton", "weather"];
+export type App = "cotton" | "weather" | "sugar";
+export const APPS: App[] = ["cotton", "weather", "sugar"];
 export type UserStatus = "pending" | "approved" | "rejected";
 
 export type UserDoc = {

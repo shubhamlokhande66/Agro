@@ -3,10 +3,11 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import clsx from "clsx";
-import { NAV } from "@/lib/nav";
+import { NAV, type NavGroup } from "@/lib/nav";
 import { useAuth } from "@/lib/auth";
 
-export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
+/** the dashboard menu — the cotton menu by default; the sugar dashboard passes its own */
+export function Sidebar({ onNavigate, nav = NAV, subtitle = "Cotton Terminal" }: { onNavigate?: () => void; nav?: NavGroup[]; subtitle?: string }) {
   const pathname = usePathname();
   const { role, username } = useAuth();
 
@@ -16,12 +17,12 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
         {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src="/agrolytix-logo.jpg" alt="Agrolytix Research" className="h-14 w-auto" />
         <div className="mt-2 text-[9.5px] font-medium uppercase tracking-[0.16em] text-ink-faint">
-          Cotton Terminal
+          {subtitle}
         </div>
       </div>
 
       <nav className="flex-1 space-y-4 overflow-y-auto px-2.5 pb-4">
-        {NAV.filter((g) => !g.adminOnly || role === "admin").map((group, gi) => (
+        {nav.filter((g) => !g.adminOnly || role === "admin").map((group, gi) => (
           <div key={gi}>
             {group.heading ? (
               <div className="mb-1 px-2 text-[9.5px] font-bold uppercase tracking-[0.16em] text-ink-faint/80">

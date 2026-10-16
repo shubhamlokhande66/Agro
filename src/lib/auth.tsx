@@ -11,7 +11,7 @@ import {
 
 export type Role = "admin" | "client";
 /** which dashboard this provider signs in to — each has its own accounts and session */
-export type App = "cotton" | "weather";
+export type App = "cotton" | "weather" | "sugar";
 
 type AuthState = {
   app: App;

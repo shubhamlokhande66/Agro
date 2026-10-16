@@ -4,14 +4,14 @@ import type { App, Role } from "./users";
 import { sessionExists, touchSession } from "./devices";
 
 /** one session cookie per dashboard, so a browser can be signed in to both independently */
-const COOKIES: Record<App, string> = { cotton: "cda_session", weather: "wda_session" };
+const COOKIES: Record<App, string> = { cotton: "cda_session", weather: "wda_session", sugar: "sda_session" };
 const secretStr =
   process.env.AUTH_SECRET ?? "dev-insecure-secret-change-in-production-please";
 const secret = new TextEncoder().encode(secretStr);
 
 export type Session = { username: string; role: Role; sessionId: string; deviceId: string; app: App };
 
-export const parseApp = (v: unknown): App => (v === "weather" ? "weather" : "cotton");
+export const parseApp = (v: unknown): App => (v === "weather" || v === "sugar" ? v : "cotton");
 
 export async function createSession(session: Session) {
   const token = await new SignJWT(session)

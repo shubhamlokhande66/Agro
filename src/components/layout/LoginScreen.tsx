@@ -8,6 +8,7 @@ import { useAuth } from "@/lib/auth";
 const THEMES = {
   cotton: { title: "Cotton Terminal", bg: "#07100c", a: "#2dd08a", b: "#0b7d4e", glow: "15,157,99", text: "#05221a" },
   weather: { title: "Monsoon Monitor", bg: "#060b16", a: "#38bdf8", b: "#1d4ed8", glow: "37,99,235", text: "#04122e" },
+  sugar: { title: "Sugar Terminal", bg: "#120a06", a: "#f5b54a", b: "#c2410c", glow: "234,128,48", text: "#2a1204" },
 } as const;
 
 export function LoginScreen() {

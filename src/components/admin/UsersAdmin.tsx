@@ -11,7 +11,7 @@ type UserRow = {
   _id: string;
   username: string;
   role: "admin" | "client";
-  app?: "cotton" | "weather";
+  app?: "cotton" | "weather" | "sugar";
   status: "pending" | "approved" | "rejected";
   deviceLimit: number | null;
   createdAt: number;
@@ -20,7 +20,7 @@ type UserRow = {
   devices: Device[];
 };
 
-const APP_LABEL = { cotton: "Cotton", weather: "Weather" } as const;
+const APP_LABEL = { cotton: "Cotton", weather: "Weather", sugar: "Sugar" } as const;
 const appOf = (u: UserRow) => u.app ?? "cotton";
 
 
@@ -31,7 +31,7 @@ const STATUS_STYLE: Record<UserRow["status"], string> = {
 };
 
 /** account approvals & device limits for one dashboard's accounts (each admin area has its own) */
-export function UsersAdmin({ app = "cotton" }: { app?: "cotton" | "weather" }) {
+export function UsersAdmin({ app = "cotton" }: { app?: "cotton" | "weather" | "sugar" }) {
   const [users, setUsers] = useState<UserRow[] | null>(null);
   const [busy, setBusy] = useState<string | null>(null);
   const [modalUser, setModalUser] = useState<UserRow | null>(null);
@@ -73,7 +73,7 @@ export function UsersAdmin({ app = "cotton" }: { app?: "cotton" | "weather" }) {
   return (
     <div>
       <PageHeader
-        title={app === "weather" ? "Weather Users" : "Users"}
+        title={app === "cotton" ? "Users" : `${APP_LABEL[app]} Users`}
         icon="◈"
         sub={`${APP_LABEL[app]} dashboard accounts — approve signup requests${app === "cotton" ? ", set roles" : ""}, and control how many devices each account can be signed in on.`}
       />
@@ -193,7 +193,7 @@ function UserModal({
   act,
 }: {
   user: UserRow;
-  app: "cotton" | "weather";
+  app: "cotton" | "weather" | "sugar";
   busy: boolean;
   onClose: () => void;
   act: (username: string, action: string, payload?: Record<string, unknown>) => Promise<boolean>;
@@ -229,8 +229,8 @@ function UserModal({
           <Labeled label="Move to dashboard">
             <SelectInput
               value={APP_LABEL[target]}
-              options={["Cotton", "Weather"]}
-              onChange={(v) => setTarget(v === "Weather" ? "weather" : "cotton")}
+              options={["Cotton", "Weather", "Sugar"]}
+              onChange={(v) => setTarget(v === "Weather" ? "weather" : v === "Sugar" ? "sugar" : "cotton")}
             />
           </Labeled>
         ) : null}

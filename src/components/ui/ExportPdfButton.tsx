@@ -15,6 +15,8 @@ export type PdfReport = {
   fileName: string;
   /** "Inside this report" list on the cover */
   contents?: string[];
+  /** photo banner across the top of the cover (default: the cotton field-to-mill banner; null: none) */
+  banner?: string | null;
   /** field photographs for the cover (same-origin URLs) — a function is read when the PDF is made */
   photos?: { src: string; caption: string }[] | (() => { src: string; caption: string }[]);
 };
@@ -69,7 +71,8 @@ export async function drawCover(pdf: jsPDF, report: PdfReport) {
   // photo banner, edge to edge
   let y = 0;
   try {
-    const banner = await loadImage(BANNER_SRC);
+    if (report.banner === null) throw new Error("no banner");
+    const banner = await loadImage(report.banner ?? BANNER_SRC);
     const h = (pageW * banner.h) / banner.w;
     pdf.addImage(banner.data, "JPEG", 0, 0, pageW, h);
     y = h;

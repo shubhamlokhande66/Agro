@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
-type AppKey = "cotton" | "weather";
+type AppKey = "cotton" | "weather" | "sugar";
 
 const DASHBOARDS: {
   key: AppKey;
@@ -32,14 +32,23 @@ const DASHBOARDS: {
     points: ["IMD subdivision rainfall & deficits", "ENSO / IOD indices", "Crop-weighted rainfall risk"],
     accent: "#2563eb",
   },
+  {
+    key: "sugar",
+    href: "/sugar",
+    icon: "🍬",
+    title: "Sugar Dashboard",
+    sub: "Agrolytix Sugar Terminal",
+    points: ["Ex-mill, ICE No.11 & London No.5 prices", "Cane crushing, production & ethanol", "Balance sheet, exports & policy"],
+    accent: "#d97706",
+  },
 ];
 
 /** Entry page: pick a dashboard. Each has its own login (and its own accounts). */
 export default function LandingPage() {
-  const [signedIn, setSignedIn] = useState<Record<AppKey, boolean>>({ cotton: false, weather: false });
+  const [signedIn, setSignedIn] = useState<Record<AppKey, boolean>>({ cotton: false, weather: false, sugar: false });
 
   useEffect(() => {
-    for (const app of ["cotton", "weather"] as const) {
+    for (const app of ["cotton", "weather", "sugar"] as const) {
       fetch(`/api/auth/me?app=${app}`)
         .then((r) => r.json())
         .then((d) => setSignedIn((s) => ({ ...s, [app]: !!d?.session })))
@@ -49,14 +58,14 @@ export default function LandingPage() {
 
   return (
     <div className="grid min-h-screen place-items-center bg-bg px-4 py-10">
-      <div className="w-full max-w-3xl">
+      <div className="w-full max-w-5xl">
         <div className="mb-8 text-center">
           <img src="/agrolytix-logo.jpg" alt="Agrolytix Research" className="mx-auto h-16 w-auto" />
           <h1 className="mt-4 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Choose a dashboard</h1>
           <p className="mt-1 text-[13px] text-ink-faint">Each dashboard has its own sign-in.</p>
         </div>
 
-        <div className="grid gap-4 sm:grid-cols-2">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           {DASHBOARDS.map((d) => (
             <Link
               key={d.key}

@@ -14,7 +14,7 @@ export type DatasetMeta = {
   description: string;
   route: string;
   /** which dashboard's admin area edits it (missing = cotton) */
-  app?: "cotton" | "weather";
+  app?: "cotton" | "weather" | "sugar";
 };
 
 export const DATASETS: DatasetMeta[] = [
@@ -95,8 +95,8 @@ export const DATASETS: DatasetMeta[] = [
 
 export const DATASET_KEYS = DATASETS.map((d) => d.key);
 export const datasetMeta = (key: string) => DATASETS.find((d) => d.key === key);
-export const datasetApp = (key: string): "cotton" | "weather" => datasetMeta(key)?.app ?? "cotton";
+export const datasetApp = (key: string): "cotton" | "weather" | "sugar" => datasetMeta(key)?.app ?? "cotton";
 /** the datasets one dashboard's admin area manages — the two admin areas are kept separate */
-export const datasetsFor = (app: "cotton" | "weather") => DATASETS.filter((d) => (d.app ?? "cotton") === app);
+export const datasetsFor = (app: "cotton" | "weather" | "sugar") => DATASETS.filter((d) => (d.app ?? "cotton") === app);
 export const COTTON_DATASETS = datasetsFor("cotton");
 export const WEATHER_DATASETS = datasetsFor("weather");

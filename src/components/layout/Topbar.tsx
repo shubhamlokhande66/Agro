@@ -3,14 +3,14 @@
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/lib/auth";
 import { useTheme } from "@/lib/theme";
-import { ALL_ITEMS } from "@/lib/nav";
+import { ALL_ITEMS, type NavItem } from "@/lib/nav";
 
-export function Topbar({ onMenu }: { onMenu: () => void }) {
+export function Topbar({ onMenu, items = ALL_ITEMS }: { onMenu: () => void; items?: NavItem[] }) {
   const { username, logout, canUpload } = useAuth();
   const { mode, toggle } = useTheme();
   const pathname = usePathname();
   const current =
-    ALL_ITEMS.find((i) =>
+    items.find((i) =>
       pathname.startsWith(i.href),
     )?.label ?? "Overview";
 
