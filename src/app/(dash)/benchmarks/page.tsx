@@ -5,42 +5,21 @@ import { useState } from "react";
 import { PageHeader } from "@/components/ui/PageHeader";
 import BarChart from "@/components/charts/BarChart";
 import { BENCH, LAKH_BALES_TO_KMT } from "@/data/benchmarks";
-import { dpValue } from "@/data/production";
-import { WASDE_REPORTS, convertWasde } from "@/data/wasde";
+import { benchmarkRows, type BenchRow } from "@/lib/benchmarks";
 
 type Unit = "lakh" | "kmt";
-type Row = { source: string; kind: "ours" | "usda" | "trade" | "avg"; a: number | null; b: number | null; note?: string };
+type Row = BenchRow;
 
 const toUnit = (lakh: number, u: Unit) => (u === "kmt" ? lakh * LAKH_BALES_TO_KMT : lakh);
 const fmt = (lakh: number | null, u: Unit) =>
   lakh == null ? "—" : toUnit(lakh, u).toLocaleString("en-IN", { maximumFractionDigits: u === "kmt" ? 0 : 1, minimumFractionDigits: u === "kmt" ? 0 : 1 });
 const signedFmt = (lakh: number, u: Unit) => `${lakh > 0 ? "+" : lakh < 0 ? "−" : ""}${fmt(Math.abs(lakh), u)}`;
-const reportMonth = (m: string) => {
-  const [y, mo] = m.split("-");
-  return `${["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][Number(mo) - 1]} ${y}`;
-};
 
 export default function BenchmarksPage() {
   const [unit, setUnit] = useState<Unit>("lakh");
   const [sa, sb] = BENCH.seasons;
 
-  // Agrolytix: our production dataset; USDA: India production in the latest WASDE, converted to lakh bales
-  const latest = WASDE_REPORTS[0];
-  const usda = (season: string) => {
-    const v = latest?.years.find((y) => y.year === season)?.countries.India?.current.production;
-    return v == null ? null : convertWasde(v, "lakh");
-  };
-  const trade = BENCH.houses.map<Row>((h) => ({ source: h.source, kind: "trade", a: h.a, b: h.b, note: h.asOf }));
-  const avg = (key: "a" | "b") => {
-    const vals = trade.map((t) => t[key]).filter((v): v is number => v != null);
-    return vals.length ? vals.reduce((x, y) => x + y, 0) / vals.length : null;
-  };
-  const rows: Row[] = [
-    { source: "Agrolytix", kind: "ours", a: dpValue("prod", sa, "ALL_INDIA"), b: dpValue("prod", sb, "ALL_INDIA"), note: "Domestic Production" },
-    { source: "USDA", kind: "usda", a: usda(sa), b: usda(sb), note: latest ? `WASDE ${reportMonth(latest.month)}` : undefined },
-    ...trade,
-    { source: "Trade average", kind: "avg", a: avg("a"), b: avg("b"), note: trade.map((t) => t.source).join(", ") },
-  ];
+  const { rows } = benchmarkRows();
   const ours = rows[0];
   const vs = (r: Row, key: "a" | "b") => (r.kind === "ours" || r[key] == null || ours[key] == null ? null : (r[key] as number) - (ours[key] as number));
   const yoy = (r: Row) => (r.a != null && r.b != null ? r.b - r.a : null);

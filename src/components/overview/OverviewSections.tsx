@@ -8,6 +8,7 @@ import { Tabs } from "@/components/ui/Tabs";
 import { Table, TableWrap, Td, Th } from "@/components/ui/DataTable";
 import { CommentsPanel } from "@/components/ui/CommentsPanel";
 import { CottonBeltRain } from "./CottonBeltRain";
+import { BenchmarksSection, FieldPulseSection } from "./ReportExtras";
 import { autoCommentary } from "@/lib/autoCommentary";
 import LineChart, { type LineSeries } from "@/components/charts/LineChart";
 import BarChart from "@/components/charts/BarChart";
@@ -681,8 +682,9 @@ function ExportSalesSection() {
 }
 
 /** Compact previews of each dashboard area — weather, sowing & arrivals, production, CCI, balance
- *  sheet, imports & basis, WASDE, CFTC and USDA export sales — each followed by a commentary
- *  panel, so Overview (and its PDF report) gives the headline picture without opening each tab. */
+ *  sheet, imports & basis, WASDE, CFTC and USDA export sales, production benchmarks — each followed by a commentary
+ *  panel, so Overview (and its PDF report) gives the headline picture without opening each tab. The latest
+ *  Field Pulse report, with its photographs, closes the report. */
 export function OverviewSections() {
   return (
     <div className="mt-4 space-y-4">
@@ -712,6 +714,9 @@ export function OverviewSections() {
         <ExportSalesSection />
       </div>
       <CommentsPanel section="overviewCftc" title="Summary (CFTC & USDA export sales)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewCftc")} />
+      <BenchmarksSection />
+      <CommentsPanel section="overviewBenchmarks" title="Summary (Production benchmarks)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewBenchmarks")} />
+      <FieldPulseSection />
     </div>
   );
 }

@@ -268,3 +268,11 @@ body {
     animation: none !important;
   }
 }
+
+/* while a PDF is being captured (ExportPdfButton): the live page takes the PDF layout */
+.pdf-capture .print-hide:not(.pdf-keep-live) {
+  display: none !important;
+}
+.pdf-capture .pdf-full-row {
+  grid-column: 1 / -1 !important;
+}

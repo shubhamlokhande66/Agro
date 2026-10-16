@@ -14,6 +14,7 @@ import { WASDE_REPORTS, convertWasde, type WasdeRow } from "@/data/wasde";
 import { COT_WEEKS, cotNet, cotNetChg } from "@/data/cftc";
 import { ES_YEARS } from "@/data/exportSales";
 import { monthlyBasis } from "@/lib/basis";
+import { benchmarkRows } from "@/lib/benchmarks";
 import { priceTableRows } from "@/components/overview/PriceTable";
 import type { CottonBelt } from "@/lib/server/cottonBelt";
 
@@ -26,7 +27,8 @@ export type AutoSection =
   | "overviewBalance"
   | "overviewTradeBasis"
   | "overviewWasde"
-  | "overviewCftc";
+  | "overviewCftc"
+  | "overviewBenchmarks";
 
 /* ---------------- helpers ---------------- */
 
@@ -330,6 +332,30 @@ function cftcCommentary(): string | null {
   return out.length ? out.join(" ") : null;
 }
 
+/* ---------------- production benchmarks ---------------- */
+
+function benchmarksCommentary(): string | null {
+  const { sa, sb, rows } = benchmarkRows();
+  const ours = rows[0];
+  if (ours.b == null) return null;
+  const others = rows.filter((r) => r.kind !== "ours" && r.kind !== "avg" && r.b != null);
+  const avg = rows.find((r) => r.kind === "avg");
+  const usda = rows.find((r) => r.kind === "usda");
+  const diff = (v: number) => `${v - ours.b! >= 0 ? "+" : "−"}${n1(Math.abs(v - ours.b!))}`;
+  let text = `Agrolytix estimates India's ${sb} crop at ${n1(ours.b)} lakh bales${ours.a != null ? ` (${sa}: ${n1(ours.a)}, ${pct(pctOf(ours.b, ours.a)!)})` : ""}.`;
+  if (usda?.b != null) text += ` USDA is at ${n1(usda.b)} lakh bales (${diff(usda.b)} vs ours).`;
+  const trade = others.filter((r) => r.kind === "trade");
+  if (trade.length) text += ` Trade estimates: ${list(trade.map((r) => `${r.source} ${n1(r.b!)}`))}${avg?.b != null ? `, averaging ${n1(avg.b)} (${diff(avg.b)} vs ours)` : ""}.`;
+  if (others.length) {
+    const vals = [ours.b, ...others.map((r) => r.b!)];
+    const lo = Math.min(...vals);
+    const hi = Math.max(...vals);
+    const pos = ours.b <= lo ? "at the low end of" : ours.b >= hi ? "at the high end of" : "within";
+    text += ` Estimates range from ${n1(lo)} to ${n1(hi)} lakh bales; our number sits ${pos} that range.`;
+  }
+  return text;
+}
+
 /* ---------------- entry point ---------------- */
 
 /** the auto-written summary for a panel, or null when there's nothing to summarise */
@@ -353,5 +379,7 @@ export async function autoCommentary(section: AutoSection): Promise<string | nul
       return wasdeCommentary();
     case "overviewCftc":
       return cftcCommentary();
+    case "overviewBenchmarks":
+      return benchmarksCommentary();
   }
 }

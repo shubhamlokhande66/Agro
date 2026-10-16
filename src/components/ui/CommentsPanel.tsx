@@ -7,7 +7,7 @@ import { timeAgo } from "@/lib/format";
 
 const AUTOSAVE_DEBOUNCE_MS = 600;
 
-type Section = "overview" | "overviewWeather" | "overviewSowing" | "overviewProduction" | "overviewBalance" | "sowing" | "production" | "weather" | "balanceSheet" | "cci" | "overviewCci" | "overviewTradeBasis" | "overviewWasde" | "overviewCftc";
+type Section = "overview" | "overviewWeather" | "overviewSowing" | "overviewProduction" | "overviewBalance" | "sowing" | "production" | "weather" | "balanceSheet" | "cci" | "overviewCci" | "overviewTradeBasis" | "overviewWasde" | "overviewCftc" | "overviewBenchmarks";
 
 /** A persisted free-text notes panel — "add commentary below the chart" from the
  *  requirements doc. One blob of text per section, shared by everyone who opens the page,
