@@ -27,6 +27,7 @@ export type AutoSection =
   | "overviewTradeBasis"
   | "overviewWasde"
   | "overviewCftc"
+  | "overviewExportSales"
   | "overviewBenchmarks";
 
 /* ---------------- helpers ---------------- */
@@ -309,7 +310,7 @@ function wasdeCommentary(): string | null {
   return text;
 }
 
-/* ---------------- CFTC & export sales ---------------- */
+/* ---------------- CFTC, USDA export sales ---------------- */
 
 function cftcCommentary(): string | null {
   const out: string[] = [];
@@ -321,6 +322,11 @@ function cftcCommentary(): string | null {
       `CFTC (${dayMonth(w.date)}): managed money was net ${net >= 0 ? "long" : "short"} ${Math.abs(net).toLocaleString("en-US")} contracts, ${chg >= 0 ? "adding" : "shedding"} ${Math.abs(chg).toLocaleString("en-US")} on the week${(chg > 0 && net < 0) ? " (short covering)" : chg < 0 && net < 0 ? " (fresh selling)" : ""}.`,
     );
   }
+  return out.length ? out.join(" ") : null;
+}
+
+function exportSalesCommentary(): string | null {
+  const out: string[] = [];
   const cur = ES_YEARS[0];
   const prev = ES_YEARS[1];
   const wk = cur?.weeks.at(-1);
@@ -381,6 +387,8 @@ export async function autoCommentary(section: AutoSection): Promise<string | nul
       return wasdeCommentary();
     case "overviewCftc":
       return cftcCommentary();
+    case "overviewExportSales":
+      return exportSalesCommentary();
     case "overviewBenchmarks":
       return benchmarksCommentary();
   }

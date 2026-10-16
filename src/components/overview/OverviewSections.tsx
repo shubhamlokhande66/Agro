@@ -643,7 +643,7 @@ function CftcSection() {
   const chg = cotNetChg(w, "mm");
   const short = (d: string) => new Date(d + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "2-digit" });
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader title="CFTC · Commitments of Traders" sub={`ICE cotton · positions as of ${short(w.date)} · contracts`} right={<More href="/cftc" label="CFTC" />} />
       <StatStrip>
         <Stat label="Managed money net" value={`${net >= 0 ? "+" : "−"}${Math.abs(net).toLocaleString("en-US")}`} tone={net >= 0 ? "pos" : "neg"} />
@@ -672,7 +672,7 @@ function ExportSalesSection() {
   const k = (v: number) => Math.round(v / 1000);
   const yoy = (a: number, b?: number) => (b ? ((a - b) / b) * 100 : null);
   return (
-    <Card>
+    <Card className="h-full">
       <CardHeader title={`USDA Export Sales · ${cur.year}`} sub={`US upland cotton · week ending ${shortDate(w.week)} · thousand running bales`} right={<More href="/usda" label="Export sales" />} />
       <StatStrip>
         <Stat label="Net sales · week" value={`${k(w.netSales).toLocaleString("en-IN")}k`} />
@@ -744,11 +744,15 @@ export function OverviewSections() {
       <CommentsPanel section="overviewWasde" title="Summary (WASDE)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewWasde")} />
 
       <ReportHeading>CFTC &amp; USDA Export Sales</ReportHeading>
-      <div className="grid gap-4 lg:grid-cols-2">
+      {/* one below the other, each with its commentary box beside it */}
+      <div className="pdf-pair grid gap-4 lg:grid-cols-2">
         <CftcSection />
-        <ExportSalesSection />
+        <CommentsPanel section="overviewCftc" title="Summary (CFTC)" minHeight={260} rows={10} className="h-full" autoWrite={() => autoCommentary("overviewCftc")} />
       </div>
-      <CommentsPanel section="overviewCftc" title="Summary (CFTC & USDA export sales)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewCftc")} />
+      <div className="pdf-pair grid gap-4 lg:grid-cols-2">
+        <ExportSalesSection />
+        <CommentsPanel section="overviewExportSales" title="Summary (USDA export sales)" minHeight={260} rows={10} className="h-full" autoWrite={() => autoCommentary("overviewExportSales")} />
+      </div>
 
       <div className="pdf-monthly-only space-y-4">
         <ReportHeading>Production Benchmarks</ReportHeading>
