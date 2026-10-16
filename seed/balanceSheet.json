@@ -3232,21 +3232,21 @@
     },
     "2026/27": {
       "Oct": {
-        "opening": 76.5,
-        "crop": 268.4,
+        "opening": 77.6,
+        "crop": 267.7,
         "farmer_sell": 12,
         "cci_proc": 0,
         "cci_sell": 4,
         "stock_cci": 6.5,
-        "imports": 8,
+        "imports": 7.5,
         "dom_cons": 23.3,
         "nonmill_cons": 0.5,
         "total_cons": 23.9,
         "exports": 1.43,
-        "closing": 71
+        "closing": 71.8
       },
       "Nov": {
-        "opening": 71.2,
+        "opening": 71.8,
         "crop": null,
         "farmer_sell": 45,
         "cci_proc": 12,
@@ -3257,52 +3257,52 @@
         "nonmill_cons": 0.5,
         "total_cons": 25.9,
         "exports": 1,
-        "closing": 99
+        "closing": 99.9
       },
       "Dec": {
-        "opening": 99.3,
+        "opening": 99.9,
         "crop": null,
-        "farmer_sell": 43,
+        "farmer_sell": 35,
         "cci_proc": 35,
         "cci_sell": 4,
         "stock_cci": 43.5,
-        "imports": 12,
+        "imports": 15,
         "dom_cons": 27.4,
         "nonmill_cons": 1,
         "total_cons": 28.4,
         "exports": 1,
-        "closing": 125
+        "closing": 120.5
       },
       "Jan": {
-        "opening": 124.9,
+        "opening": 120.5,
         "crop": null,
-        "farmer_sell": 45,
+        "farmer_sell": 46,
         "cci_proc": 35,
         "cci_sell": null,
         "stock_cci": 78.5,
-        "imports": 5,
+        "imports": 4.4,
         "dom_cons": 25.4,
         "nonmill_cons": 1,
         "total_cons": 26.4,
         "exports": 0.9,
-        "closing": 148
+        "closing": 143.6
       },
       "Feb": {
-        "opening": 147.6,
+        "opening": 143.6,
         "crop": null,
-        "farmer_sell": 42,
+        "farmer_sell": 47.3,
         "cci_proc": 15,
         "cci_sell": null,
         "stock_cci": 93.5,
-        "imports": 2,
+        "imports": 1,
         "dom_cons": 26.4,
         "nonmill_cons": 1,
         "total_cons": 27.4,
         "exports": 0.97,
-        "closing": 163
+        "closing": 163.6
       },
       "Mar": {
-        "opening": 163.2,
+        "opening": 163.6,
         "crop": null,
         "farmer_sell": 28,
         "cci_proc": null,
@@ -3313,10 +3313,10 @@
         "nonmill_cons": 1,
         "total_cons": 27.4,
         "exports": 1.2,
-        "closing": 164
+        "closing": 164.5
       },
       "Apr": {
-        "opening": 164.2,
+        "opening": 164.5,
         "crop": null,
         "farmer_sell": 15.7,
         "cci_proc": null,
@@ -3327,10 +3327,10 @@
         "nonmill_cons": 1,
         "total_cons": 27.4,
         "exports": 1.33,
-        "closing": 153
+        "closing": 153.8
       },
       "May": {
-        "opening": 153.4,
+        "opening": 153.8,
         "crop": null,
         "farmer_sell": 8,
         "cci_proc": null,
@@ -3344,7 +3344,7 @@
         "closing": 138
       },
       "Jun": {
-        "opening": 137.6,
+        "opening": 138,
         "crop": null,
         "farmer_sell": 8,
         "cci_proc": null,
@@ -3355,10 +3355,10 @@
         "nonmill_cons": 1,
         "total_cons": 27.4,
         "exports": 1.02,
-        "closing": 123
+        "closing": 123.2
       },
       "Jul": {
-        "opening": 122.9,
+        "opening": 123.2,
         "crop": null,
         "farmer_sell": 8,
         "cci_proc": null,
@@ -3369,10 +3369,10 @@
         "nonmill_cons": 1,
         "total_cons": 28.4,
         "exports": 1,
-        "closing": 107
+        "closing": 106.9
       },
       "Aug": {
-        "opening": 106.6,
+        "opening": 106.9,
         "crop": null,
         "farmer_sell": 6.6,
         "cci_proc": null,
@@ -3383,12 +3383,12 @@
         "nonmill_cons": 1,
         "total_cons": 28.4,
         "exports": 0.39,
-        "closing": 86
+        "closing": 86.7
       },
       "Sep": {
-        "opening": 86.3,
+        "opening": 86.7,
         "crop": null,
-        "farmer_sell": 7.1,
+        "farmer_sell": 8.1,
         "cci_proc": null,
         "cci_sell": 5,
         "stock_cci": 7.6,
@@ -3397,7 +3397,7 @@
         "nonmill_cons": 1,
         "total_cons": 27.9,
         "exports": 0.33,
-        "closing": 67
+        "closing": 68.6
       }
     }
   },
@@ -3743,20 +3743,20 @@
       "total_sur": 0.231
     },
     "2026/27": {
-      "opening_stocks": 76.5,
-      "crop_size": 268.4,
-      "farmer_selling": 268.4,
-      "imports": 60.4,
-      "total_supply": 405.3,
+      "opening_stocks": 77.6,
+      "crop_size": 267.7,
+      "farmer_selling": 267.7,
+      "imports": 61.3,
+      "total_supply": 406.6,
       "msp_procurement": 97,
       "msp_auctions": 99.9,
       "stocks_govt": 7.6,
       "domestic_cons": 326.3,
       "exports": 11.61,
       "total_demand": 337.91,
-      "closing_stocks": 67,
-      "sur_free_mkt": 0.176,
-      "total_sur": 0.198
+      "closing_stocks": 68.6,
+      "sur_free_mkt": 0.181,
+      "total_sur": 0.203
     }
   },
   "annual_seasons": [
