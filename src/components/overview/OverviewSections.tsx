@@ -47,18 +47,14 @@ function More({ href, label }: { href: string; label: string }) {
 }
 
 /** one figure in the rainfall card's headline strip */
-function Stat({ label, value, tone }: { label: string; value: string; tone?: "pos" | "neg" }) {
+function Stat({ label, value, tone, note, noteTone }: { label: string; value: string; tone?: "pos" | "neg"; note?: string; noteTone?: "pos" | "neg" }) {
+  const toneCls = (t?: "pos" | "neg") => (t === "neg" ? "text-neg" : t === "pos" ? "text-pos" : "text-ink");
   return (
     <div className="min-w-0 px-2.5 py-1.5">
       <div className="truncate text-[8.5px] font-semibold uppercase tracking-wide text-ink-faint">{label}</div>
-      <div
-        className={
-          "num mt-0.5 truncate text-[12.5px] font-semibold leading-tight " +
-          (tone === "neg" ? "text-neg" : tone === "pos" ? "text-pos" : "text-ink")
-        }
-      >
-        {value}
-      </div>
+      <div className={"num mt-0.5 truncate text-[12.5px] font-semibold leading-tight " + toneCls(tone)}>{value}</div>
+      {/* a second, smaller line — e.g. the change vs last year — so the figure itself never gets cut off */}
+      {note ? <div className={"num truncate text-[10.5px] font-medium leading-tight " + (noteTone ? toneCls(noteTone) : "text-ink-faint")}>{note}</div> : null}
     </div>
   );
 }
@@ -675,11 +671,21 @@ function ExportSalesSection() {
   const yoy = (a: number, b?: number) => (b ? ((a - b) / b) * 100 : null);
   return (
     <Card className="h-full">
-      <CardHeader title={`USDA Export Sales · ${cur.year}`} sub={`US upland cotton · week ending ${shortDate(w.week)} · thousand running bales`} right={<More href="/usda" label="Export sales" />} />
+      <CardHeader title={`USDA Export Sales · ${cur.year}`} sub={`US upland cotton · week to ${shortDate(w.week)} · '000 running bales`} right={<More href="/usda" label="Export sales" />} />
       <StatStrip>
-        <Stat label="Net sales · week" value={`${k(w.netSales).toLocaleString("en-IN")}k`} />
-        <Stat label="Commitments · YoY" value={`${k(w.commitment).toLocaleString("en-IN")}k · ${signedPct(yoy(w.commitment, ly?.commitment), 1)}`} tone={toneOf(yoy(w.commitment, ly?.commitment))} />
-        <Stat label="Exports so far · YoY" value={`${k(w.accExports).toLocaleString("en-IN")}k · ${signedPct(yoy(w.accExports, ly?.accExports), 1)}`} tone={toneOf(yoy(w.accExports, ly?.accExports))} />
+        <Stat label="Net sales · week" value={`${k(w.netSales).toLocaleString("en-US")}k`} note={`Shipped ${k(w.exports).toLocaleString("en-US")}k`} />
+        <Stat
+          label="Commitments"
+          value={`${k(w.commitment).toLocaleString("en-US")}k`}
+          note={`${signedPct(yoy(w.commitment, ly?.commitment), 1)} vs last year`}
+          noteTone={toneOf(yoy(w.commitment, ly?.commitment))}
+        />
+        <Stat
+          label="Exports so far"
+          value={`${k(w.accExports).toLocaleString("en-US")}k`}
+          note={`${signedPct(yoy(w.accExports, ly?.accExports), 1)} vs last year`}
+          noteTone={toneOf(yoy(w.accExports, ly?.accExports))}
+        />
       </StatStrip>
       <LineChart
         labels={Array.from({ length: n }, (_, j) => `Wk ${j + 1}`)}
@@ -687,11 +693,13 @@ function ExportSalesSection() {
         height={210}
         xTicks={8}
         series={[
-          { label: `${cur.year} commitments`, color: "#0f9d63", data: Array.from({ length: n }, (_, j) => (cur.weeks[j] ? k(cur.weeks[j].commitment) : null)) },
-          { label: `${prev.year} commitments`, color: "#94a3b8", data: Array.from({ length: n }, (_, j) => (prev.weeks[j] ? k(prev.weeks[j].commitment) : null)) },
+          { label: `${cur.year}`, color: "#0f9d63", width: 2.5, data: Array.from({ length: n }, (_, j) => (cur.weeks[j] ? k(cur.weeks[j].commitment) : null)) },
+          { label: `${prev.year}`, color: "#94a3b8", width: 2, data: Array.from({ length: n }, (_, j) => (prev.weeks[j] ? k(prev.weeks[j].commitment) : null)) },
         ]}
         yFmt={(v) => `${(v / 1000).toFixed(1)}M`}
+        tooltipLabel={(c) => `${c.dataset.label} commitments: ${Math.round(c.parsed.y).toLocaleString("en-US")}k bales`}
       />
+      <p className="mt-1 text-[10.5px] text-ink-faint">Cumulative commitments (exports + outstanding sales) by week of the marketing year</p>
     </Card>
   );
 }
