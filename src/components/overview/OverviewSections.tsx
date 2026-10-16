@@ -18,7 +18,6 @@ import { SOWING_SERIES, SOWING_WEEKS } from "@/data/sowing";
 import { DP_DATA, DP_REGIONS, DP_SEASONS, DP_STATE_LABELS, dpValue, type DpMetric } from "@/data/production";
 import { SND } from "@/data/balanceSheet";
 import { CCI, cciWeekly } from "@/data/cci";
-import { IE } from "@/data/trade";
 import { WASDE_REPORTS, convertWasde, type WasdeRow } from "@/data/wasde";
 import { COT_WEEKS, cotNet, cotNetChg } from "@/data/cftc";
 import { ES_YEARS } from "@/data/exportSales";
@@ -492,41 +491,12 @@ function CciSection() {
   );
 }
 
-function TradeSection() {
-  const seasons = (IE.seasons ?? []).slice(-8);
-  const latest = IE.actual_cutoff?.season || seasons.at(-1);
-  if (!latest || !seasons.length) return null;
-  const imp = IE.import_totals?.[latest] ?? null;
-  const exp = IE.export_totals?.[latest] ?? null;
-  return (
-    // shown on the Overview but left out of the PDF report
-    <Card className="print-hide">
-      <CardHeader title="Cotton Imports & Exports" sub="India · lakh bales · cotton year Oct–Sep" right={<More href="/trade" label="Import & export" />} />
-      <StatStrip>
-        <Stat label={`Imports ${latest}`} value={`${num(imp, 1)} lb`} />
-        <Stat label={`Exports ${latest}`} value={`${num(exp, 1)} lb`} />
-        <Stat label="Net imports" value={imp != null && exp != null ? `${num(imp - exp, 1)} lb` : "—"} />
-      </StatStrip>
-      <BarChart
-        labels={seasons}
-        legend
-        height={200}
-        series={[
-          { label: "Imports", color: "#2563c9", data: seasons.map((x) => IE.import_totals?.[x] ?? null) },
-          { label: "Exports", color: "#0f9d63", data: seasons.map((x) => IE.export_totals?.[x] ?? null) },
-        ]}
-      />
-    </Card>
-  );
-}
-
 function BasisSection() {
   const rows = monthlyBasis().slice(-12);
   const last = rows.at(-1);
   if (!last) return null;
   return (
-    // in the PDF the imports card beside it is left out, so this one takes the full row
-    <Card className="pdf-full-row">
+    <Card className="h-full">
       <CardHeader title="Cotton Basis" sub="Guj-29 minus Cotlook A Index · US ¢/lb · monthly" right={<More href="/basis" label="Cotton basis" />} />
       <StatStrip>
         <Stat label={`Basis ${last.month}`} value={`${last.basis >= 0 ? "+" : ""}${last.basis.toFixed(2)}¢`} tone={last.basis >= 0 ? "neg" : "pos"} />
@@ -674,7 +644,7 @@ function ExportSalesSection() {
 }
 
 /** Compact previews of each dashboard area — weather, sowing & arrivals, production, CCI, balance
- *  sheet, imports & basis, WASDE, CFTC and USDA export sales, production benchmarks — each followed by a commentary
+ *  sheet, cotton basis, WASDE, CFTC and USDA export sales, production benchmarks — each followed by a commentary
  *  panel, so Overview (and its PDF report) gives the headline picture without opening each tab. The latest
  *  Field Pulse report, with its photographs, closes the report. */
 export function OverviewSections() {
@@ -697,11 +667,11 @@ export function OverviewSections() {
       </div>
       <BalanceSheetSection />
       <CommentsPanel section="overviewBalance" title="Summary (Balance Sheet)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewBalance")} />
-      <div className="grid gap-4 lg:grid-cols-2">
-        <TradeSection />
+      {/* basis chart on the left, the commentary box beside it */}
+      <div className="pdf-pair grid gap-4 lg:grid-cols-2">
         <BasisSection />
+        <CommentsPanel section="overviewTradeBasis" title="Summary (Cotton basis)" minHeight={260} rows={10} className="h-full" autoWrite={() => autoCommentary("overviewTradeBasis")} />
       </div>
-      <CommentsPanel section="overviewTradeBasis" title="Summary (Cotton imports & basis)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewTradeBasis")} />
       <WasdeSection />
       <CommentsPanel section="overviewWasde" title="Summary (WASDE)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewWasde")} />
       <div className="grid gap-4 lg:grid-cols-2">

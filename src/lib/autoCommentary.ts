@@ -9,7 +9,6 @@ import { SOWING_SERIES, SOWING_WEEKS } from "@/data/sowing";
 import { DP_SEASONS, DP_STATES, DP_STATE_LABELS, dpValue } from "@/data/production";
 import { SND } from "@/data/balanceSheet";
 import { CCI, cciWeekly } from "@/data/cci";
-import { IE } from "@/data/trade";
 import { WASDE_REPORTS, convertWasde, type WasdeRow } from "@/data/wasde";
 import { COT_WEEKS, cotNet, cotNetChg } from "@/data/cftc";
 import { ES_YEARS } from "@/data/exportSales";
@@ -267,17 +266,10 @@ function balanceCommentary(): string | null {
   return text;
 }
 
-/* ---------------- imports & basis ---------------- */
+/* ---------------- cotton basis ---------------- */
 
 function tradeBasisCommentary(): string | null {
   const out: string[] = [];
-  const season = IE.actual_cutoff?.season || (IE.seasons ?? []).at(-1);
-  if (season) {
-    const imp = IE.import_totals?.[season];
-    const exp = IE.export_totals?.[season];
-    if (imp != null || exp != null)
-      out.push(`In ${season}, India ${imp != null ? `imported ${n1(imp)} lakh bales` : ""}${imp != null && exp != null ? " and " : ""}${exp != null ? `exported ${n1(exp)} lakh bales` : ""}.`);
-  }
   const rows = monthlyBasis();
   const last = rows.at(-1);
   const prev = rows.at(-2);
