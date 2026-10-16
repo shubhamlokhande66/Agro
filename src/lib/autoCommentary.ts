@@ -163,7 +163,18 @@ function sowingCommentary(): string | null {
   if (key) {
     const a = ARRIVALS[key] ?? [];
     const i = lastIdx(a);
-    if (i >= 0) {
+    // cotton year Oct–Sep: once the latest season in the data has ended, the new season's arrivals
+    // only begin in November, so report the closing total instead of a stale weekly figure
+    const startYear = parseInt(key, 10);
+    const now = new Date();
+    const curStart = now.getMonth() >= 9 ? now.getFullYear() : now.getFullYear() - 1;
+    if (i >= 0 && startYear < curStart) {
+      const yoy = pctOf(a[i], prevKey ? ARRIVALS[prevKey]?.[i] : null);
+      const next = `${curStart}-${String((curStart + 1) % 100).padStart(2, "0")}`;
+      out.push(
+        `${key} arrivals stood at ${n1(a[i])} lakh bales in the latest data (${weekLabel(ARRIVAL_WEEKS[i])})${yoy != null ? `, ${pct(yoy)} vs ${prevKey} at the same point` : ""}. Arrivals for ${next} will start from November.`,
+      );
+    } else if (i >= 0) {
       const v = a[i];
       const weekly = i > 0 && a[i - 1] != null ? v - a[i - 1] : null;
       const yoy = pctOf(v, prevKey ? ARRIVALS[prevKey]?.[i] : null);
