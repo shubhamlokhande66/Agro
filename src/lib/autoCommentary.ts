@@ -8,7 +8,7 @@ import { ARRIVALS, ARRIVAL_SEASONS, ARRIVAL_WEEKS } from "@/data/arrivals";
 import { SOWING_SERIES, SOWING_WEEKS } from "@/data/sowing";
 import { DP_SEASONS, DP_STATES, DP_STATE_LABELS, dpValue } from "@/data/production";
 import { SND } from "@/data/balanceSheet";
-import { CCI } from "@/data/cci";
+import { CCI, cciWeekly } from "@/data/cci";
 import { IE } from "@/data/trade";
 import { WASDE_REPORTS, convertWasde, type WasdeRow } from "@/data/wasde";
 import { COT_WEEKS, cotNet, cotNetChg } from "@/data/cftc";
@@ -223,6 +223,15 @@ function cciCommentary(): string | null {
   const out = [
     `For ${latest}, CCI has procured ${n1(CCI.proc_annual[latest] ?? 0)} lakh bales and sold ${n1(CCI.sell_annual?.[latest] ?? 0)} lakh bales under OMSS${CCI.stock_annual?.[latest] != null ? `, leaving ${n1(CCI.stock_annual[latest])} lakh bales in stock` : ""}.`,
   ];
+  // the latest week's sales against the week before
+  const weeks = cciWeekly(2);
+  const lw = weeks.at(-1);
+  if (lw) {
+    const pw = weeks.length > 1 ? weeks[0] : null;
+    out.push(
+      `In the week of ${dayMonth(lw.week)}, CCI sold ${n1(lw.vol)} lakh bales${lw.price != null ? ` at an average ₹${n0(lw.price)}/candy` : ""}${pw ? ` (previous week: ${n1(pw.vol)} lakh bales${pw.price != null ? ` at ₹${n0(pw.price)}` : ""})` : ""}.`,
+    );
+  }
   const prices = (CCI.datewise ?? []).filter((d) => d.p != null);
   const last = prices.at(-1);
   if (last?.p != null) {

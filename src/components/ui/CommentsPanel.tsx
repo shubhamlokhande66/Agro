@@ -19,6 +19,7 @@ export function CommentsPanel({
   minHeight = 320,
   rows = 20,
   autoWrite,
+  className,
 }: {
   section: Section;
   title?: string;
@@ -26,6 +27,8 @@ export function CommentsPanel({
   rows?: number;
   /** writes the summary from the latest data — shows a "✨ Auto-write" button to signed-in users */
   autoWrite?: () => Promise<string | null>;
+  /** extra classes on the panel, e.g. h-full when it sits beside a card */
+  className?: string;
 }) {
   const { authed, username } = useAuth();
   const [text, setText] = useState("");
@@ -152,7 +155,7 @@ export function CommentsPanel({
     // left out of the PDF
     const hasText = text.trim().length > 0;
     return (
-      <div className={"panel px-4 py-3" + (hasText ? "" : " print-hide")}>
+      <div className={"panel px-4 py-3" + (hasText ? "" : " print-hide") + (className ? ` ${className}` : "")}>
         <div className="flex items-center justify-between gap-3">
           <span className="flex min-w-0 items-center gap-2.5">
             <span aria-hidden className="text-[14px]">📝</span>
@@ -179,7 +182,7 @@ export function CommentsPanel({
   }
 
   return (
-    <Card>
+    <Card className={className}>
       <CardHeader
         title={title}
         sub={lastEdited}

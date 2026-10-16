@@ -17,7 +17,7 @@ import { ARRIVALS, ARRIVAL_SEASONS, ARRIVAL_WEEKS } from "@/data/arrivals";
 import { SOWING_SERIES, SOWING_WEEKS } from "@/data/sowing";
 import { DP_DATA, DP_REGIONS, DP_SEASONS, DP_STATE_LABELS, dpValue, type DpMetric } from "@/data/production";
 import { SND } from "@/data/balanceSheet";
-import { CCI } from "@/data/cci";
+import { CCI, cciWeekly } from "@/data/cci";
 import { IE } from "@/data/trade";
 import { WASDE_REPORTS, convertWasde, type WasdeRow } from "@/data/wasde";
 import { COT_WEEKS, cotNet, cotNetChg } from "@/data/cftc";
@@ -460,42 +460,34 @@ function BalanceSheetSection() {
 /* ---- CCI, imports & basis, WASDE, CFTC and USDA export sales (report summaries) ---- */
 
 function CciSection() {
-  const seasons = Object.keys(CCI.proc_annual ?? {}).sort().slice(-8);
-  const latest = seasons.at(-1);
+  const latest = Object.keys(CCI.proc_annual ?? {}).sort().at(-1);
   if (!latest) return null;
-  const prices = (CCI.datewise ?? []).filter((d) => d.p != null).slice(-120);
+  const weeks = cciWeekly(26);
+  const last = weeks.at(-1);
+  const wk = (iso: string) => new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
   return (
-    <Card>
-      <CardHeader title={`CCI Updates · ${latest}`} sub="Cotton Corporation of India · lakh bales" right={<More href="/cci" label="CCI updates" />} />
+    <Card className="h-full">
+      <CardHeader
+        title={`CCI Updates · ${latest}`}
+        sub={`Cotton Corporation of India · weekly OMSS sales (lakh bales) and average sale price (₹/candy)${last ? ` · latest week of ${wk(last.week)}` : ""}`}
+        right={<More href="/cci" label="CCI updates" />}
+      />
       <StatStrip>
         <Stat label={`Procurement ${latest}`} value={`${num(CCI.proc_annual[latest], 1)} lb`} />
         <Stat label={`OMSS sales ${latest}`} value={`${num(CCI.sell_annual[latest], 1)} lb`} />
         <Stat label={`Closing stock ${latest}`} value={`${num(CCI.stock_annual?.[latest] ?? null, 1)} lb`} />
       </StatStrip>
-      <div className="grid gap-4 md:grid-cols-2">
-        <div>
-          <div className="mb-1 text-[11px] font-semibold text-ink-soft">Procurement vs OMSS sales</div>
-          <BarChart
-            labels={seasons}
-            legend
-            height={200}
-            series={[
-              { label: "Procurement", color: "#0f9d63", data: seasons.map((x) => CCI.proc_annual[x] ?? null) },
-              { label: "OMSS sales", color: "#2563c9", data: seasons.map((x) => CCI.sell_annual[x] ?? null) },
-            ]}
-          />
-        </div>
-        <div>
-          <div className="mb-1 text-[11px] font-semibold text-ink-soft">CCI sale price · ₹/candy</div>
-          <LineChart
-            labels={prices.map((d) => d.d)}
-            height={200}
-            xTicks={5}
-            series={[{ label: "CCI price", color: "#d97706", data: prices.map((d) => d.p) }]}
-            yFmt={(v) => `₹${Math.round(v / 1000)}k`}
-          />
-        </div>
-      </div>
+      {weeks.length ? (
+        <ComboChart
+          labels={weeks.map((w) => wk(w.week))}
+          height={240}
+          xTicks={8}
+          left={{ label: "Weekly sales · lakh bales", data: weeks.map((w) => w.vol), color: "#2563c9", fmt: (v) => v.toFixed(1), bars: true }}
+          right={{ label: "Avg sale price · ₹/candy", data: weeks.map((w) => w.price), color: "#d97706", fmt: (v) => `₹${(v / 1000).toFixed(1)}k` }}
+        />
+      ) : (
+        <p className="py-10 text-center text-[12px] text-ink-faint">No CCI sales reported yet.</p>
+      )}
     </Card>
   );
 }
@@ -698,8 +690,11 @@ export function OverviewSections() {
       <CommentsPanel section="overviewSowing" title="Summary (Cotton Arrivals & Sowing)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewSowing")} />
       <ProductionSection />
       <CommentsPanel section="overviewProduction" title="Summary (Domestic production)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewProduction")} />
-      <CciSection />
-      <CommentsPanel section="overviewCci" title="Summary (CCI updates)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewCci")} />
+      {/* chart on the left, the commentary box beside it (full width in the PDF when the box is empty) */}
+      <div className="pdf-pair grid gap-4 lg:grid-cols-2">
+        <CciSection />
+        <CommentsPanel section="overviewCci" title="Summary (CCI updates)" minHeight={260} rows={10} className="h-full" autoWrite={() => autoCommentary("overviewCci")} />
+      </div>
       <BalanceSheetSection />
       <CommentsPanel section="overviewBalance" title="Summary (Balance Sheet)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewBalance")} />
       <div className="grid gap-4 lg:grid-cols-2">

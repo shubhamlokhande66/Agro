@@ -283,6 +283,10 @@ body {
 .pdf-capture .pdf-only {
   display: block !important;
 }
+/* a two-card row whose partner is left out of the PDF: the remaining card takes the full width */
+.pdf-capture .pdf-pair:has(> .print-hide) > * {
+  grid-column: 1 / -1 !important;
+}
 .pdf-capture .pdf-full-row {
   grid-column: 1 / -1 !important;
 }
