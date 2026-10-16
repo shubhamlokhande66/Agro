@@ -185,7 +185,8 @@ function sowingCommentary(): string | null {
       );
     }
   }
-  return out.length ? out.join(" ") : null;
+  // arrivals first: once sowing is over, arrivals are what the market watches
+  return out.length ? [...out].reverse().join(" ") : null;
 }
 
 /* ---------------- production ---------------- */

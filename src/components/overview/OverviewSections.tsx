@@ -692,10 +692,10 @@ export function OverviewSections() {
       <CottonBeltRain />
       <CommentsPanel section="overviewWeather" title="Summary (Weather & Rainfall · India)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewWeather")} />
       <div className="grid gap-4 lg:grid-cols-2">
-        <SowingSection />
         <ArrivalsSection />
+        <SowingSection />
       </div>
-      <CommentsPanel section="overviewSowing" title="Summary (Cotton Sowing & Arrivals)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewSowing")} />
+      <CommentsPanel section="overviewSowing" title="Summary (Cotton Arrivals & Sowing)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewSowing")} />
       <ProductionSection />
       <CommentsPanel section="overviewProduction" title="Summary (Domestic production)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewProduction")} />
       <CciSection />
