@@ -9,6 +9,7 @@ import { Table, TableWrap, Td, Th } from "@/components/ui/DataTable";
 import { CommentsPanel } from "@/components/ui/CommentsPanel";
 import { CottonBeltRain } from "./CottonBeltRain";
 import { BenchmarksSection, FieldPulseSection } from "./ReportExtras";
+import { ReportHeading } from "./ReportHeading";
 import { autoCommentary } from "@/lib/autoCommentary";
 import LineChart, { type LineSeries } from "@/components/charts/LineChart";
 import BarChart from "@/components/charts/BarChart";
@@ -39,7 +40,7 @@ const lastIdx = (a: (number | null)[] | undefined) => {
 
 function More({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} className="text-[11px] font-semibold text-accent hover:underline">
+    <Link href={href} className="print-hide text-[11px] font-semibold text-accent hover:underline">
       {label} →
     </Link>
   );
@@ -125,7 +126,7 @@ function WeatherSection() {
           yFmt={(v) => Math.round(v) + "mm"}
           tooltipLabel={(c) => `${c.dataset.label}: ${Math.round(c.parsed.y)} mm`}
           smartX={false}
-          height={220}
+          height={170}
         />
     </Card>
 
@@ -153,7 +154,7 @@ function WeatherSection() {
             return `${c.dataset.label}: ${v >= 0 ? "+" : ""}${v.toFixed(1)}% vs normal`;
           }}
           smartX={false}
-          height={272}
+          height={222}
         />
       ) : (
         <p className="text-[12px] text-ink-faint">No {year} rainfall reported yet.</p>
@@ -177,8 +178,8 @@ function ArrivalsSection() {
   const yoy = pctChange(curLatest, prevAtSame);
   const prevTotal = lastNum(prev);
   const series: LineSeries[] = [
-    ...(prevKey ? [{ label: prevKey, data: ARRIVALS[prevKey] ?? [], color: "#2563eb", width: 2 }] : []),
-    { label: latestKey, data: ARRIVALS[latestKey] ?? [], color: "#ef4444", width: 2.5, dashed: true },
+    ...(prevKey ? [{ label: prevKey, data: ARRIVALS[prevKey] ?? [], color: "#1d4ed8", width: 3 }] : []),
+    { label: latestKey, data: ARRIVALS[latestKey] ?? [], color: "#dc2626", width: 3.5 },
   ];
 
   return (
@@ -235,9 +236,9 @@ function SowingSection() {
       <LineChart
         labels={SOWING_WEEKS}
         series={[
-          ...(normalS ? [{ label: normalS.label, data: normalS.data ?? [], color: "#94a3b8", width: 1.75, dashed: true }] : []),
-          ...(prevS ? [{ label: prevS.label, data: prevS.data ?? [], color: "#2563eb", width: 2 }] : []),
-          { label: curS.label, data: curS.data ?? [], color: "#ef4444", width: 3 },
+          ...(normalS ? [{ label: normalS.label, data: normalS.data ?? [], color: "#475569", width: 2.5, dashed: true }] : []),
+          ...(prevS ? [{ label: prevS.label, data: prevS.data ?? [], color: "#1d4ed8", width: 3 }] : []),
+          { label: curS.label, data: curS.data ?? [], color: "#dc2626", width: 3.5 },
         ]}
         height={210}
         smartX={false}
@@ -288,7 +289,7 @@ function ProductionSection() {
   return (
     <Card>
       <CardHeader
-        title="Domestic Cotton Production"
+        title={`India Cotton Production · ${sB}`}
         sub={`Area · yield · production · ${cropLabel(sB)} (${sB}) vs ${sA}`}
         right={<More href="/production" label="Full production" />}
       />
@@ -321,6 +322,7 @@ function ProductionSection() {
         <span className="text-[11px] font-semibold uppercase tracking-wide text-ink-faint">
           {m ? `State-wise ${m.label.toLowerCase()} · ${m.unit}` : "State-wise area, yield & production"}
         </span>
+        <span className="print-hide">
         <Tabs
           options={[
             { value: "all" as const, label: "All" },
@@ -329,6 +331,7 @@ function ProductionSection() {
           value={metric}
           onChange={setMetric}
         />
+        </span>
       </div>
       <TableWrap>
         {m == null ? (
@@ -497,7 +500,7 @@ function BalanceSheetSection() {
           </tbody>
         </Table>
       </TableWrap>
-      <p className="mt-1.5 text-[10.5px] text-ink-faint">
+      <p className="print-hide mt-1.5 text-[10.5px] text-ink-faint">
         Cumulative: opening stock at 1 Oct, flows summed Oct to the selected month, closing stock at its end · crop is the full-season estimate
       </p>
     </Card>
@@ -696,39 +699,64 @@ function ExportSalesSection() {
  *  panel, so Overview (and its PDF report) gives the headline picture without opening each tab. The latest
  *  Field Pulse report, with its photographs, closes the report. */
 export function OverviewSections() {
+  const prodSeason = DP_SEASONS.at(-1) ?? "";
   return (
     <div className="mt-4 space-y-4">
+      <ReportHeading>Weather &amp; Rainfall</ReportHeading>
       <WeatherSection />
       <CottonBeltRain />
-      <CommentsPanel section="overviewWeather" title="Summary (Weather & Rainfall · India)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewWeather")} />
+      <CommentsPanel section="overviewWeather" title="Summary (Weather & Rainfall · India)" pdfTitle="Weather review: last week and 7-day outlook" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewWeather")} />
+
+      <ReportHeading>Cotton Arrivals &amp; Sowing</ReportHeading>
       <div className="grid gap-4 lg:grid-cols-2">
         <ArrivalsSection />
         <SowingSection />
       </div>
       <CommentsPanel section="overviewSowing" title="Summary (Cotton Arrivals & Sowing)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewSowing")} />
+
+      <ReportHeading>India Cotton Production {prodSeason}</ReportHeading>
       <ProductionSection />
-      <CommentsPanel section="overviewProduction" title="Summary (Domestic production)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewProduction")} />
+      <CommentsPanel section="overviewProduction" title="Summary (Domestic production)" pdfTitle={`Production outlook ${prodSeason}`} minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewProduction")} />
+
+      <ReportHeading>CCI Updates</ReportHeading>
       {/* chart on the left, the commentary box beside it (full width in the PDF when the box is empty) */}
       <div className="pdf-pair grid gap-4 lg:grid-cols-2">
         <CciSection />
         <CommentsPanel section="overviewCci" title="Summary (CCI updates)" minHeight={260} rows={10} className="h-full" autoWrite={() => autoCommentary("overviewCci")} />
       </div>
-      <BalanceSheetSection />
-      <CommentsPanel section="overviewBalance" title="Summary (Balance Sheet)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewBalance")} />
+
+      {/* monthly report only — the weekly report is the week's market intelligence */}
+      <div className="pdf-monthly-only space-y-4">
+        <ReportHeading>India Balance Sheet</ReportHeading>
+        <BalanceSheetSection />
+        <CommentsPanel section="overviewBalance" title="Summary (Balance Sheet)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewBalance")} />
+      </div>
+
+      <ReportHeading>Cotton Basis</ReportHeading>
       {/* basis chart on the left, the commentary box beside it */}
       <div className="pdf-pair grid gap-4 lg:grid-cols-2">
         <BasisSection />
         <CommentsPanel section="overviewTradeBasis" title="Summary (Cotton basis)" minHeight={260} rows={10} className="h-full" autoWrite={() => autoCommentary("overviewTradeBasis")} />
       </div>
+
+      <ReportHeading>USDA WASDE</ReportHeading>
       <WasdeSection />
       <CommentsPanel section="overviewWasde" title="Summary (WASDE)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewWasde")} />
+
+      <ReportHeading>CFTC &amp; USDA Export Sales</ReportHeading>
       <div className="grid gap-4 lg:grid-cols-2">
         <CftcSection />
         <ExportSalesSection />
       </div>
       <CommentsPanel section="overviewCftc" title="Summary (CFTC & USDA export sales)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewCftc")} />
-      <BenchmarksSection />
-      <CommentsPanel section="overviewBenchmarks" title="Summary (Production benchmarks)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewBenchmarks")} />
+
+      <div className="pdf-monthly-only space-y-4">
+        <ReportHeading>Production Benchmarks</ReportHeading>
+        <BenchmarksSection />
+        <CommentsPanel section="overviewBenchmarks" title="Summary (Production benchmarks)" minHeight={100} rows={4} autoWrite={() => autoCommentary("overviewBenchmarks")} />
+      </div>
+
+      <ReportHeading>Field Pulse · From the Fields</ReportHeading>
       <FieldPulseSection />
     </div>
   );

@@ -11,7 +11,7 @@ import { num } from "@/lib/format";
 
 function More({ href, label }: { href: string; label: string }) {
   return (
-    <Link href={href} className="text-[11px] font-semibold text-accent hover:underline">
+    <Link href={href} className="print-hide text-[11px] font-semibold text-accent hover:underline">
       {label} →
     </Link>
   );

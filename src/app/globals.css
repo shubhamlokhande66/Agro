@@ -283,6 +283,24 @@ body {
 .pdf-capture .pdf-only {
   display: block !important;
 }
+/* the weekly report carries market intelligence only — balance sheet & benchmarks are monthly */
+.pdf-capture.pdf-weekly .pdf-monthly-only {
+  display: none !important;
+}
+/* commentary reads as running text below its chart, not as a boxed panel */
+.pdf-capture .comment-panel {
+  border-color: transparent !important;
+  background: transparent !important;
+  box-shadow: none !important;
+  padding-left: 2px !important;
+  padding-right: 2px !important;
+}
+.pdf-capture .comment-panel p {
+  margin-top: 0 !important;
+  font-size: 13px !important;
+  line-height: 1.65 !important;
+  text-align: justify;
+}
 /* a two-card row whose partner is left out of the PDF: the remaining card takes the full width */
 .pdf-capture .pdf-pair:has(> .print-hide) > * {
   grid-column: 1 / -1 !important;

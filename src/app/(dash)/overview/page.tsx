@@ -7,20 +7,48 @@ import { PriceTable } from "@/components/overview/PriceTable";
 import { OverviewSections } from "@/components/overview/OverviewSections";
 import { CommentsPanel } from "@/components/ui/CommentsPanel";
 import { autoCommentary } from "@/lib/autoCommentary";
+import { ReportHeading } from "@/components/overview/ReportHeading";
+import { GROUND_REPORTS, GROUND_STATES, imageUrl } from "@/data/groundReport";
 import { ExportPdfButton, type PdfReport } from "@/components/ui/ExportPdfButton";
 import { GlobalPeriodTabs } from "@/components/ui/GlobalPeriodTabs";
 import { type GlobalPeriod } from "@/lib/period";
 import { useDatasetMeta } from "@/lib/meta/context";
 import { useState } from "react";
 
+/** what each report covers, for its cover page (the weekly report leaves out the balance sheet and benchmarks) */
+const WEEKLY_CONTENTS = [
+  "Market Prices",
+  "Weather & Rainfall",
+  "Cotton Arrivals & Sowing",
+  "India Cotton Production",
+  "CCI Updates",
+  "Cotton Basis",
+  "USDA WASDE",
+  "CFTC & USDA Export Sales",
+  "Field Pulse · From the Fields",
+];
+const MONTHLY_CONTENTS = [...WEEKLY_CONTENTS.slice(0, 5), "India Balance Sheet", ...WEEKLY_CONTENTS.slice(5, 8), "Production Benchmarks", WEEKLY_CONTENTS[8]];
+
+/** up to three photographs from the latest Field Pulse report, one per state, for the cover */
+function coverPhotos(): { src: string; caption: string }[] {
+  const r = GROUND_REPORTS[0];
+  if (!r) return [];
+  const label = (code: string) => GROUND_STATES.find((s) => s.code === code)?.label ?? code;
+  return r.states
+    .filter((s) => s.photos.length)
+    .slice(0, 3)
+    .map((s) => ({ src: imageUrl(s.photos[0].id), caption: [label(s.state), s.photos[0].location].filter(Boolean).join(" · ") }));
+}
+
 function overviewReports(now = new Date()): PdfReport[] {
   const dd = (n: number) => String(n).padStart(2, "0");
   const day = `${dd(now.getDate())}.${dd(now.getMonth() + 1)}.${now.getFullYear()}`; // 16.10.2026, as on the weekly report
   const month = now.toLocaleDateString("en-GB", { month: "long", year: "numeric" });
   const iso = now.toISOString().slice(0, 10);
+  const photos = coverPhotos();
   return [
-    { key: "weekly", label: "Weekly report", title: "INDIA COTTON: Weekly Report", dateLine: day, fileName: `Agrolytix India Cotton Weekly Report ${iso}` },
-    { key: "monthly", label: "Monthly report", title: "INDIA COTTON: Monthly Report", dateLine: month, fileName: `Agrolytix India Cotton Monthly Report ${iso.slice(0, 7)}` },
+    { key: "weekly", label: "Weekly report", title: "INDIA COTTON: Weekly Report", dateLine: day, fileName: `Agrolytix India Cotton Weekly Report ${iso}`, contents: WEEKLY_CONTENTS, photos },
+    { key: "monthly", label: "Monthly report", title: "INDIA COTTON: Monthly Report", dateLine: month, fileName: `Agrolytix India Cotton Monthly Report ${iso.slice(0, 7)}`, contents: MONTHLY_CONTENTS, photos },
   ];
 }
 
@@ -39,7 +67,8 @@ export default function OverviewPage() {
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
-        <div>
+        {/* page title and "data updated" are dashboard chrome — the PDF has its cover page instead */}
+        <div className="print-hide">
           <div className="eyebrow">Agrolytix Research · India Cotton</div>
           <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">
             Market Overview
@@ -76,6 +105,7 @@ export default function OverviewPage() {
         </div>
       </div>
 
+      <ReportHeading sub="Domestic and global markets">Market Prices</ReportHeading>
       {/* the PDF report always carries the price table, never the chart — in chart view the table is
           kept hidden on screen and swapped in while the PDF is captured */}
       <div className={view === "table" ? undefined : "pdf-only"}>
@@ -91,7 +121,7 @@ export default function OverviewPage() {
       ) : null}
 
       <div className="mt-4">
-        <CommentsPanel section="overview" title="Summary (Prices)" minHeight={120} rows={5} autoWrite={() => autoCommentary("overview")} />
+        <CommentsPanel section="overview" title="Summary (Prices)" pdfTitle="Market review" minHeight={120} rows={5} autoWrite={() => autoCommentary("overview")} />
       </div>
 
       <OverviewSections />

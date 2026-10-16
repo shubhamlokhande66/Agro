@@ -119,7 +119,7 @@ export function CottonBeltRain() {
               key={src}
               src={src}
               alt={`IMD weekly district rainfall map · ${MAPS.find((m) => m.value === map)?.label}`}
-              className="max-h-[460px] w-auto max-w-full rounded-lg"
+              className="max-h-[340px] w-auto max-w-full rounded-lg"
               onError={() => setMapFailed(src)}
             />
           </div>
