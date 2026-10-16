@@ -48,7 +48,7 @@ function AdminHeader({ onMenu }: { onMenu: () => void }) {
 
         <div className="flex items-center gap-1.5 sm:gap-2">
           <Link
-            href="/"
+            href="/overview"
             className="rounded-xl border border-line bg-surface px-2.5 py-2 text-[12px] font-semibold text-ink-soft transition-colors hover:bg-surface-2 hover:text-ink sm:px-3"
           >
             <span aria-hidden>←</span> <span className="hidden sm:inline">Back to site</span>
@@ -93,7 +93,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const [drawer, setDrawer] = useState(false);
 
   useEffect(() => {
-    if (ready && authed && !isAdmin) router.replace("/");
+    if (ready && authed && !isAdmin) router.replace("/overview");
   }, [ready, authed, isAdmin, router]);
 
   if (!ready) return <Splash />;

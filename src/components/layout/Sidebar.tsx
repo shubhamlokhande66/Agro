@@ -30,10 +30,7 @@ export function Sidebar({ onNavigate }: { onNavigate?: () => void }) {
             ) : null}
             <div className="space-y-0.5">
               {group.items.map((item) => {
-                const active =
-                  item.href === "/"
-                    ? pathname === "/"
-                    : pathname === item.href || pathname.startsWith(item.href + "/");
+                const active = pathname === item.href || pathname.startsWith(item.href + "/");
                 const disabled = item.soon;
                 const Comp: any = disabled ? "div" : Link;
                 return (

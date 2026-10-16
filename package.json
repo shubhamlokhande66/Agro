@@ -8,12 +8,18 @@
     "start": "next start -p 4000",
     "lint": "next lint",
     "db:seed": "tsx scripts/seed.ts",
+    "sync:cai": "tsx scripts/sync-cai.ts",
+    "sync:ice": "tsx scripts/sync-ice.ts",
+    "sync:rbi": "tsx scripts/sync-rbi.ts",
+    "import:snd": "tsx scripts/import-balance-sheet.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
     "chart.js": "4.4.4",
     "clsx": "2.1.1",
+    "html2canvas-pro": "^2.4.5",
     "jose": "^6.2.12",
+    "jspdf": "^4.2.1",
     "mongodb": "^7.6.0",
     "next": "^14.2.33",
     "react": "18.3.1",

@@ -3,6 +3,9 @@ import { hashPassword, verifyPassword } from "./passwords";
 import { listDevices, type SessionDoc } from "./devices";
 
 export type Role = "admin" | "client";
+/** which dashboard an account signs in to — accounts are never shared between the two */
+export type App = "cotton" | "weather";
+export const APPS: App[] = ["cotton", "weather"];
 export type UserStatus = "pending" | "approved" | "rejected";
 
 export type UserDoc = {
@@ -11,6 +14,8 @@ export type UserDoc = {
   passwordHash: string;
   role: Role;
   status: UserStatus;
+  /** the dashboard this account belongs to; missing on older accounts = cotton */
+  app?: App;
   /** max concurrent devices allowed to be logged in at once; null = unlimited */
   deviceLimit: number | null;
   createdAt: number;
@@ -19,6 +24,9 @@ export type UserDoc = {
 };
 
 const key = (username: string) => username.trim().toLowerCase();
+
+/** the dashboard an account belongs to (older accounts predate the weather dashboard = cotton) */
+export const userApp = (u: Pick<UserDoc, "app">): App => u.app ?? "cotton";
 
 export async function getUserByUsername(username: string): Promise<UserDoc | null> {
   const db = await getDb();
@@ -47,6 +55,7 @@ export async function listUsersWithDevices(): Promise<UserWithDevices[]> {
 export async function createUser(
   username: string,
   password: string,
+  app: App = "cotton",
 ): Promise<{ ok: true } | { ok: false; error: string }> {
   const trimmed = username.trim();
   if (trimmed.length < 3) return { ok: false, error: "Username must be at least 3 characters" };
@@ -64,6 +73,7 @@ export async function createUser(
     passwordHash: hashPassword(password),
     role: "client",
     status: "pending",
+    app,
     deviceLimit: null,
     createdAt: now,
     approvedAt: null,
@@ -88,6 +98,11 @@ export async function setUserStatus(username: string, status: UserStatus, by: st
 export async function setUserRole(username: string, role: Role) {
   const db = await getDb();
   await db.collection<UserDoc>(COLLECTIONS.users).updateOne({ _id: key(username) }, { $set: { role } });
+}
+
+export async function setUserApp(username: string, app: App) {
+  const db = await getDb();
+  await db.collection<UserDoc>(COLLECTIONS.users).updateOne({ _id: key(username) }, { $set: { app } });
 }
 
 export async function setDeviceLimit(username: string, deviceLimit: number | null) {

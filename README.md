@@ -58,6 +58,28 @@ production, balanceSheet, trade, cop, calendar, rainfall, wasde.
 
 Saving writes to MongoDB and is live for everyone immediately.
 
+## Two dashboards
+
+`/` is a landing page with two dashboards, each with its **own sign-in and accounts**:
+
+- **Cotton Dashboard** (`/overview` and the rest of the app) — cotton accounts.
+- **Weather Dashboard** (`/monsoon`) — "Monsoon Rainfall Risk Monitor": IMD subdivision
+  rainfall & deficits, production-weighted regional departures, ENSO/IOD (NOAA), IMD
+  maps, satellite, Windy forecasts and IMD press releases — weather accounts.
+
+A cotton login can't open the weather dashboard or vice versa. New weather users sign up
+from the weather sign-in screen and are approved in the weather admin area (**Weather Users**);
+an account that signed up on the wrong screen can be moved to the other dashboard there. Admin accounts can sign in to
+both dashboards.
+
+Each dashboard has its **own admin area**: cotton data and cotton accounts under `/admin`,
+weather data and weather accounts under `/monsoon/admin` (the **⚙ Weather Admin** button in the
+weather top bar). Saving needs an admin sign-in to that dashboard. Weather datasets: IMD
+subdivision rainfall, commodity weights & regions, Kharif planting, historical monsoon, and
+desk alerts — edited with the same forms as the cotton data. The daily cron updates IMD rainfall when
+IMD publishes a complete bulletin and refreshes NOAA ENSO/IOD and IMD press releases.
+`npx tsx scripts/seed-monsoon.ts` creates the weather datasets in an empty database.
+
 ## Login
 
 | Username | Password | Role |
@@ -73,6 +95,14 @@ Saving writes to MongoDB and is live for everyone immediately.
 3. Seed the database once from your machine:
    `DATABASE_URL="mongodb+srv://…" npm run db:seed`
 4. Deploy.
+5. Add a `CRON_SECRET` env var. `vercel.json` runs one job, `/api/cron/daily`, every day
+   at 7:00 PM IST (13:30 UTC), after CAI publishes (~6:40 PM). It runs each outside-data sync in turn:
+   - CAI upcountry spot rates → Domestic Prices (Guj / MMA / CS / PHR varieties)
+   - ICE Cotton No. 2 + ICE Brent settlements → International Prices
+   - RBI USD/INR reference rate → Currency
+   Each looks back several days, so data published after a run is caught by the next.
+   Manual runs: `npm run sync:cai`, `npm run sync:ice`, `npm run sync:rbi`, or the
+   "Sync" button in each dataset's admin editor.
 
 ## Notes
 

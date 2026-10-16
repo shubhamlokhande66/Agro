@@ -2,8 +2,8 @@
 
 import clsx from "clsx";
 import { VARIETIES, recentPrices } from "@/data/prices";
-import { ICE_D_V, BR_M_V } from "@/data/international";
-import { USDINR_M_V, USDCNY_M_V } from "@/data/currency";
+import { ICE_D_V, BR_D_V, BR_M_V } from "@/data/international";
+import { USDINR_M_V, USDINR_1Y_V, USDCNY_M_V } from "@/data/currency";
 import { IE } from "@/data/trade";
 import { pctChange } from "@/lib/format";
 
@@ -30,8 +30,8 @@ function build(): Item[] {
   push("GUJ-29", daily("guj29"), (v) => "₹" + v.toLocaleString("en-IN"));
   push("MMAK-29", daily("mmak29"), (v) => "₹" + v.toLocaleString("en-IN"));
   push("ICE #2", ICE_D_V, (v) => v.toFixed(2) + "¢");
-  push("BRENT", BR_M_V, (v) => "$" + v.toFixed(1));
-  push("USD/INR", USDINR_M_V, (v) => "₹" + v.toFixed(2));
+  push("BRENT", BR_D_V.length ? BR_D_V : BR_M_V, (v) => "$" + v.toFixed(2));
+  push("USD/INR", USDINR_1Y_V.length ? USDINR_1Y_V : USDINR_M_V, (v) => "₹" + v.toFixed(2));
   push("USD/CNY", USDCNY_M_V, (v) => "¥" + v.toFixed(3));
 
   const impSeason = IE.actual_cutoff?.season;

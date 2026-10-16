@@ -1,7 +1,10 @@
 import { NextResponse } from "next/server";
-import { readSession } from "@/lib/server/session";
+import { readSession, parseApp } from "@/lib/server/session";
 
-export async function GET() {
-  const session = await readSession();
+export const dynamic = "force-dynamic";
+
+/** GET /api/auth/me?app=weather — the signed-in session for one dashboard (cotton by default) */
+export async function GET(req: Request) {
+  const session = await readSession(parseApp(new URL(req.url).searchParams.get("app")));
   return NextResponse.json({ session });
 }

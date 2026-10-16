@@ -242,3 +242,29 @@ body {
 .animate-rise {
   animation: rise 0.32s cubic-bezier(0.22, 1, 0.36, 1) both;
 }
+
+/* ---- browser print (Ctrl+P): hide app chrome; "Download PDF" uses ExportPdfButton instead ---- */
+@media print {
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+  html,
+  body {
+    background: #fff !important;
+  }
+  * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+  .print-hide {
+    display: none !important;
+  }
+  .panel {
+    break-inside: avoid;
+    box-shadow: none !important;
+  }
+  .animate-rise {
+    animation: none !important;
+  }
+}

@@ -11,7 +11,7 @@ export function Topbar({ onMenu }: { onMenu: () => void }) {
   const pathname = usePathname();
   const current =
     ALL_ITEMS.find((i) =>
-      i.href === "/" ? pathname === "/" : pathname.startsWith(i.href),
+      pathname.startsWith(i.href),
     )?.label ?? "Overview";
 
   return (

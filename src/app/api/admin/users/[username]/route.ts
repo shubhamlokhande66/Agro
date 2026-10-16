@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
-import { readSession } from "@/lib/server/session";
+import { readAdmin } from "@/lib/server/session";
 import {
   getUserByUsername,
   listUsers,
   setDeviceLimit,
+  setUserApp,
+  userApp,
+  APPS,
+  type App,
   setUserRole,
   setUserStatus,
 } from "@/lib/server/users";
@@ -15,13 +19,14 @@ export async function POST(
   req: Request,
   { params }: { params: { username: string } },
 ) {
-  const session = await readSession();
-  if (!session || session.role !== "admin") {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
-  }
-
   const target = await getUserByUsername(params.username);
   if (!target) return NextResponse.json({ error: "User not found" }, { status: 404 });
+
+  // an account is managed from its own dashboard's admin area
+  const session = await readAdmin(userApp(target));
+  if (!session) {
+    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  }
 
   const body = await req.json().catch(() => ({}));
   const action = body?.action;
@@ -50,10 +55,24 @@ export async function POST(
         await setUserStatus(target._id, "pending", session.username);
         break;
       case "setRole":
+        if (userApp(target) !== "cotton") {
+          return NextResponse.json({ error: "Admin accounts are managed from the cotton admin area" }, { status: 400 });
+        }
         if (body.role !== "admin" && body.role !== "client") {
           return NextResponse.json({ error: "Invalid role" }, { status: 400 });
         }
         await setUserRole(target._id, body.role);
+        break;
+      case "setApp":
+        if (!APPS.includes(body.app as App)) {
+          return NextResponse.json({ error: "Invalid dashboard" }, { status: 400 });
+        }
+        if (target.role === "admin" && body.app !== "cotton") {
+          return NextResponse.json({ error: "Admin accounts manage the cotton dashboard — keep them on Cotton" }, { status: 400 });
+        }
+        await setUserApp(target._id, body.app as App);
+        // their current sessions were issued for the other dashboard
+        await revokeAllDevices(target._id);
         break;
       case "setDeviceLimit": {
         const limit = body.deviceLimit;
