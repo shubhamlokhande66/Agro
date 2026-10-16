@@ -7,6 +7,7 @@ const UA =
 
 /** the IMD weekly rainfall maps the Overview shows — a fixed list, never an arbitrary path */
 const MAPS: Record<string, string> = {
+  states: "Rainfall/STATE_RAINFALL_MAP_COUNTRY_INDIA_w.JPG",
   india: "Rainfall/DISTRICT_RAINFALL_MAP_COUNTRY_INDIA_w.JPG",
   central: "Rainfall/DISTRICT_RAINFALL_MAP_REGION_CODE_CENTRAL_INDIA_w.jpg",
   northwest: "Rainfall/DISTRICT_RAINFALL_MAP_REGION_CODE_NORTH_WEST_INDIA_w.jpg",

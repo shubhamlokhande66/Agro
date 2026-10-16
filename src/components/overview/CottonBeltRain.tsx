@@ -7,7 +7,8 @@ import { loadCottonBelt } from "@/lib/autoCommentary";
 import type { CottonBelt } from "@/lib/server/cottonBelt";
 
 const MAPS = [
-  { value: "india", label: "India" },
+  { value: "states", label: "States" },
+  { value: "india", label: "Districts" },
   { value: "central", label: "Central" },
   { value: "northwest", label: "North-West" },
   { value: "south", label: "South" },
@@ -32,7 +33,7 @@ const fmtMm = (mm: number | null) => (mm == null ? "—" : mm < 0.5 ? "0" : mm <
 
 /** IMD's weekly district rainfall map + last-7-day and 7-day-forecast rain for each cotton state */
 export function CottonBeltRain() {
-  const [map, setMap] = useState<MapKey>("india");
+  const [map, setMap] = useState<MapKey>("states");
   const [mapFailed, setMapFailed] = useState<string | null>(null);
   const [data, setData] = useState<CottonBelt | null>(null);
   const [err, setErr] = useState(false);
@@ -50,7 +51,7 @@ export function CottonBeltRain() {
       <Card>
         <CardHeader
           title="Weekly rainfall map · IMD"
-          sub="District-wise rainfall in the latest IMD week (Thu–Wed) · % departure from normal"
+          sub={`${map === "states" ? "State-wise" : "District-wise"} rainfall in the latest IMD week (Thu–Wed) · % departure from normal`}
           right={
             <span className="print-hide">
               <Tabs options={MAPS.map((m) => ({ value: m.value, label: m.label }))} value={map} onChange={setMap} />
@@ -81,7 +82,7 @@ export function CottonBeltRain() {
             />
           </div>
         )}
-        <p className="mt-1.5 text-[10.5px] text-ink-faint">Source: India Meteorological Department, weekly district-wise rainfall.</p>
+        <p className="mt-1.5 text-[10.5px] text-ink-faint">Source: India Meteorological Department, weekly state- and district-wise rainfall.</p>
       </Card>
 
       <Card>
