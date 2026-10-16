@@ -24,10 +24,12 @@ export function __hydrateCci(b: CciData) {
 }
 
 /** CCI's daily sales grouped into Monday–Sunday weeks: total volume sold (lakh bales) and the
- *  volume-weighted average sale price (₹/candy) — the latest `n` weeks with any sales */
-export function cciWeekly(n = 26): { week: string; vol: number; price: number | null }[] {
+ *  volume-weighted average sale price (₹/candy) — the latest `n` weeks with any sales, optionally
+ *  only one season's sales ("2025-26") */
+export function cciWeekly(n = 26, season?: string): { week: string; vol: number; price: number | null }[] {
   const weeks = new Map<string, { vol: number; pv: number; pVol: number; pSum: number; pN: number }>();
   for (const r of CCI.datewise ?? []) {
+    if (season && r.seas !== season) continue;
     const t = Date.parse(r.d + "T00:00:00Z");
     if (!Number.isFinite(t)) continue;
     const monday = new Date(t - ((new Date(t).getUTCDay() + 6) % 7) * 86400000).toISOString().slice(0, 10);
@@ -53,3 +55,6 @@ export function cciWeekly(n = 26): { week: string; vol: number; price: number | 
       price: w.pVol > 0 ? Math.round(w.pv / w.pVol) : w.pN ? Math.round(w.pSum / w.pN) : null,
     }));
 }
+
+/** the latest season with daily sales, e.g. "2025-26" */
+export const cciLatestSalesSeason = () => (CCI.datewise ?? []).map((r) => r.seas).filter(Boolean).sort().at(-1);

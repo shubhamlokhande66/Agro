@@ -19,7 +19,7 @@ import { SOWING_SERIES, SOWING_WEEKS } from "@/data/sowing";
 import { DP_DATA, DP_REGIONS, DP_SEASONS, DP_STATE_LABELS, dpValue, type DpMetric } from "@/data/production";
 import { SND } from "@/data/balanceSheet";
 import { SND_MONTHS_INDIA, currentSndMonth, sndAnnual, sndMonthsTo, sndPeriod, type SndRow } from "@/lib/snd";
-import { CCI, cciWeekly } from "@/data/cci";
+import { CCI, cciLatestSalesSeason, cciWeekly } from "@/data/cci";
 import { WASDE_REPORTS, convertWasde, type WasdeRow } from "@/data/wasde";
 import { COT_WEEKS, cotNet, cotNetChg } from "@/data/cftc";
 import { ES_YEARS } from "@/data/exportSales";
@@ -512,14 +512,16 @@ function BalanceSheetSection() {
 function CciSection() {
   const latest = Object.keys(CCI.proc_annual ?? {}).sort().at(-1);
   if (!latest) return null;
-  const weeks = cciWeekly(26);
+  // the current sales season only, every week of it
+  const salesSeason = cciLatestSalesSeason();
+  const weeks = salesSeason ? cciWeekly(60, salesSeason) : [];
   const last = weeks.at(-1);
   const wk = (iso: string) => new Date(iso + "T00:00:00Z").toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
   return (
     <Card className="h-full">
       <CardHeader
         title={`CCI Updates · ${latest}`}
-        sub={`Cotton Corporation of India · weekly OMSS sales (lakh bales) and average sale price (₹/candy)${last ? ` · latest week of ${wk(last.week)}` : ""}`}
+        sub={`Cotton Corporation of India · ${salesSeason ? `${salesSeason.replace("-", "/")} season · ` : ""}weekly OMSS sales (lakh bales) and average sale price (₹/candy)${last ? ` · latest week of ${wk(last.week)}` : ""}`}
         right={<More href="/cci" label="CCI updates" />}
       />
       <StatStrip>
