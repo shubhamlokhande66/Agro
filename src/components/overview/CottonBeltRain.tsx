@@ -37,14 +37,57 @@ export function CottonBeltRain() {
   const [mapFailed, setMapFailed] = useState<string | null>(null);
   const [data, setData] = useState<CottonBelt | null>(null);
   const [err, setErr] = useState(false);
+  // the maps are stored weekly; the stamp makes the browser ask again after a refresh
+  const [stamp, setStamp] = useState<number | null>(null);
+  const [refreshing, setRefreshing] = useState(false);
+  const [note, setNote] = useState<string | null>(null);
 
   useEffect(() => {
     loadCottonBelt()
-      .then(setData)
+      .then((d) => {
+        setData(d);
+        setStamp((s) => s ?? d.fetchedAt);
+      })
       .catch(() => setErr(true));
   }, []);
 
-  const src = `/api/weather/imd-map?map=${map}`;
+  /** fetch this week's IMD maps and cotton-state rain now (otherwise renewed every Friday) */
+  async function refresh() {
+    setRefreshing(true);
+    setNote(null);
+    try {
+      const r = await fetch("/api/weather/weekly-rain", { method: "POST" }).then((x) => x.json());
+      const d = await loadCottonBelt(true);
+      setData(d);
+      setErr(false);
+      setMapFailed(null);
+      setStamp(Date.now());
+      setNote(r.saved ? (r.reason ?? "Updated") : (r.reason ?? "Couldn't reach the sources — showing the last update"));
+    } catch {
+      setNote("Refresh failed — try again");
+    } finally {
+      setRefreshing(false);
+    }
+  }
+
+  const src = `/api/weather/imd-map?map=${map}${stamp ? `&v=${stamp}` : ""}`;
+  const updated = data?.fetchedAt
+    ? `Updated ${new Date(data.fetchedAt).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} · renews every Friday`
+    : "Renews every Friday";
+  const refreshBtn = (
+    <span className="print-hide flex shrink-0 items-center gap-2">
+      <span className="hidden text-[10.5px] text-ink-faint sm:inline">{note ?? updated}</span>
+      <button
+        type="button"
+        onClick={refresh}
+        disabled={refreshing}
+        title="Fetch the latest IMD maps and rainfall now"
+        className="focusable rounded-lg border border-line px-2.5 py-1 text-[11.5px] font-semibold text-accent hover:bg-surface-2 disabled:opacity-60"
+      >
+        {refreshing ? "Refreshing…" : "↻ Refresh"}
+      </button>
+    </span>
+  );
 
   return (
     <div className="grid gap-4 lg:grid-cols-2">
@@ -52,12 +95,11 @@ export function CottonBeltRain() {
         <CardHeader
           title="Weekly rainfall map · IMD"
           sub={`${map === "states" ? "State-wise" : "District-wise"} rainfall in the latest IMD week (Thu–Wed) · % departure from normal`}
-          right={
-            <span className="print-hide">
-              <Tabs options={MAPS.map((m) => ({ value: m.value, label: m.label }))} value={map} onChange={setMap} />
-            </span>
-          }
+          right={refreshBtn}
         />
+        <div className="print-hide mb-2 flex justify-end">
+          <Tabs options={MAPS.map((m) => ({ value: m.value, label: m.label }))} value={map} onChange={setMap} />
+        </div>
         {mapFailed === src ? (
           <div className="flex h-72 flex-col items-center justify-center gap-3 text-center">
             <p className="text-[12px] text-ink-faint">The IMD map server isn&apos;t responding right now.</p>
@@ -89,6 +131,7 @@ export function CottonBeltRain() {
         <CardHeader
           title="Rain in cotton states"
           sub={data ? `Last 7 days (${span(data.pastDays)}) · forecast next 7 days (${span(data.forecastDays)}) · mm` : "Last 7 days and next 7 days · mm"}
+          right={refreshBtn}
         />
         {err ? (
           <p className="py-10 text-center text-[12px] text-ink-faint">Rainfall data couldn&apos;t be loaded — try again later.</p>
