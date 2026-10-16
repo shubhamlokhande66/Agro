@@ -504,7 +504,8 @@ function TradeSection() {
   const imp = IE.import_totals?.[latest] ?? null;
   const exp = IE.export_totals?.[latest] ?? null;
   return (
-    <Card>
+    // shown on the Overview but left out of the PDF report
+    <Card className="print-hide">
       <CardHeader title="Cotton Imports & Exports" sub="India · lakh bales · cotton year Oct–Sep" right={<More href="/trade" label="Import & export" />} />
       <StatStrip>
         <Stat label={`Imports ${latest}`} value={`${num(imp, 1)} lb`} />
@@ -529,7 +530,8 @@ function BasisSection() {
   const last = rows.at(-1);
   if (!last) return null;
   return (
-    <Card>
+    // in the PDF the imports card beside it is left out, so this one takes the full row
+    <Card className="pdf-full-row">
       <CardHeader title="Cotton Basis" sub="Guj-29 minus Cotlook A Index · US ¢/lb · monthly" right={<More href="/basis" label="Cotton basis" />} />
       <StatStrip>
         <Stat label={`Basis ${last.month}`} value={`${last.basis >= 0 ? "+" : ""}${last.basis.toFixed(2)}¢`} tone={last.basis >= 0 ? "neg" : "pos"} />

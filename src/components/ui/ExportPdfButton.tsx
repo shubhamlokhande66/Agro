@@ -138,7 +138,8 @@ export function ExportPdfButton({
         onclone: (doc) => {
           const style = doc.createElement("style");
           style.textContent =
-            "*,*::before,*::after{animation:none!important;transition:none!important}.animate-rise{opacity:1!important;transform:none!important}";
+            "*,*::before,*::after{animation:none!important;transition:none!important}.animate-rise{opacity:1!important;transform:none!important}" +
+            ".pdf-full-row{grid-column:1/-1!important}";
           doc.head.appendChild(style);
         },
       });
