@@ -28,7 +28,7 @@ export default function SugarParity() {
   return (
     <div>
       <PageHeader title="Export Parity" icon="≈" sub="London No.5 converted to an ex-mill price in India vs the domestic S-30 price · ₹ per quintal" />
-      <SampleBanner source="London No.5, USD/INR, freight and port cost assumptions" />
+      <SampleBanner datasets={["sugarPrices"]} source="London No.5, USD/INR, freight and port cost assumptions" />
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
         <Figure label="Export parity (ex-mill)" value={fmt(parity.at(-1))} unit="₹/qtl" />
         <Figure label="Domestic S-30 Kolhapur" value={fmt(dom.at(-1))} unit="₹/qtl" />

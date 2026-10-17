@@ -57,7 +57,7 @@ export default function SugarOverview() {
         </div>
         <ExportPdfButton fileName={`Agrolytix Sugar Overview ${new Date().toISOString().slice(0, 10)}`} reports={sugarReports()} />
       </div>
-      <SampleBanner source="mill tenders & trade quotes, ICE / London settlements, ISMA, UNICA, ISO" />
+      <SampleBanner datasets={["sugarPrices", "sugarCrushing", "sugarProduction", "sugarBalance", "sugarBrazil", "sugarWorld"]} source="mill tenders & trade quotes, ICE / London settlements, ISMA, UNICA, ISO" />
 
       <ReportHeading sub="Domestic and global markets">Market Prices</ReportHeading>
       <section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">

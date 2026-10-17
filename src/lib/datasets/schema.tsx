@@ -18,6 +18,8 @@ import { RecordTable } from "@/components/admin/RecordCards";
 import { WeeklyPriceFill } from "@/components/admin/WeeklyPriceFill";
 import { GroundReportEditor } from "@/components/admin/GroundReportEditor";
 import { IMD_SUBDIVISIONS, SUBDIVISION_ZONES } from "@/lib/monsoon/constants";
+import { BR_FORTNIGHT_LIST, CRUSH_FORTNIGHT_LIST, SUGAR_STATES, TRADE_MONTH_LIST } from "@/data/sugar/defaults";
+import { blankFromFields, type FieldSpec } from "@/components/admin/fields";
 import {
   flattenCategoryYear,
   flattenMulti,
@@ -1449,12 +1451,276 @@ const groundReportSchema: EditorSection[] = [
   },
 ];
 
+/* ================================================================== */
+/*  Sugar dashboard                                                    */
+/* ================================================================== */
+
+/** any edit makes the dataset real data — drops the "sample values" flag */
+const real = (d: any) => {
+  const { _sample, ...rest } = d ?? {};
+  void _sample;
+  return rest;
+};
+const cmpSeasonDesc = (a: any, b: any) => (parseInt(b.season, 10) || 0) - (parseInt(a.season, 10) || 0);
+
+/** a table section over one array of a sugar dataset */
+function sugarRecords(opts: {
+  id: string;
+  title: string;
+  hint?: string;
+  arrayKey?: string;
+  itemName: string;
+  fields: FieldSpec[];
+  sort?: (a: any, b: any) => number;
+  primary?: boolean;
+}): EditorSection {
+  const k = opts.arrayKey ?? "rows";
+  return {
+    id: opts.id,
+    title: opts.title,
+    hint: opts.hint,
+    ...(opts.primary ? { primaryAdd: { label: `Add ${opts.itemName}` } } : {}),
+    render: (d, set, adderRef) => (
+      <RecordManager<any>
+        ref={opts.primary ? adderRef : undefined}
+        hideAddButton={opts.primary}
+        value={opts.sort ? [...(d?.[k] ?? [])].sort(opts.sort) : d?.[k] ?? []}
+        onChange={(rows) => set(real({ ...d, [k]: rows }))}
+        itemName={opts.itemName}
+        makeItem={() => blankFromFields(opts.fields)}
+        fields={opts.fields}
+      />
+    ),
+  };
+}
+const n = (key: string, label: string): FieldSpec => ({ key, label, type: "number" });
+const t = (key: string, label: string, placeholder?: string): FieldSpec => ({ key, label, type: "text", placeholder });
+const sel = (key: string, label: string, options: readonly string[]): FieldSpec => ({ key, label, type: "select", options });
+
+/** a few single numbers at the top of a sugar dataset */
+const sugarNumbers = (id: string, title: string, items: { key: string; label: string }[]): EditorSection => ({
+  id,
+  title,
+  render: (d, set) => (
+    <div className="grid gap-3 sm:grid-cols-3">
+      {items.map((it) => (
+        <Labeled key={it.key} label={it.label}>
+          <NumInput value={d?.[it.key] ?? null} align="left" onChange={(v) => set(real({ ...d, [it.key]: v }))} />
+        </Labeled>
+      ))}
+    </div>
+  ),
+});
+
+const sugarPricesSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "Monthly prices",
+    hint: "One row per month (month as YYYY-MM, e.g. 2026-10). Domestic prices in ₹ per quintal; ICE No.11 in US¢/lb; London No.5 in US$/tonne; molasses in ₹/tonne.",
+    itemName: "Month",
+    primary: true,
+    sort: (a, b) => String(b.month).localeCompare(String(a.month)),
+    fields: [
+      t("month", "Month (YYYY-MM)", "2026-10"),
+      n("m30_muzaffarnagar", "M-30 Muzaffarnagar ₹/qtl"),
+      n("s30_kolhapur", "S-30 Kolhapur ₹/qtl"),
+      n("s30_belgaum", "S-30 Belgaum ₹/qtl"),
+      n("s30_vashi", "S-30 Vashi ₹/qtl"),
+      n("ice11", "ICE No.11 ¢/lb"),
+      n("ldn5", "London No.5 $/t"),
+      n("usdinr", "USD/INR"),
+      n("molasses", "Molasses ₹/t"),
+    ],
+  }),
+];
+
+const sugarCrushingSchema: EditorSection[] = [
+  {
+    id: "asof",
+    title: "Report",
+    render: (d, set) => (
+      <Labeled label="Position as of (e.g. ISMA release of 15 Jan 2026)">
+        <TextInput value={d?.asOf ?? ""} onChange={(v) => set(real({ ...d, asOf: v }))} placeholder="ISMA · 15 Jan 2026" />
+      </Labeled>
+    ),
+  },
+  sugarRecords({
+    id: "rows",
+    title: "Cumulative progress by fortnight",
+    hint: "Season as 2025-26. Sugar produced is cumulative (lakh tonnes, after diversion).",
+    itemName: "Fortnight",
+    primary: true,
+    sort: (a, b) => cmpSeasonDesc(a, b) || CRUSH_FORTNIGHT_LIST.indexOf(b.fortnight) - CRUSH_FORTNIGHT_LIST.indexOf(a.fortnight),
+    fields: [t("season", "Season", "2025-26"), sel("fortnight", "Fortnight", CRUSH_FORTNIGHT_LIST), n("sugar", "Sugar produced (lakh t)"), n("mills", "Mills operating")],
+  }),
+  sugarRecords({
+    id: "states",
+    arrayKey: "states",
+    title: "Latest position by state",
+    hint: "Cane and sugar in lakh tonnes; last year = sugar produced by the same date last season.",
+    itemName: "State",
+    fields: [t("state", "State"), n("mills", "Mills"), n("cane", "Cane crushed (lakh t)"), n("sugar", "Sugar (lakh t)"), n("recovery", "Recovery %"), n("lastYear", "Last season (lakh t)")],
+  }),
+];
+
+const sugarProductionSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "Production by state",
+    hint: "Lakh tonnes after diversion to ethanol; season as 2025-26 (add “(E)” for estimates).",
+    itemName: "Season",
+    primary: true,
+    sort: cmpSeasonDesc,
+    fields: [t("season", "Season", "2025-26 (E)"), ...SUGAR_STATES.map((st) => n(st.key, st.label)), n("diversion", "Diverted to ethanol")],
+  }),
+];
+
+const sugarEthanolSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "Ethanol procurement price (₹/litre)",
+    itemName: "Supply year",
+    primary: true,
+    sort: (a, b) => (parseInt(b.esy, 10) || 0) - (parseInt(a.esy, 10) || 0),
+    fields: [t("esy", "Ethanol supply year", "2025-26"), n("c_heavy", "C-heavy molasses"), n("b_heavy", "B-heavy molasses"), n("juice", "Cane juice / syrup")],
+  }),
+];
+
+const sugarCaneSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "Cane area & price",
+    itemName: "Season",
+    primary: true,
+    sort: cmpSeasonDesc,
+    fields: [t("season", "Season", "2025-26"), n("area", "Area (lakh ha)"), n("frp", "FRP ₹/qtl"), n("sap_up", "UP SAP ₹/qtl")],
+  }),
+];
+
+const sugarBalanceSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "Balance sheet (lakh tonnes)",
+    hint: "Net production, total supply and closing stock are calculated: closing = opening + gross − diversion + imports − consumption − exports.",
+    itemName: "Season",
+    primary: true,
+    sort: cmpSeasonDesc,
+    fields: [t("season", "Season", "2025-26 (E)"), n("opening", "Opening stock"), n("gross", "Gross production"), n("diversion", "Diversion to ethanol"), n("imports", "Imports"), n("consumption", "Consumption"), n("exports", "Exports")],
+  }),
+];
+
+const sugarTradeSchema: EditorSection[] = [
+  sugarNumbers("totals", "Season figures", [
+    { key: "exportQuota", label: "Export quota (lakh t)" },
+    { key: "imports", label: "Imports this season (lakh t)" },
+  ]),
+  sugarRecords({
+    id: "rows",
+    title: "Monthly exports (lakh tonnes)",
+    itemName: "Month",
+    primary: true,
+    sort: (a, b) => cmpSeasonDesc(a, b) || TRADE_MONTH_LIST.indexOf(b.month) - TRADE_MONTH_LIST.indexOf(a.month),
+    fields: [t("season", "Season", "2025-26"), sel("month", "Month", TRADE_MONTH_LIST), n("exports", "Exports")],
+  }),
+  sugarRecords({
+    id: "destinations",
+    arrayKey: "destinations",
+    title: "Export destinations (% share)",
+    itemName: "Destination",
+    fields: [t("country", "Country"), n("share", "Share %")],
+  }),
+];
+
+const sugarPolicySchema: EditorSection[] = [
+  sugarNumbers("msp", "Prices", [{ key: "msp", label: "MSP of sugar (₹/kg)" }]),
+  sugarRecords({
+    id: "release",
+    arrayKey: "release",
+    title: "Monthly release quota (lakh tonnes)",
+    hint: "Month as e.g. Nov 25 — in order, oldest first.",
+    itemName: "Month",
+    primary: true,
+    fields: [t("month", "Month", "Nov 26"), n("quota", "Quota (lakh t)")],
+  }),
+  sugarRecords({
+    id: "items",
+    arrayKey: "items",
+    title: "Policy snapshot",
+    itemName: "Measure",
+    fields: [t("item", "Measure"), t("value", "Current"), t("note", "Note")],
+  }),
+];
+
+const sugarRainfallSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "Rainfall % deviation from normal",
+    itemName: "Subdivision",
+    primary: true,
+    fields: [t("subdivision", "Subdivision"), n("jun", "Jun %"), n("jul", "Jul %"), n("aug", "Aug %"), n("sep", "Sep %")],
+  }),
+];
+
+const sugarBrazilSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "Centre-South progress by fortnight",
+    hint: "Season as 2025-26 (Apr–Mar). Sugar is cumulative (million tonnes); mix = % of ATR to sugar in that fortnight.",
+    itemName: "Fortnight",
+    primary: true,
+    sort: (a, b) => cmpSeasonDesc(a, b) || BR_FORTNIGHT_LIST.indexOf(b.fortnight) - BR_FORTNIGHT_LIST.indexOf(a.fortnight),
+    fields: [t("season", "Season", "2026-27"), sel("fortnight", "Fortnight", BR_FORTNIGHT_LIST), n("sugar", "Sugar (mn t)"), n("mix", "Sugar mix %")],
+  }),
+];
+
+const sugarWorldSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "World balance (million tonnes, raw value)",
+    itemName: "Season",
+    primary: true,
+    sort: cmpSeasonDesc,
+    fields: [t("season", "Season", "2026-27 (F)"), n("production", "Production"), n("consumption", "Consumption")],
+  }),
+  sugarRecords({
+    id: "top",
+    arrayKey: "top",
+    title: "Main producers & exporters (million tonnes)",
+    itemName: "Country",
+    fields: [t("country", "Country"), n("production", "Production"), n("exports", "Exports")],
+  }),
+];
+
+const sugarCftcSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "Managed money net position (contracts)",
+    hint: "One row per weekly report (Tuesday date). Positive = net long.",
+    itemName: "Week",
+    primary: true,
+    sort: (a, b) => String(b.week).localeCompare(String(a.week)),
+    fields: [{ key: "week", label: "Week (report date)", type: "date" }, n("net", "Funds net")],
+  }),
+];
+
 export const SCHEMAS: Record<string, EditorSection[]> = {
   monsoonImd: monsoonImdSchema,
   monsoonWeights: monsoonWeightsSchema,
   monsoonPlanting: monsoonPlantingSchema,
   monsoonHistory: monsoonHistorySchema,
   monsoonAlerts: monsoonAlertsSchema,
+  sugarPrices: sugarPricesSchema,
+  sugarCrushing: sugarCrushingSchema,
+  sugarProduction: sugarProductionSchema,
+  sugarEthanol: sugarEthanolSchema,
+  sugarCane: sugarCaneSchema,
+  sugarBalance: sugarBalanceSchema,
+  sugarTrade: sugarTradeSchema,
+  sugarPolicy: sugarPolicySchema,
+  sugarRainfall: sugarRainfallSchema,
+  sugarBrazil: sugarBrazilSchema,
+  sugarWorld: sugarWorldSchema,
+  sugarCftc: sugarCftcSchema,
   prices: pricesSchema,
   international: internationalSchema,
   currency: currencySchema,

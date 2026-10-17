@@ -13,7 +13,7 @@ export default function SugarWeather() {
   return (
     <div>
       <PageHeader title="Cane Belt Rainfall" icon="☂" sub="Monsoon rainfall vs normal in the main sugarcane subdivisions · % deviation" />
-      <SampleBanner source="IMD subdivision rainfall (the same feed as the Weather dashboard)" />
+      <SampleBanner datasets={["sugarRainfall"]} source="IMD subdivision rainfall (the same feed as the Weather dashboard)" />
       <Card>
         <CardHeader title="Monthly rainfall deviation" sub="% vs long-period average · positive = above normal" />
         <BarChart labels={RAIN_MONTHS} height={300} legend series={RAIN_STATES.map((s, i) => ({ label: s.state, data: s.dev, color: COLORS[i] }))} yFmt={(v) => `${v}%`} />

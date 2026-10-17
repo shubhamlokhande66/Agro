@@ -39,7 +39,14 @@ export const SUGAR_NAV: NavGroup[] = [
       { href: "/sugar/news", label: "News Feed", icon: "❒", soon: true },
     ],
   },
-  { heading: "Admin", adminOnly: true, items: [{ href: "/sugar/admin/users", label: "Sugar Users", icon: "⚙" }] },
+  {
+    heading: "Admin",
+    adminOnly: true,
+    items: [
+      { href: "/sugar/admin", label: "Admin Dashboard", icon: "⚙" },
+      { href: "/sugar/admin/users", label: "Sugar Users", icon: "☺" },
+    ],
+  },
 ];
 
 export const SUGAR_ITEMS: NavItem[] = SUGAR_NAV.flatMap((g) => g.items);

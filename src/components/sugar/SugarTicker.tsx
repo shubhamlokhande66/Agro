@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { SUGAR_PRICES, whitePremium } from "@/data/sugar/sample";
+import { SUGAR_PRICES, SUGAR_SAMPLE, whitePremium } from "@/data/sugar/sample";
 
 /** the scrolling strip under the top bar: latest sugar prices and their month-on-month change */
 export function SugarTicker() {
@@ -19,7 +19,7 @@ export function SugarTicker() {
   ];
   return (
     <div className="flex gap-6 overflow-x-auto border-b border-line bg-surface px-4 py-1.5 text-[11.5px] sm:px-6">
-      <span className="shrink-0 rounded bg-amber-100 px-1.5 py-px text-[9.5px] font-bold uppercase tracking-wide text-amber-800">Sample</span>
+      {SUGAR_SAMPLE.sugarPrices ? <span className="shrink-0 rounded bg-amber-100 px-1.5 py-px text-[9.5px] font-bold uppercase tracking-wide text-amber-800">Sample</span> : null}
       {items.map((it) => {
         const ch = ((it.v - it.prev) / Math.abs(it.prev)) * 100;
         return (

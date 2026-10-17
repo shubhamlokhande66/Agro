@@ -91,6 +91,43 @@ export const DATASETS: DatasetMeta[] = [
   { key: "monsoonAlerts", label: "Weather Alerts", group: "Weather dashboard", kind: "records", app: "weather",
     description: "Your own alerts / notes, pinned above IMD's press releases on Weather Reports.",
     route: "/monsoon/weather" },
+  // ── Sugar dashboard ──
+  { key: "sugarPrices", label: "Sugar Prices (monthly)", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "Monthly ex-mill / wholesale prices (₹/qtl), ICE No.11, London No.5, USD/INR and molasses — one row per month.",
+    route: "/sugar/prices" },
+  { key: "sugarCrushing", label: "Crushing Progress", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "Fortnightly cumulative sugar produced and mills operating per season, plus the latest state-wise position.",
+    route: "/sugar/crushing" },
+  { key: "sugarProduction", label: "Production by State", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "Season totals by state (lakh tonnes, after diversion) and sugar diverted to ethanol.",
+    route: "/sugar/production" },
+  { key: "sugarEthanol", label: "Ethanol Prices", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "OMC ethanol procurement price by feedstock (₹/litre) per ethanol supply year.",
+    route: "/sugar/ethanol" },
+  { key: "sugarCane", label: "Cane Area & FRP", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "Sugarcane area, FRP and UP state advised price per season.",
+    route: "/sugar/cane" },
+  { key: "sugarBalance", label: "Sugar Balance Sheet", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "Opening stock, production, diversion, imports, consumption and exports per season — net production, supply and closing stock are calculated.",
+    route: "/sugar/balance-sheet" },
+  { key: "sugarTrade", label: "Exports & Imports", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "Monthly exports per season, export quota, imports and export destinations.",
+    route: "/sugar/trade" },
+  { key: "sugarPolicy", label: "Policy & Quotas", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "Monthly domestic release quota, MSP of sugar and the policy snapshot table.",
+    route: "/sugar/policy" },
+  { key: "sugarRainfall", label: "Cane Belt Rainfall", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "Monthly rainfall % deviation from normal for the cane subdivisions.",
+    route: "/sugar/weather" },
+  { key: "sugarBrazil", label: "Brazil (UNICA)", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "Centre-South cumulative sugar production and sugar mix by fortnight, per season.",
+    route: "/sugar/brazil" },
+  { key: "sugarWorld", label: "World Sugar Balance", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "World production and consumption per season, and the main producers / exporters.",
+    route: "/sugar/world" },
+  { key: "sugarCftc", label: "CFTC Sugar No.11", group: "Sugar dashboard", kind: "records", app: "sugar",
+    description: "Managed money net position in ICE Sugar No.11, one row per week.",
+    route: "/sugar/cftc" },
 ];
 
 export const DATASET_KEYS = DATASETS.map((d) => d.key);
@@ -100,3 +137,4 @@ export const datasetApp = (key: string): "cotton" | "weather" | "sugar" => datas
 export const datasetsFor = (app: "cotton" | "weather" | "sugar") => DATASETS.filter((d) => (d.app ?? "cotton") === app);
 export const COTTON_DATASETS = datasetsFor("cotton");
 export const WEATHER_DATASETS = datasetsFor("weather");
+export const SUGAR_DATASETS = datasetsFor("sugar");

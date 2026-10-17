@@ -13,7 +13,7 @@ export default function SugarWorld() {
   return (
     <div>
       <PageHeader title="World Sugar Balance" icon="◑" sub="Global production and consumption · million tonnes, raw value · Oct–Sep" />
-      <SampleBanner source="ISO quarterly market outlook, USDA FAS Sugar: World Markets and Trade" />
+      <SampleBanner datasets={["sugarWorld"]} source="ISO quarterly market outlook, USDA FAS Sugar: World Markets and Trade" />
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Figure label={`Production ${WORLD_SEASONS[n - 1]}`} value={fmt(WORLD_PROD[n - 1], 1)} unit="mn t" />
         <Figure label="Consumption" value={fmt(WORLD_CONS[n - 1], 1)} unit="mn t" />

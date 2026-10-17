@@ -14,7 +14,7 @@ export default function SugarCftc() {
   return (
     <div>
       <PageHeader title="CFTC · Sugar No.11" icon="◔" sub="Commitments of Traders · managed money (funds) net position · contracts" />
-      <SampleBanner source="CFTC disaggregated Commitments of Traders, futures only (code 080732)" />
+      <SampleBanner datasets={["sugarCftc"]} source="CFTC disaggregated Commitments of Traders, futures only (code 080732)" />
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-3">
         <Figure label={`Funds net · ${short(COT_WEEKS.at(-1)!)}`} value={signed(net)} note={net >= 0 ? "net long" : "net short"} />
         <Figure label="Change on week" value={signed(chg)} />

@@ -12,12 +12,12 @@ export default function SugarCane() {
   return (
     <div>
       <PageHeader title="Cane Area & FRP" icon="❊" sub="Sugarcane area and the cane price mills must pay" />
-      <SampleBanner source="Ministry of Agriculture area estimates, CACP / cabinet FRP, state advised prices (SAP)" />
+      <SampleBanner datasets={["sugarCane"]} source="Ministry of Agriculture area estimates, CACP / cabinet FRP, state advised prices (SAP)" />
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Figure label={`Cane area ${CANE_YEARS[n - 1]}`} value={fmt(CANE_AREA[n - 1], 1)} unit="lakh ha" note={`${(pct(CANE_AREA[n - 1], CANE_AREA[n - 2]) ?? 0).toFixed(1)}% vs last year`} />
         <Figure label={`FRP ${CANE_YEARS[n - 1]}`} value={`₹${CANE_FRP[n - 1]}`} unit="/ quintal" note="at 10.25% recovery" />
         <Figure label="UP state advised price" value={`₹${CANE_SAP_UP[n - 1]}`} unit="/ quintal" note="early variety" />
-        <Figure label="FRP rise vs last year" value={`₹${CANE_FRP[n - 1] - CANE_FRP[n - 2]}`} unit="/ quintal" />
+        <Figure label="FRP rise vs last year" value={`₹${(CANE_FRP[n - 1] ?? 0) - (CANE_FRP[n - 2] ?? 0)}`} unit="/ quintal" />
       </section>
       <div className="grid gap-4 lg:grid-cols-2">
         <Card>

@@ -16,7 +16,7 @@ export default function SugarBalance() {
   return (
     <div>
       <PageHeader title="Sugar Balance Sheet" icon="⚖" sub="India supply & demand · season Oct–Sep · lakh tonnes" />
-      <SampleBanner source="ISMA / AISTA balance sheets, DFPD; Agrolytix estimates" />
+      <SampleBanner datasets={["sugarBalance"]} source="ISMA / AISTA balance sheets, DFPD; Agrolytix estimates" />
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Figure label={`Net production ${BS_SEASONS[n - 1]}`} value={fmt(row("net")[n - 1], 1)} unit="lakh t" />
         <Figure label="Consumption" value={fmt(cons[n - 1], 1)} unit="lakh t" />

@@ -16,7 +16,7 @@ export default function SugarPrices() {
   return (
     <div>
       <PageHeader title="Domestic Sugar Prices" icon="₹" sub="Ex-mill and wholesale · ₹ per quintal · monthly" />
-      <SampleBanner source="mill tender prices and trade quotes (Kolhapur, Muzaffarnagar, Belgaum, Vashi)" />
+      <SampleBanner datasets={["sugarPrices"]} source="mill tender prices and trade quotes (Kolhapur, Muzaffarnagar, Belgaum, Vashi)" />
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         {dom.map((p) => (
           <Figure key={p.key} label={p.label} value={fmt(p.values.at(-1))} unit="₹/qtl" change={pct(p.values.at(-1), p.values.at(-2))} />

@@ -12,7 +12,7 @@ export default function SugarBrazil() {
   return (
     <div>
       <PageHeader title="Brazil Centre-South (UNICA)" icon="◕" sub={`Season ${cy} (Apr–Mar) vs ${ly} · position as of ${BR_FORTNIGHTS[i]}`} />
-      <SampleBanner source="UNICA fortnightly reports" />
+      <SampleBanner datasets={["sugarBrazil"]} source="UNICA fortnightly reports" />
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Figure label={`Sugar to ${BR_FORTNIGHTS[i]}`} value={fmt(BR_SUGAR[cy][i], 1)} unit="mn t" note={`${ly}: ${fmt(BR_SUGAR[ly][i], 1)}`} />
         <Figure label="vs last season" value={`${(pct(BR_SUGAR[cy][i], BR_SUGAR[ly][i]) ?? 0).toFixed(1)}%`} />

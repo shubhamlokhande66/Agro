@@ -15,7 +15,7 @@ export default function SugarProduction() {
   return (
     <div>
       <PageHeader title="Sugar Production by State" icon="▤" sub="Season Oct–Sep · lakh tonnes, after diversion to ethanol" />
-      <SampleBanner source="ISMA / NFCSF season estimates, DFPD" />
+      <SampleBanner datasets={["sugarProduction"]} source="ISMA / NFCSF season estimates, DFPD" />
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Figure label={`All India ${PROD_SEASONS[n - 1]}`} value={fmt(total[n - 1], 1)} unit="lakh t" note={`${PROD_SEASONS[n - 2]}: ${fmt(total[n - 2], 1)}`} />
         <Figure label="Change vs last season" value={`${(pct(total[n - 1], total[n - 2]) ?? 0).toFixed(1)}%`} />

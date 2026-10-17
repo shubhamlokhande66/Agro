@@ -10,6 +10,7 @@ import { Sidebar } from "@/components/layout/Sidebar";
 import { Topbar } from "@/components/layout/Topbar";
 import { SUGAR_ITEMS, SUGAR_NAV } from "@/lib/sugarNav";
 import { SugarTicker } from "./SugarTicker";
+import { SugarDataProvider, useSugarData } from "./SugarData";
 
 const QUICK = [
   { href: "/sugar", label: "Overview", icon: "◎" },
@@ -21,9 +22,6 @@ const QUICK = [
 /** the sugar terminal: the cotton terminal's layout with the sugar menu and its own sign-in */
 export function SugarShell({ children }: { children: React.ReactNode }) {
   const { ready, authed } = useAuth();
-  const [drawer, setDrawer] = useState(false);
-  const pathname = usePathname();
-
   if (!ready) {
     return (
       <div className="grid min-h-screen place-items-center bg-bg text-sm text-ink-faint">
@@ -32,6 +30,24 @@ export function SugarShell({ children }: { children: React.ReactNode }) {
     );
   }
   if (!authed) return <LoginScreen />;
+  return (
+    <SugarDataProvider>
+      <Frame>{children}</Frame>
+    </SugarDataProvider>
+  );
+}
+
+function Frame({ children }: { children: React.ReactNode }) {
+  const [drawer, setDrawer] = useState(false);
+  const pathname = usePathname();
+  const { ready, version } = useSugarData();
+  if (!ready) {
+    return (
+      <div className="grid min-h-screen place-items-center bg-bg text-sm text-ink-faint">
+        <span className="animate-pulse">Loading sugar data…</span>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen">
@@ -52,7 +68,7 @@ export function SugarShell({ children }: { children: React.ReactNode }) {
           <SugarTicker />
         </div>
         <main className="flex-1 px-4 pb-24 pt-6 sm:px-6 lg:px-8 lg:pb-16">
-          <div key={pathname} className="print-page mx-auto max-w-[1280px] animate-rise">
+          <div key={`${pathname}:${version}`} className="print-page mx-auto max-w-[1280px] animate-rise">
             {children}
           </div>
         </main>

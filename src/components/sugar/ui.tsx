@@ -1,14 +1,16 @@
 "use client";
 
 import clsx from "clsx";
+import { SUGAR_SAMPLE } from "@/data/sugar/sample";
 
-/** shown on every sugar page until its data source is connected */
-export function SampleBanner({ source }: { source?: string }) {
+/** shown on a sugar page while any of its datasets still holds the sample values (edit them in Sugar Admin) */
+export function SampleBanner({ source, datasets }: { source?: string; datasets: string[] }) {
+  if (!datasets.some((k) => SUGAR_SAMPLE[k])) return null;
   return (
     <div className="mb-4 flex items-start gap-2.5 rounded-xl border border-amber-300/70 bg-amber-50 px-3.5 py-2.5 text-[12px] text-amber-900 dark:border-amber-500/40 dark:bg-amber-500/10 dark:text-amber-200">
       <span className="mt-px rounded bg-amber-200 px-1.5 py-px text-[9.5px] font-bold uppercase tracking-wide text-amber-900">Sample data</span>
       <span>
-        Layout preview — the numbers on this page are placeholders, not market data.
+        Placeholder numbers, not market data — replace them in <b>Sugar Admin</b>.
         {source ? <> Expected source: <b>{source}</b>.</> : null}
       </span>
     </div>

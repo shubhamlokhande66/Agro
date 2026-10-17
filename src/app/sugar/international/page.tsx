@@ -15,7 +15,7 @@ export default function SugarInternational() {
   return (
     <div>
       <PageHeader title="ICE No.11 & London No.5" icon="🌐" sub="World raw and white sugar futures · front month · monthly average" />
-      <SampleBanner source="ICE Futures US (Sugar No.11) and ICE Futures Europe (White Sugar No.5) settlements" />
+      <SampleBanner datasets={["sugarPrices"]} source="ICE Futures US (Sugar No.11) and ICE Futures Europe (White Sugar No.5) settlements" />
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Figure label="ICE Raw Sugar No.11" value={fmt(ice.at(-1), 2)} unit="¢/lb" change={pct(ice.at(-1), ice.at(-2))} />
         <Figure label="London White No.5" value={fmt(ldn.at(-1), 1)} unit="$/t" change={pct(ldn.at(-1), ldn.at(-2))} />

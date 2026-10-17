@@ -5,7 +5,7 @@ import { Card, CardHeader } from "@/components/ui/Card";
 import { Table, TableWrap, Td, Th } from "@/components/ui/DataTable";
 import LineChart from "@/components/charts/LineChart";
 import { Chg, Figure, SampleBanner, fmt, pct } from "@/components/sugar/ui";
-import { CRUSH_FORTNIGHTS, CRUSH_MILLS, CRUSH_STATES, CRUSH_SUGAR } from "@/data/sugar/sample";
+import { CRUSH_AS_OF, CRUSH_FORTNIGHTS, CRUSH_MILLS, CRUSH_STATES, CRUSH_SUGAR } from "@/data/sugar/sample";
 
 export default function SugarCrushing() {
   const [ly, cy] = Object.keys(CRUSH_SUGAR);
@@ -15,8 +15,8 @@ export default function SugarCrushing() {
   const total = CRUSH_STATES.reduce((a, s) => ({ mills: a.mills + s.mills, cane: a.cane + s.cane, sugar: a.sugar + s.sugar, ly: a.ly + s.ly }), { mills: 0, cane: 0, sugar: 0, ly: 0 });
   return (
     <div>
-      <PageHeader title="Crushing Progress" icon="⚙" sub={`Season ${cy} vs ${ly} · position as of ${CRUSH_FORTNIGHTS[i]}`} />
-      <SampleBanner source="ISMA / NFCSF fortnightly crushing reports" />
+      <PageHeader title="Crushing Progress" icon="⚙" sub={`Season ${cy} vs ${ly} · position as of ${CRUSH_FORTNIGHTS[i]}${CRUSH_AS_OF ? ` · ${CRUSH_AS_OF}` : ""}`} />
+      <SampleBanner datasets={["sugarCrushing"]} source="ISMA / NFCSF fortnightly crushing reports" />
       <section className="mb-4 grid grid-cols-2 gap-3 lg:grid-cols-4">
         <Figure label={`Sugar produced to ${CRUSH_FORTNIGHTS[i]}`} value={fmt(now, 1)} unit="lakh t" note={`${ly}: ${fmt(then, 1)}`} />
         <Figure label="vs last season, same date" value={`${(pct(now, then) ?? 0) >= 0 ? "+" : ""}${(pct(now, then) ?? 0).toFixed(1)}%`} />
