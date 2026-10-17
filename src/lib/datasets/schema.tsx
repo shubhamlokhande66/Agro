@@ -1512,20 +1512,39 @@ const sugarNumbers = (id: string, title: string, items: { key: string; label: st
   ),
 });
 
+const sugarWholesaleSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "Daily wholesale prices (₹/quintal incl. GST)",
+    hint: "Synced every evening from chinimandi.com (the latest days their page shows). Add older days by hand — date as YYYY-MM-DD.",
+    itemName: "Day",
+    primary: true,
+    sort: (a, b) => String(b.date).localeCompare(String(a.date)),
+    fields: [
+      { key: "date", label: "Date", type: "date" },
+      n("delhi", "Delhi"),
+      n("kanpur", "Kanpur"),
+      n("raipur", "Raipur"),
+      n("mumbai", "Mumbai"),
+      n("ranchi", "Ranchi"),
+      n("kolkata", "Kolkata"),
+      n("guwahati", "Guwahati"),
+      n("hyderabad", "Hyderabad (S-30)"),
+      n("chennai", "Chennai"),
+    ],
+  }),
+];
+
 const sugarPricesSchema: EditorSection[] = [
   sugarRecords({
     id: "rows",
-    title: "Monthly prices",
-    hint: "One row per month (month as YYYY-MM, e.g. 2026-10). Domestic prices in ₹ per quintal; ICE No.11 in US¢/lb; London No.5 in US$/tonne; molasses in ₹/tonne.",
+    title: "Monthly global prices",
+    hint: "One row per month (month as YYYY-MM, e.g. 2026-10). ICE No.11 in US¢/lb; London No.5 in US$/tonne; molasses in ₹/tonne. Domestic prices come from the Wholesale Sugar Prices dataset.",
     itemName: "Month",
     primary: true,
     sort: (a, b) => String(b.month).localeCompare(String(a.month)),
     fields: [
       t("month", "Month (YYYY-MM)", "2026-10"),
-      n("m30_muzaffarnagar", "M-30 Muzaffarnagar ₹/qtl"),
-      n("s30_kolhapur", "S-30 Kolhapur ₹/qtl"),
-      n("s30_belgaum", "S-30 Belgaum ₹/qtl"),
-      n("s30_vashi", "S-30 Vashi ₹/qtl"),
       n("ice11", "ICE No.11 ¢/lb"),
       n("ldn5", "London No.5 $/t"),
       n("usdinr", "USD/INR"),
@@ -1709,6 +1728,7 @@ export const SCHEMAS: Record<string, EditorSection[]> = {
   monsoonPlanting: monsoonPlantingSchema,
   monsoonHistory: monsoonHistorySchema,
   monsoonAlerts: monsoonAlertsSchema,
+  sugarWholesale: sugarWholesaleSchema,
   sugarPrices: sugarPricesSchema,
   sugarCrushing: sugarCrushingSchema,
   sugarProduction: sugarProductionSchema,

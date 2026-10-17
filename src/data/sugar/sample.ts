@@ -24,10 +24,6 @@ export let SUGAR_UPDATED: Record<string, number | null> = {};
 /* ── prices ── */
 export type SugarPriceSeries = { key: string; label: string; unit: string; group: "domestic" | "global" | "byproduct"; values: number[]; digits: number };
 const PRICE_META: Omit<SugarPriceSeries, "values">[] = [
-  { key: "s30_kolhapur", label: "S-30 ex-mill · Kolhapur (MH)", unit: "₹/quintal", group: "domestic", digits: 0 },
-  { key: "m30_muzaffarnagar", label: "M-30 ex-mill · Muzaffarnagar (UP)", unit: "₹/quintal", group: "domestic", digits: 0 },
-  { key: "s30_belgaum", label: "S-30 ex-mill · Belgaum (KA)", unit: "₹/quintal", group: "domestic", digits: 0 },
-  { key: "s30_vashi", label: "S-30 wholesale · Vashi (Mumbai)", unit: "₹/quintal", group: "domestic", digits: 0 },
   { key: "ice11", label: "ICE Raw Sugar No.11", unit: "US¢/lb", group: "global", digits: 2 },
   { key: "ldn5", label: "London White Sugar No.5", unit: "US$/tonne", group: "global", digits: 1 },
   { key: "usdinr", label: "USD / INR", unit: "₹ per US$", group: "global", digits: 2 },
@@ -43,6 +39,48 @@ export const whitePremium = () => {
   const r = sugarPrice("ice11").values;
   return w.map((v, i) => Math.round((v - r[i] * 22.0462) * 10) / 10);
 };
+
+/* ── domestic wholesale (Chinimandi, daily) ── */
+export const WHOLESALE_CITIES = [
+  { key: "delhi", label: "Delhi" },
+  { key: "kanpur", label: "Kanpur" },
+  { key: "raipur", label: "Raipur" },
+  { key: "mumbai", label: "Mumbai" },
+  { key: "ranchi", label: "Ranchi" },
+  { key: "kolkata", label: "Kolkata" },
+  { key: "guwahati", label: "Guwahati" },
+  { key: "hyderabad", label: "Hyderabad (S-30)" },
+  { key: "chennai", label: "Chennai" },
+] as const;
+export type WholesaleCity = (typeof WHOLESALE_CITIES)[number]["key"];
+/** trading dates, oldest first ("2026-10-16") */
+export let WS_DATES: string[] = [];
+export let WS: Record<string, (number | null)[]> = {};
+export const wsLatest = (city: string) => {
+  const v = WS[city] ?? [];
+  for (let i = v.length - 1; i >= 0; i--) if (v[i] != null) return { value: v[i] as number, date: WS_DATES[i], i };
+  return null;
+};
+/** % change of a city's price vs `days` calendar days before its latest (null when history is shorter) */
+export function wsChange(city: string, days: number): number | null {
+  const last = wsLatest(city);
+  if (!last) return null;
+  const target = Date.parse(last.date) - days * 86400000;
+  if (!WS_DATES.length || Date.parse(WS_DATES[0]) > target + 3 * 86400000) return null;
+  let base: number | null = null;
+  for (let i = 0; i < WS_DATES.length; i++) {
+    if (Date.parse(WS_DATES[i]) > target) break;
+    if (WS[city][i] != null) base = WS[city][i];
+  }
+  return base ? ((last.value - base) / base) * 100 : null;
+}
+/** a city's monthly average for "YYYY-MM" (null if no prices that month) */
+export function wsMonthAvg(city: string, ym: string): number | null {
+  const vals = WS_DATES.map((d, i) => (d.startsWith(ym) ? WS[city]?.[i] : null)).filter((v): v is number => v != null);
+  return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+}
+/** the monthly price rows' months ("2026-10"), oldest first — matches S_MONTHS */
+export let S_MONTH_KEYS: string[] = [];
 
 /* ── crushing ── */
 export const CRUSH_FORTNIGHTS = CRUSH_FORTNIGHT_LIST;
@@ -114,6 +152,11 @@ export function hydrateSugar(blobs: Record<string, Rec | null | undefined>, upda
 
   const pr = [...rowsOf(d("sugarPrices"))].sort((a, b) => String(a.month).localeCompare(String(b.month)));
   S_MONTHS = pr.map((r) => monthLabel(String(r.month)));
+  S_MONTH_KEYS = pr.map((r) => String(r.month));
+
+  const ws = [...rowsOf(d("sugarWholesale"))].filter((r) => /^\d{4}-\d{2}-\d{2}$/.test(String(r.date))).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  WS_DATES = ws.map((r) => String(r.date));
+  WS = Object.fromEntries(WHOLESALE_CITIES.map((c) => [c.key, ws.map((r) => num(r[c.key]))]));
   SUGAR_PRICES = PRICE_META.map((m) => ({ ...m, values: pr.map((r) => num(r[m.key]) as number) }));
 
   const cr = d("sugarCrushing");

@@ -39,10 +39,6 @@ export const TRADE_MONTH_LIST = ["Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr"
 
 const prices = (() => {
   const s = {
-    s30_kolhapur: walk(11, 24, 3720, 70, 6),
-    m30_muzaffarnagar: walk(23, 24, 3980, 70, 7),
-    s30_belgaum: walk(37, 24, 3700, 70, 6),
-    s30_vashi: walk(41, 24, 3840, 70, 6),
     ice11: walk(53, 24, 21.5, 1.4, -0.12),
     ldn5: walk(67, 24, 610, 22, -3.2),
     usdinr: walk(79, 24, 84, 0.45, 0.4),
@@ -84,6 +80,8 @@ const prod: [string, number[]][] = [
 const diversion = [36, 43, 21, 35, 40];
 
 export const SUGAR_DEFAULTS: Record<string, Record<string, unknown>> = {
+  // filled by the daily Chinimandi sync — nothing to sample
+  sugarWholesale: { rows: [] },
   sugarPrices: { rows: prices },
   sugarCrushing: {
     asOf: "",

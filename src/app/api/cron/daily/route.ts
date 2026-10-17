@@ -12,6 +12,7 @@ import { refreshImd } from "@/lib/server/monsoon/imd";
 import { refreshEnso } from "@/lib/server/monsoon/enso";
 import { refreshReports } from "@/lib/server/monsoon/reports";
 import { isFridayIST, refreshWeeklyRain } from "@/lib/server/weeklyRain";
+import { syncChinimandiWholesale } from "@/lib/server/chinimandi";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -46,6 +47,8 @@ export async function GET(req: Request) {
     imd: () => refreshImd(),
     enso: () => refreshEnso(),
     imdPress: () => refreshReports(),
+    // sugar dashboard: Chinimandi wholesale sugar prices
+    chinimandi: () => syncChinimandiWholesale(),
     // the Overview's weekly rain maps and cotton-state table: renewed on Fridays (last, it's the slowest)
     weeklyRain: () => (isFridayIST() ? refreshWeeklyRain() : Promise.resolve({ saved: false, reason: "Fridays only" })),
   };

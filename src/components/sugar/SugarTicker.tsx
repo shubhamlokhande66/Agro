@@ -1,13 +1,20 @@
 "use client";
 
 import clsx from "clsx";
-import { SUGAR_PRICES, SUGAR_SAMPLE, whitePremium } from "@/data/sugar/sample";
+import { SUGAR_PRICES, SUGAR_SAMPLE, WHOLESALE_CITIES, whitePremium, wsChange, wsLatest } from "@/data/sugar/sample";
 
 /** the scrolling strip under the top bar: latest sugar prices and their month-on-month change */
 export function SugarTicker() {
+  // domestic: Chinimandi wholesale, change vs a week earlier; global: monthly, change on the month
+  const domestic = (["delhi", "kanpur", "mumbai", "kolkata"] as const).flatMap((c) => {
+    const l = wsLatest(c);
+    const ch = wsChange(c, 7);
+    return l ? [{ label: `M-30 ${WHOLESALE_CITIES.find((x) => x.key === c)!.label}`, v: l.value, prev: ch == null ? l.value : l.value / (1 + ch / 100), digits: 0 }] : [];
+  });
   const items = [
-    ...SUGAR_PRICES.filter((p) => ["m30_muzaffarnagar", "s30_kolhapur", "s30_vashi", "ice11", "ldn5", "usdinr"].includes(p.key)).map((p) => ({
-      label: p.label.split(" · ")[0] + (p.label.includes("·") ? ` ${p.label.split(" · ")[1].split(" ")[0]}` : ""),
+    ...domestic,
+    ...SUGAR_PRICES.filter((p) => ["ice11", "ldn5", "usdinr"].includes(p.key)).map((p) => ({
+      label: p.label.replace("Raw Sugar ", "").replace("White Sugar ", "").replace("London", "LDN"),
       v: p.values.at(-1)!,
       prev: p.values.at(-2)!,
       digits: p.digits,

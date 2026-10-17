@@ -11,12 +11,23 @@ import { ExportPdfButton, type PdfReport } from "@/components/ui/ExportPdfButton
 import { ReportHeading } from "@/components/overview/ReportHeading";
 import { Figure, SampleBanner, fmt, pct, Chg } from "@/components/sugar/ui";
 import {
-  S_MONTHS, SUGAR_PRICES, sugarPrice, whitePremium,
+  S_MONTHS, SUGAR_PRICES, sugarPrice, whitePremium, WHOLESALE_CITIES, WS, WS_DATES, wsChange, wsLatest,
   CRUSH_FORTNIGHTS, CRUSH_SUGAR, PROD_SEASONS, PROD_STATES, BS_SEASONS, BS_ROWS,
   BR_FORTNIGHTS, BR_SUGAR, WORLD_SEASONS, WORLD_PROD, WORLD_CONS,
 } from "@/data/sugar/sample";
 
 type Hero = "domestic" | "global" | "premium";
+
+/** the cities on the domestic chart (all nine are in the table and on Domestic Prices) */
+const HERO_CITIES = [
+  { key: "delhi", color: "#c2410c", width: 2.5 },
+  { key: "kanpur", color: "#d97706", width: 2 },
+  { key: "mumbai", color: "#0f766e", width: 2.5 },
+  { key: "kolkata", color: "#2563eb", width: 2 },
+  { key: "hyderabad", color: "#7c3aed", width: 2 },
+  { key: "chennai", color: "#64748b", width: 2 },
+] as const;
+const dm = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
 function sugarReports(now = new Date()): PdfReport[] {
   const dd = (n: number) => String(n).padStart(2, "0");
@@ -57,13 +68,13 @@ export default function SugarOverview() {
         </div>
         <ExportPdfButton fileName={`Agrolytix Sugar Overview ${new Date().toISOString().slice(0, 10)}`} reports={sugarReports()} />
       </div>
-      <SampleBanner datasets={["sugarPrices", "sugarCrushing", "sugarProduction", "sugarBalance", "sugarBrazil", "sugarWorld"]} source="mill tenders & trade quotes, ICE / London settlements, ISMA, UNICA, ISO" />
+      <SampleBanner datasets={["sugarWholesale", "sugarPrices", "sugarCrushing", "sugarProduction", "sugarBalance", "sugarBrazil", "sugarWorld"]} source="ICE / London settlements, ISMA, UNICA, ISO" />
 
       <ReportHeading sub="Domestic and global markets">Market Prices</ReportHeading>
       <section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <Figure label="M-30 · Muzaffarnagar" value={fmt(latest("m30_muzaffarnagar"))} unit="₹/qtl" change={mm("m30_muzaffarnagar")} />
-        <Figure label="S-30 · Kolhapur" value={fmt(latest("s30_kolhapur"))} unit="₹/qtl" change={mm("s30_kolhapur")} />
-        <Figure label="S-30 · Vashi" value={fmt(latest("s30_vashi"))} unit="₹/qtl" change={mm("s30_vashi")} />
+        {(["delhi", "kanpur", "mumbai"] as const).map((c) => (
+          <Figure key={c} label={`M-30 wholesale · ${WHOLESALE_CITIES.find((x) => x.key === c)!.label}`} value={fmt(wsLatest(c)?.value)} unit="₹/qtl" change={wsChange(c, 7)} changeLabel="w/w" />
+        ))}
         <Figure label="ICE Raw No.11" value={fmt(latest("ice11"), 2)} unit="¢/lb" change={mm("ice11")} />
         <Figure label="London White No.5" value={fmt(latest("ldn5"), 1)} unit="$/t" change={mm("ldn5")} />
         <Figure label="White premium" value={fmt(prem.at(-1), 1)} unit="$/t" change={pct(prem.at(-1), prem.at(-2))} />
@@ -71,8 +82,8 @@ export default function SugarOverview() {
 
       <Card>
         <CardHeader
-          title={hero === "domestic" ? "Domestic ex-mill prices" : hero === "global" ? "ICE No.11 vs London No.5" : "White premium (London No.5 − ICE No.11)"}
-          sub={hero === "domestic" ? "₹ per quintal · monthly average" : hero === "global" ? "Raw ¢/lb (left) and white $/t (right) · monthly" : "US$ per tonne · refining margin signal"}
+          title={hero === "domestic" ? "Domestic wholesale sugar prices" : hero === "global" ? "ICE No.11 vs London No.5" : "White premium (London No.5 − ICE No.11)"}
+          sub={hero === "domestic" ? `M-30 wholesale incl. GST · ₹ per quintal · daily (Chinimandi)${WS_DATES.length ? ` · ${WS_DATES.length} trading days` : ""}` : hero === "global" ? "Raw ¢/lb (left) and white $/t (right) · monthly" : "US$ per tonne · refining margin signal"}
           right={
             <span className="print-hide">
               <Tabs
@@ -88,18 +99,18 @@ export default function SugarOverview() {
           }
         />
         {hero === "domestic" ? (
-          <LineChart
-            labels={S_MONTHS}
-            height={300}
-            legend
-            series={[
-              { label: "M-30 Muzaffarnagar (UP)", data: sugarPrice("m30_muzaffarnagar").values, color: "#c2410c", width: 2.5 },
-              { label: "S-30 Kolhapur (MH)", data: sugarPrice("s30_kolhapur").values, color: "#0f766e", width: 2.5 },
-              { label: "S-30 Belgaum (KA)", data: sugarPrice("s30_belgaum").values, color: "#7c3aed", width: 2 },
-              { label: "S-30 Vashi", data: sugarPrice("s30_vashi").values, color: "#64748b", width: 2, dashed: true },
-            ]}
-            yFmt={(v) => `₹${Math.round(v).toLocaleString("en-IN")}`}
-          />
+          WS_DATES.length ? (
+            <LineChart
+              labels={WS_DATES.map(dm)}
+              height={300}
+              legend
+              xTicks={8}
+              series={HERO_CITIES.map((c) => ({ label: WHOLESALE_CITIES.find((x) => x.key === c.key)!.label, data: WS[c.key], color: c.color, width: c.width, tension: 0 }))}
+              yFmt={(v) => `₹${Math.round(v).toLocaleString("en-IN")}`}
+            />
+          ) : (
+            <p className="py-16 text-center text-[12px] text-ink-faint">No wholesale prices yet — run ⟳ Sync Chinimandi in Sugar Admin.</p>
+          )
         ) : hero === "global" ? (
           <LineChart
             labels={S_MONTHS}
@@ -117,7 +128,7 @@ export default function SugarOverview() {
       </Card>
 
       <Card className="mt-4">
-        <CardHeader title="Price table" sub="Latest month and % change over 1, 3, 6 and 12 months" right={<More href="/sugar/prices" label="All prices" />} />
+        <CardHeader title="Price table" sub="Latest price and % change · domestic daily (Chinimandi), global monthly" right={<More href="/sugar/prices" label="All prices" />} />
         <TableWrap>
           <Table>
             <thead>
@@ -125,6 +136,7 @@ export default function SugarOverview() {
                 <Th>Market</Th>
                 <Th>Unit</Th>
                 <Th align="right">Latest</Th>
+                <Th align="right">1 W</Th>
                 <Th align="right">1 M</Th>
                 <Th align="right">3 M</Th>
                 <Th align="right">6 M</Th>
@@ -132,11 +144,22 @@ export default function SugarOverview() {
               </tr>
             </thead>
             <tbody>
-              {SUGAR_PRICES.filter((p) => p.group !== "byproduct" || p.key === "molasses").map((p) => (
+              {WHOLESALE_CITIES.map((c) => (
+                <tr key={c.key}>
+                  <Td>M-30 wholesale · {c.label}</Td>
+                  <Td className="text-ink-faint">₹/quintal</Td>
+                  <Td align="right" mono>{fmt(wsLatest(c.key)?.value)}</Td>
+                  {[7, 30, 91, 182, 365].map((d) => (
+                    <Td key={d} align="right"><Chg v={wsChange(c.key, d)} /></Td>
+                  ))}
+                </tr>
+              ))}
+              {SUGAR_PRICES.map((p) => (
                 <tr key={p.key}>
                   <Td>{p.label}</Td>
                   <Td className="text-ink-faint">{p.unit}</Td>
                   <Td align="right" mono>{fmt(p.values.at(-1), p.digits)}</Td>
+                  <Td align="right" className="text-ink-faint">—</Td>
                   {[1, 3, 6, 12].map((m) => (
                     <Td key={m} align="right"><Chg v={chgOver(p.values, m)} /></Td>
                   ))}

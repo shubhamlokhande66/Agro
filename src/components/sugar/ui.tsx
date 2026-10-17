@@ -30,7 +30,7 @@ export function Chg({ v, suffix = "%" }: { v: number | null; suffix?: string }) 
 }
 
 /** one headline figure: label, value + unit, change underneath */
-export function Figure({ label, value, unit, change, note }: { label: string; value: string; unit?: string; change?: number | null; note?: string }) {
+export function Figure({ label, value, unit, change, note, changeLabel = "m/m" }: { label: string; value: string; unit?: string; change?: number | null; note?: string; changeLabel?: string }) {
   return (
     <div className="panel px-4 py-3">
       <div className="truncate text-[10px] font-semibold uppercase tracking-wide text-ink-faint">{label}</div>
@@ -39,7 +39,7 @@ export function Figure({ label, value, unit, change, note }: { label: string; va
         {unit ? <span className="ml-1 text-[11px] font-medium text-ink-faint">{unit}</span> : null}
       </div>
       <div className="num mt-0.5 text-[11px] text-ink-faint">
-        {change !== undefined ? <><Chg v={change} /> m/m</> : null}
+        {change !== undefined ? <><Chg v={change} /> {changeLabel}</> : null}
         {note ? <span>{change !== undefined ? " · " : ""}{note}</span> : null}
       </div>
     </div>

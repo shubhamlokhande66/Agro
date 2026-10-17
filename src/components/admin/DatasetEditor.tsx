@@ -14,6 +14,12 @@ const AUTOSAVE_DEBOUNCE_MS = 600;
 
 /** datasets that can pull fresh data from an outside source on demand (same endpoints the cron jobs hit) */
 const SYNC_SOURCES: Record<string, { source: string; url: string; label: string; title: string }> = {
+  sugarWholesale: {
+    source: "Chinimandi",
+    url: "/api/cron/chinimandi",
+    label: "⟳ Sync Chinimandi",
+    title: "Fetch the latest wholesale sugar prices shown on chinimandi.com (about the last 30 trading days)",
+  },
   prices: {
     source: "CAI",
     url: "/api/cron/cai-spot-rates",
