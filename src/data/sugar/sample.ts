@@ -159,6 +159,10 @@ export let WORLD_PROD: number[] = [];
 export let WORLD_CONS: number[] = [];
 export let WORLD_TOP: { country: string; prod: number; exports: number }[] = [];
 
+/* ── crude oil (Brent, shared with the cotton dashboard) ── */
+export let CRUDE_DAILY: { labels: string[]; values: number[] } = { labels: [], values: [] };
+export let CRUDE_MONTHLY: { labels: string[]; values: number[] } = { labels: [], values: [] };
+
 /* ── CFTC ── */
 export let COT_WEEKS: string[] = [];
 export let COT_MM_NET: number[] = [];
@@ -170,7 +174,15 @@ function bySeason(rows: Rec[], slotKey: string, slots: string[], valueKey: strin
 }
 
 /** fills every export above from the sugar datasets (missing ones fall back to the sample defaults) */
-export function hydrateSugar(blobs: Record<string, Rec | null | undefined>, updated: Record<string, number | null> = {}) {
+export function hydrateSugar(
+  blobs: Record<string, Rec | null | undefined>,
+  updated: Record<string, number | null> = {},
+  crude?: { daily?: { labels: string[]; values: number[] }; monthly?: { labels: string[]; values: number[] } },
+) {
+  if (crude) {
+    CRUDE_DAILY = crude.daily ?? { labels: [], values: [] };
+    CRUDE_MONTHLY = crude.monthly ?? { labels: [], values: [] };
+  }
   const d = (k: string): Rec => (blobs[k] ?? SUGAR_DEFAULTS[k]) as Rec;
   SUGAR_SAMPLE = Object.fromEntries(Object.keys(SUGAR_DEFAULTS).map((k) => [k, !blobs[k] || !!blobs[k]!._sample]));
   SUGAR_UPDATED = updated;

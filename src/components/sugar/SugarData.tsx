@@ -15,7 +15,7 @@ export function SugarDataProvider({ children }: { children: React.ReactNode }) {
       const r = await fetch("/api/sugar/data", { cache: "no-store" });
       if (r.ok) {
         const d = await r.json();
-        hydrateSugar(d.datasets ?? {}, d.updated ?? {});
+        hydrateSugar(d.datasets ?? {}, d.updated ?? {}, d.crude);
       }
     } catch {
       // offline — keep what's loaded (the sample values at first)

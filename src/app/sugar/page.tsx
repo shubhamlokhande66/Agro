@@ -3,32 +3,21 @@
 import Link from "next/link";
 import { useState } from "react";
 import { Card, CardHeader } from "@/components/ui/Card";
-import { Tabs } from "@/components/ui/Tabs";
 import { Table, TableWrap, Td, Th } from "@/components/ui/DataTable";
 import LineChart from "@/components/charts/LineChart";
 import BarChart from "@/components/charts/BarChart";
 import { ExportPdfButton, type PdfReport } from "@/components/ui/ExportPdfButton";
 import { ReportHeading } from "@/components/overview/ReportHeading";
-import { Figure, SampleBanner, fmt, pct, Chg } from "@/components/sugar/ui";
+import { SampleBanner, fmt } from "@/components/sugar/ui";
+import { SugarCategoryRail, SugarHeroChart, SugarPriceTable, type SugarCategory } from "@/components/sugar/SugarOverviewParts";
+import { GlobalPeriodTabs } from "@/components/ui/GlobalPeriodTabs";
+import type { GlobalPeriod } from "@/lib/period";
+import { timeAgo } from "@/lib/format";
 import {
-  S_MONTHS, SUGAR_PRICES, sugarPrice, whitePremium, WHOLESALE_CITIES, WS, WS_DATES, wsChange, wsLatest,
-  NC, NC_DATES, NCDEX_SERIES, dailyChange, dailyLatest,
+  SUGAR_UPDATED,
   CRUSH_FORTNIGHTS, CRUSH_SUGAR, PROD_SEASONS, PROD_STATES, BS_SEASONS, BS_ROWS,
   BR_FORTNIGHTS, BR_SUGAR, WORLD_SEASONS, WORLD_PROD, WORLD_CONS,
 } from "@/data/sugar/sample";
-
-type Hero = "domestic" | "global" | "premium";
-
-/** the cities on the domestic chart (all nine are in the table and on Domestic Prices) */
-const HERO_CITIES = [
-  { key: "delhi", color: "#c2410c", width: 2.5 },
-  { key: "kanpur", color: "#d97706", width: 2 },
-  { key: "mumbai", color: "#0f766e", width: 2.5 },
-  { key: "kolkata", color: "#2563eb", width: 2 },
-  { key: "hyderabad", color: "#7c3aed", width: 2 },
-  { key: "chennai", color: "#64748b", width: 2 },
-] as const;
-const dm = (iso: string) => new Date(iso + "T00:00:00").toLocaleDateString("en-GB", { day: "numeric", month: "short" });
 
 function sugarReports(now = new Date()): PdfReport[] {
   const dd = (n: number) => String(n).padStart(2, "0");
@@ -48,139 +37,62 @@ function More({ href, label }: { href: string; label: string }) {
   );
 }
 
-/** change over `months` from the latest value */
-const chgOver = (v: number[], months: number) => pct(v.at(-1), v.at(-1 - months));
-
 export default function SugarOverview() {
-  const [hero, setHero] = useState<Hero>("domestic");
-  const prem = whitePremium();
-  const latest = (k: string) => sugarPrice(k).values.at(-1)!;
-  const mm = (k: string) => chgOver(sugarPrice(k).values, 1);
+  const [period, setPeriod] = useState<GlobalPeriod>("1m");
+  const [cat, setCat] = useState<SugarCategory>("kolhapur");
+  const [view, setView] = useState<"chart" | "table">("chart");
   const seasons = Object.keys(CRUSH_SUGAR);
   const brSeasons = Object.keys(BR_SUGAR);
   const cur = PROD_SEASONS.length - 1;
+  const updated = Math.max(0, ...Object.values(SUGAR_UPDATED).map((t) => t ?? 0));
 
   return (
     <div>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
+        {/* page title and "data updated" are dashboard chrome — the PDF has its cover page instead */}
         <div className="print-hide">
           <div className="eyebrow">Agrolytix Research · India Sugar</div>
-          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Sugar Market Overview</h1>
+          <h1 className="mt-1 text-2xl font-semibold tracking-tight text-ink sm:text-3xl">Market Overview</h1>
+          <p className="num mt-1 text-[11px] text-ink-faint">{updated ? `Data updated ${timeAgo(updated)}` : "Live market data"}</p>
         </div>
-        <ExportPdfButton fileName={`Agrolytix Sugar Overview ${new Date().toISOString().slice(0, 10)}`} reports={sugarReports()} />
+        <div className="flex flex-wrap items-center gap-2.5">
+          <span className="print-hide">
+            <GlobalPeriodTabs value={period} onChange={setPeriod} />
+          </span>
+          <ExportPdfButton fileName={`Agrolytix Sugar Overview ${new Date().toISOString().slice(0, 10)}`} reports={sugarReports()} />
+          <div className="print-hide flex rounded-xl bg-surface-2 p-1" role="tablist" aria-label="View">
+            {(["chart", "table"] as const).map((v) => (
+              <button
+                key={v}
+                type="button"
+                role="tab"
+                aria-selected={view === v}
+                onClick={() => setView(v)}
+                className={
+                  "focusable rounded-lg px-3.5 py-1.5 text-[12.5px] font-semibold transition-colors " +
+                  (view === v ? "bg-accent text-accent-contrast" : "text-ink-faint hover:text-ink")
+                }
+              >
+                {v === "chart" ? "Chart view" : "Table view"}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
-      <SampleBanner datasets={["sugarNcdex", "sugarWholesale", "sugarPrices", "sugarCrushing", "sugarProduction", "sugarBalance", "sugarBrazil", "sugarWorld"]} source="ICE / London settlements, ISMA, UNICA, ISO" />
+      <SampleBanner datasets={["sugarPrices", "sugarCrushing", "sugarProduction", "sugarBalance", "sugarBrazil", "sugarWorld"]} source="ICE / London sugar prices, crushing, production, balance sheet, Brazil and world data — still to be connected" />
 
       <ReportHeading sub="Domestic and global markets">Market Prices</ReportHeading>
-      <section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        <Figure label="NCDEX Sugar S · Kolhapur" value={fmt(dailyLatest(NC_DATES, NC.sugar_kolhapur)?.value)} unit="₹/qtl" change={dailyChange(NC_DATES, NC.sugar_kolhapur, 7)} changeLabel="w/w" />
-        {(["delhi", "mumbai"] as const).map((c) => (
-          <Figure key={c} label={`M-30 wholesale · ${WHOLESALE_CITIES.find((x) => x.key === c)!.label}`} value={fmt(wsLatest(c)?.value)} unit="₹/qtl" change={wsChange(c, 7)} changeLabel="w/w" />
-        ))}
-        <Figure label="ICE Raw No.11" value={fmt(latest("ice11"), 2)} unit="¢/lb" change={mm("ice11")} />
-        <Figure label="London White No.5" value={fmt(latest("ldn5"), 1)} unit="$/t" change={mm("ldn5")} />
-        <Figure label="White premium" value={fmt(prem.at(-1), 1)} unit="$/t" change={pct(prem.at(-1), prem.at(-2))} />
-      </section>
-
-      <Card>
-        <CardHeader
-          title={hero === "domestic" ? "Domestic wholesale sugar prices" : hero === "global" ? "ICE No.11 vs London No.5" : "White premium (London No.5 − ICE No.11)"}
-          sub={hero === "domestic" ? `M-30 wholesale incl. GST · ₹ per quintal · daily (Chinimandi)${WS_DATES.length ? ` · ${WS_DATES.length} trading days` : ""}` : hero === "global" ? "Raw ¢/lb (left) and white $/t (right) · monthly" : "US$ per tonne · refining margin signal"}
-          right={
-            <span className="print-hide">
-              <Tabs
-                options={[
-                  { value: "domestic" as const, label: "Domestic" },
-                  { value: "global" as const, label: "Global" },
-                  { value: "premium" as const, label: "White premium" },
-                ]}
-                value={hero}
-                onChange={setHero}
-              />
-            </span>
-          }
-        />
-        {hero === "domestic" ? (
-          WS_DATES.length ? (
-            <LineChart
-              labels={WS_DATES.map(dm)}
-              height={300}
-              legend
-              xTicks={8}
-              series={HERO_CITIES.map((c) => ({ label: WHOLESALE_CITIES.find((x) => x.key === c.key)!.label, data: WS[c.key], color: c.color, width: c.width, tension: 0 }))}
-              yFmt={(v) => `₹${Math.round(v).toLocaleString("en-IN")}`}
-            />
-          ) : (
-            <p className="py-16 text-center text-[12px] text-ink-faint">No wholesale prices yet — run ⟳ Sync Chinimandi in Sugar Admin.</p>
-          )
-        ) : hero === "global" ? (
-          <LineChart
-            labels={S_MONTHS}
-            height={300}
-            legend
-            series={[
-              { label: "ICE No.11 × 22.05 ($/t equiv.)", data: sugarPrice("ice11").values.map((v) => Math.round(v * 22.0462)), color: "#2563eb", width: 2.5 },
-              { label: "London No.5 ($/t)", data: sugarPrice("ldn5").values, color: "#d97706", width: 2.5 },
-            ]}
-            yFmt={(v) => `$${Math.round(v)}`}
-          />
-        ) : (
-          <BarChart labels={S_MONTHS} height={300} series={[{ label: "White premium", data: prem, color: "#d97706" }]} yFmt={(v) => `$${Math.round(v)}`} />
-        )}
-      </Card>
-
-      <Card className="mt-4">
-        <CardHeader title="Price table" sub="Latest price and % change · domestic daily (Chinimandi), global monthly" right={<More href="/sugar/prices" label="All prices" />} />
-        <TableWrap>
-          <Table>
-            <thead>
-              <tr>
-                <Th>Market</Th>
-                <Th>Unit</Th>
-                <Th align="right">Latest</Th>
-                <Th align="right">1 W</Th>
-                <Th align="right">1 M</Th>
-                <Th align="right">3 M</Th>
-                <Th align="right">6 M</Th>
-                <Th align="right">1 Y</Th>
-              </tr>
-            </thead>
-            <tbody>
-              {NCDEX_SERIES.map((s) => (
-                <tr key={s.key}>
-                  <Td>NCDEX spot · {s.label}</Td>
-                  <Td className="text-ink-faint">{s.unit}</Td>
-                  <Td align="right" mono>{fmt(dailyLatest(NC_DATES, NC[s.key])?.value, s.key === "gur_muzaffarnagar" ? 2 : 0)}</Td>
-                  {[7, 30, 91, 182, 365].map((d) => (
-                    <Td key={d} align="right"><Chg v={dailyChange(NC_DATES, NC[s.key], d)} /></Td>
-                  ))}
-                </tr>
-              ))}
-              {WHOLESALE_CITIES.map((c) => (
-                <tr key={c.key}>
-                  <Td>M-30 wholesale · {c.label}</Td>
-                  <Td className="text-ink-faint">₹/quintal</Td>
-                  <Td align="right" mono>{fmt(wsLatest(c.key)?.value)}</Td>
-                  {[7, 30, 91, 182, 365].map((d) => (
-                    <Td key={d} align="right"><Chg v={wsChange(c.key, d)} /></Td>
-                  ))}
-                </tr>
-              ))}
-              {SUGAR_PRICES.map((p) => (
-                <tr key={p.key}>
-                  <Td>{p.label}</Td>
-                  <Td className="text-ink-faint">{p.unit}</Td>
-                  <Td align="right" mono>{fmt(p.values.at(-1), p.digits)}</Td>
-                  <Td align="right" className="text-ink-faint">—</Td>
-                  {[1, 3, 6, 12].map((m) => (
-                    <Td key={m} align="right"><Chg v={chgOver(p.values, m)} /></Td>
-                  ))}
-                </tr>
-              ))}
-            </tbody>
-          </Table>
-        </TableWrap>
-      </Card>
+      {/* the PDF report always carries the price table, never the chart — in chart view the table is
+          kept hidden on screen and swapped in while the PDF is captured */}
+      <div className={view === "table" ? undefined : "pdf-only"}>
+        <SugarPriceTable />
+      </div>
+      {view === "chart" ? (
+        <div className="print-hide grid grid-cols-1 gap-4 lg:grid-cols-[minmax(0,1fr)_300px]">
+          <SugarHeroChart category={cat} period={period} onPeriodChange={setPeriod} />
+          <SugarCategoryRail value={cat} onChange={setCat} period={period} />
+        </div>
+      ) : null}
 
       <ReportHeading>Crushing &amp; Production</ReportHeading>
       <div className="mt-4 grid gap-4 lg:grid-cols-2">
