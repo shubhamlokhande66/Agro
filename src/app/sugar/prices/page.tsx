@@ -7,7 +7,8 @@ import { Table, TableWrap, Td, Th } from "@/components/ui/DataTable";
 import LineChart from "@/components/charts/LineChart";
 import BarChart from "@/components/charts/BarChart";
 import { Figure, SampleBanner, fmt } from "@/components/sugar/ui";
-import { WHOLESALE_CITIES, WS, WS_DATES, wsChange, wsLatest } from "@/data/sugar/sample";
+import { NC, NC_DATES, NCDEX_SERIES, WHOLESALE_CITIES, WS, WS_DATES, dailyChange, dailyLatest, wsChange, wsLatest } from "@/data/sugar/sample";
+import ComboChart from "@/components/charts/ComboChart";
 
 const COLORS: Record<string, string> = {
   delhi: "#c2410c", kanpur: "#d97706", raipur: "#a16207", mumbai: "#0f766e", ranchi: "#65a30d",
@@ -28,9 +29,32 @@ export default function SugarPrices() {
       <PageHeader
         title="Domestic Sugar Prices"
         icon="₹"
-        sub={`Wholesale M-30 incl. GST (Hyderabad S-30) · ₹ per quintal · daily · source: Chinimandi${latestDate ? ` · latest ${dm(latestDate)}` : ""}`}
+        sub={`NCDEX spot (Kolhapur, Muzaffarnagar) and wholesale M-30 incl. GST in nine cities (Chinimandi) · daily${latestDate ? ` · latest ${dm(latestDate)}` : ""}`}
       />
       <SampleBanner datasets={["sugarWholesale"]} source="Chinimandi wholesale prices (sync from Sugar Admin)" />
+
+      {NC_DATES.length ? (
+        <Card className="mb-4">
+          <CardHeader
+            title="NCDEX spot prices"
+            sub={`Evening price · Sugar S Kolhapur ₹/quintal, Gur Muzaffarnagar ₹/40 kg · latest ${dm(NC_DATES.at(-1)!)} · source: NCDEX`}
+          />
+          <div className="mb-3 grid grid-cols-2 gap-3 lg:grid-cols-4">
+            {NCDEX_SERIES.map((s) => (
+              <Figure key={s.key} label={`NCDEX ${s.label}`} value={fmt(dailyLatest(NC_DATES, NC[s.key])?.value)} unit={s.unit} change={dailyChange(NC_DATES, NC[s.key], 7)} changeLabel="w/w" />
+            ))}
+            <Figure label="Sugar S Kolhapur · 1 month" value={fmt(dailyLatest(NC_DATES, NC.sugar_kolhapur)?.value)} unit="₹/qtl" change={dailyChange(NC_DATES, NC.sugar_kolhapur, 30)} changeLabel="m/m" />
+            <Figure label="Gur Muzaffarnagar · 1 month" value={fmt(dailyLatest(NC_DATES, NC.gur_muzaffarnagar)?.value, 2)} unit="₹/40 kg" change={dailyChange(NC_DATES, NC.gur_muzaffarnagar, 30)} changeLabel="m/m" />
+          </div>
+          <ComboChart
+            labels={NC_DATES.map(dm)}
+            height={260}
+            xTicks={8}
+            left={{ label: "Sugar S Kolhapur ₹/qtl", data: NC.sugar_kolhapur, color: "#c2410c", fmt: (v) => `₹${Math.round(v).toLocaleString("en-IN")}` }}
+            right={{ label: "Gur Muzaffarnagar ₹/40 kg", data: NC.gur_muzaffarnagar, color: "#92400e", fmt: (v) => `₹${Math.round(v).toLocaleString("en-IN")}` }}
+          />
+        </Card>
+      ) : null}
 
       {!WS_DATES.length ? (
         <Card>

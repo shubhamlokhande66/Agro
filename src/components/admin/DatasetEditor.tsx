@@ -14,6 +14,12 @@ const AUTOSAVE_DEBOUNCE_MS = 600;
 
 /** datasets that can pull fresh data from an outside source on demand (same endpoints the cron jobs hit) */
 const SYNC_SOURCES: Record<string, { source: string; url: string; label: string; title: string }> = {
+  sugarNcdex: {
+    source: "NCDEX",
+    url: "/api/cron/ncdex-sugar?days=31",
+    label: "⟳ Sync NCDEX",
+    title: "Fetch NCDEX spot prices for Sugar S (Kolhapur) and Gur (Muzaffarnagar) — evening price, last ~month",
+  },
   sugarWholesale: {
     source: "Chinimandi",
     url: "/api/cron/chinimandi",

@@ -1535,6 +1535,18 @@ const sugarWholesaleSchema: EditorSection[] = [
   }),
 ];
 
+const sugarNcdexSchema: EditorSection[] = [
+  sugarRecords({
+    id: "rows",
+    title: "NCDEX spot · evening price",
+    hint: "Synced every day at 5 PM from ncdex.com (NCDEX keeps about a month, so history builds up here). Sugar S in ₹/quintal; Gur in ₹/40 kg as NCDEX quotes it.",
+    itemName: "Day",
+    primary: true,
+    sort: (a, b) => String(b.date).localeCompare(String(a.date)),
+    fields: [{ key: "date", label: "Date", type: "date" }, n("sugar_kolhapur", "Sugar S · Kolhapur ₹/qtl"), n("gur_muzaffarnagar", "Gur · Muzaffarnagar ₹/40 kg")],
+  }),
+];
+
 const sugarPricesSchema: EditorSection[] = [
   sugarRecords({
     id: "rows",
@@ -1729,6 +1741,7 @@ export const SCHEMAS: Record<string, EditorSection[]> = {
   monsoonHistory: monsoonHistorySchema,
   monsoonAlerts: monsoonAlertsSchema,
   sugarWholesale: sugarWholesaleSchema,
+  sugarNcdex: sugarNcdexSchema,
   sugarPrices: sugarPricesSchema,
   sugarCrushing: sugarCrushingSchema,
   sugarProduction: sugarProductionSchema,

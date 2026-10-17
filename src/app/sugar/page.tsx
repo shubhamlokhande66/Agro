@@ -12,6 +12,7 @@ import { ReportHeading } from "@/components/overview/ReportHeading";
 import { Figure, SampleBanner, fmt, pct, Chg } from "@/components/sugar/ui";
 import {
   S_MONTHS, SUGAR_PRICES, sugarPrice, whitePremium, WHOLESALE_CITIES, WS, WS_DATES, wsChange, wsLatest,
+  NC, NC_DATES, NCDEX_SERIES, dailyChange, dailyLatest,
   CRUSH_FORTNIGHTS, CRUSH_SUGAR, PROD_SEASONS, PROD_STATES, BS_SEASONS, BS_ROWS,
   BR_FORTNIGHTS, BR_SUGAR, WORLD_SEASONS, WORLD_PROD, WORLD_CONS,
 } from "@/data/sugar/sample";
@@ -68,11 +69,12 @@ export default function SugarOverview() {
         </div>
         <ExportPdfButton fileName={`Agrolytix Sugar Overview ${new Date().toISOString().slice(0, 10)}`} reports={sugarReports()} />
       </div>
-      <SampleBanner datasets={["sugarWholesale", "sugarPrices", "sugarCrushing", "sugarProduction", "sugarBalance", "sugarBrazil", "sugarWorld"]} source="ICE / London settlements, ISMA, UNICA, ISO" />
+      <SampleBanner datasets={["sugarNcdex", "sugarWholesale", "sugarPrices", "sugarCrushing", "sugarProduction", "sugarBalance", "sugarBrazil", "sugarWorld"]} source="ICE / London settlements, ISMA, UNICA, ISO" />
 
       <ReportHeading sub="Domestic and global markets">Market Prices</ReportHeading>
       <section className="mb-4 grid grid-cols-2 gap-3 md:grid-cols-3 xl:grid-cols-6">
-        {(["delhi", "kanpur", "mumbai"] as const).map((c) => (
+        <Figure label="NCDEX Sugar S · Kolhapur" value={fmt(dailyLatest(NC_DATES, NC.sugar_kolhapur)?.value)} unit="₹/qtl" change={dailyChange(NC_DATES, NC.sugar_kolhapur, 7)} changeLabel="w/w" />
+        {(["delhi", "mumbai"] as const).map((c) => (
           <Figure key={c} label={`M-30 wholesale · ${WHOLESALE_CITIES.find((x) => x.key === c)!.label}`} value={fmt(wsLatest(c)?.value)} unit="₹/qtl" change={wsChange(c, 7)} changeLabel="w/w" />
         ))}
         <Figure label="ICE Raw No.11" value={fmt(latest("ice11"), 2)} unit="¢/lb" change={mm("ice11")} />
@@ -144,6 +146,16 @@ export default function SugarOverview() {
               </tr>
             </thead>
             <tbody>
+              {NCDEX_SERIES.map((s) => (
+                <tr key={s.key}>
+                  <Td>NCDEX spot · {s.label}</Td>
+                  <Td className="text-ink-faint">{s.unit}</Td>
+                  <Td align="right" mono>{fmt(dailyLatest(NC_DATES, NC[s.key])?.value, s.key === "gur_muzaffarnagar" ? 2 : 0)}</Td>
+                  {[7, 30, 91, 182, 365].map((d) => (
+                    <Td key={d} align="right"><Chg v={dailyChange(NC_DATES, NC[s.key], d)} /></Td>
+                  ))}
+                </tr>
+              ))}
               {WHOLESALE_CITIES.map((c) => (
                 <tr key={c.key}>
                   <Td>M-30 wholesale · {c.label}</Td>

@@ -1,7 +1,7 @@
 "use client";
 
 import clsx from "clsx";
-import { SUGAR_PRICES, SUGAR_SAMPLE, WHOLESALE_CITIES, whitePremium, wsChange, wsLatest } from "@/data/sugar/sample";
+import { NC, NC_DATES, SUGAR_PRICES, SUGAR_SAMPLE, WHOLESALE_CITIES, dailyChange, dailyLatest, whitePremium, wsChange, wsLatest } from "@/data/sugar/sample";
 
 /** the scrolling strip under the top bar: latest sugar prices and their month-on-month change */
 export function SugarTicker() {
@@ -11,7 +11,13 @@ export function SugarTicker() {
     const ch = wsChange(c, 7);
     return l ? [{ label: `M-30 ${WHOLESALE_CITIES.find((x) => x.key === c)!.label}`, v: l.value, prev: ch == null ? l.value : l.value / (1 + ch / 100), digits: 0 }] : [];
   });
+  const ncdex = (() => {
+    const l = dailyLatest(NC_DATES, NC.sugar_kolhapur);
+    const ch = dailyChange(NC_DATES, NC.sugar_kolhapur, 7);
+    return l ? [{ label: "NCDEX Kolhapur", v: l.value, prev: ch == null ? l.value : l.value / (1 + ch / 100), digits: 0 }] : [];
+  })();
   const items = [
+    ...ncdex,
     ...domestic,
     ...SUGAR_PRICES.filter((p) => ["ice11", "ldn5", "usdinr"].includes(p.key)).map((p) => ({
       label: p.label.replace("Raw Sugar ", "").replace("White Sugar ", "").replace("London", "LDN"),

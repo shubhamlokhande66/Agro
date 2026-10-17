@@ -82,6 +82,7 @@ const diversion = [36, 43, 21, 35, 40];
 export const SUGAR_DEFAULTS: Record<string, Record<string, unknown>> = {
   // filled by the daily Chinimandi sync — nothing to sample
   sugarWholesale: { rows: [] },
+  sugarNcdex: { rows: [] },
   sugarPrices: { rows: prices },
   sugarCrushing: {
     asOf: "",

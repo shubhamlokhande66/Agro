@@ -79,6 +79,31 @@ export function wsMonthAvg(city: string, ym: string): number | null {
   const vals = WS_DATES.map((d, i) => (d.startsWith(ym) ? WS[city]?.[i] : null)).filter((v): v is number => v != null);
   return vals.length ? Math.round(vals.reduce((a, b) => a + b, 0) / vals.length) : null;
 }
+/* ── NCDEX spot (daily evening price) ── */
+export const NCDEX_SERIES = [
+  { key: "sugar_kolhapur", label: "Sugar S · Kolhapur", unit: "₹/qtl" },
+  { key: "gur_muzaffarnagar", label: "Gur · Muzaffarnagar", unit: "₹/40 kg" },
+] as const;
+export let NC_DATES: string[] = [];
+export let NC: Record<string, (number | null)[]> = {};
+
+/** latest value of a daily series */
+export function dailyLatest(dates: string[], values: (number | null)[] | undefined) {
+  const v = values ?? [];
+  for (let i = v.length - 1; i >= 0; i--) if (v[i] != null) return { value: v[i] as number, date: dates[i], i };
+  return null;
+}
+/** % change of a daily series vs `days` calendar days before its latest (null when history is shorter) */
+export function dailyChange(dates: string[], values: (number | null)[] | undefined, days: number): number | null {
+  const last = dailyLatest(dates, values);
+  if (!last || !values) return null;
+  const target = Date.parse(last.date) - days * 86400000;
+  if (!dates.length || Date.parse(dates[0]) > target + 3 * 86400000) return null;
+  let base: number | null = null;
+  for (let i = 0; i < dates.length && Date.parse(dates[i]) <= target; i++) if (values[i] != null) base = values[i];
+  return base ? ((last.value - base) / base) * 100 : null;
+}
+
 /** the monthly price rows' months ("2026-10"), oldest first — matches S_MONTHS */
 export let S_MONTH_KEYS: string[] = [];
 
@@ -157,6 +182,10 @@ export function hydrateSugar(blobs: Record<string, Rec | null | undefined>, upda
   const ws = [...rowsOf(d("sugarWholesale"))].filter((r) => /^\d{4}-\d{2}-\d{2}$/.test(String(r.date))).sort((a, b) => String(a.date).localeCompare(String(b.date)));
   WS_DATES = ws.map((r) => String(r.date));
   WS = Object.fromEntries(WHOLESALE_CITIES.map((c) => [c.key, ws.map((r) => num(r[c.key]))]));
+
+  const nc = [...rowsOf(d("sugarNcdex"))].filter((r) => /^\d{4}-\d{2}-\d{2}$/.test(String(r.date))).sort((a, b) => String(a.date).localeCompare(String(b.date)));
+  NC_DATES = nc.map((r) => String(r.date));
+  NC = Object.fromEntries(NCDEX_SERIES.map((s) => [s.key, nc.map((r) => num(r[s.key]))]));
   SUGAR_PRICES = PRICE_META.map((m) => ({ ...m, values: pr.map((r) => num(r[m.key]) as number) }));
 
   const cr = d("sugarCrushing");

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { readSession } from "@/lib/server/session";
 import { syncNcdexSpotPrices } from "@/lib/server/ncdexSpot";
+import { syncNcdexSugar } from "@/lib/server/ncdexSugar";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -25,7 +26,9 @@ export async function GET(req: Request) {
   const days = Math.min(Math.max(Number(new URL(req.url).searchParams.get("days")) || 7, 1), 31);
   try {
     const report = await syncNcdexSpotPrices({ days });
-    return NextResponse.json({ ok: true, ...report });
+    // the sugar dashboard's NCDEX spot prices ride on the same evening run
+    const sugar = await syncNcdexSugar({ days }).catch((e) => ({ error: e instanceof Error ? e.message : "failed" }));
+    return NextResponse.json({ ok: true, ...report, sugar });
   } catch (err) {
     return NextResponse.json(
       { ok: false, error: err instanceof Error ? err.message : "Sync failed" },
