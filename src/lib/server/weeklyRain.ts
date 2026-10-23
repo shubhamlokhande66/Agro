@@ -22,7 +22,9 @@ export const IMD_MAPS: Record<string, string> = {
 };
 
 type BeltDoc = { _id: "belt"; fetchedAt: number; data: CottonBelt };
-type MapDoc = { _id: string; fetchedAt: number; type: string; data: Binary };
+/** imdModified: when IMD last changed the map file (its Last-Modified header) — IMD stops
+ *  updating some maps out of season (the state-wise weekly map stopped on 23 Sep 2026) */
+type MapDoc = { _id: string; fetchedAt: number; type: string; data: Binary; imdModified?: number | null };
 
 const coll = async <T extends { _id: string }>() => (await getDb()).collection<T>(COLLECTIONS.weeklyRain);
 
@@ -38,7 +40,7 @@ export function lastFridayCutoff(now = Date.now()): number {
 
 export const isFridayIST = (now = Date.now()) => new Date(now + 5.5 * 3600000).getUTCDay() === 5;
 
-async function fetchMap(path: string): Promise<{ type: string; bytes: Buffer } | null> {
+async function fetchMap(path: string): Promise<{ type: string; bytes: Buffer; modified: number | null } | null> {
   try {
     const res = await fetch(`https://mausam.imd.gov.in/${path}`, {
       headers: { "user-agent": UA, accept: "image/*", referer: "https://mausam.imd.gov.in/" },
@@ -47,7 +49,8 @@ async function fetchMap(path: string): Promise<{ type: string; bytes: Buffer } |
     });
     const type = res.headers.get("content-type") ?? "";
     if (!res.ok || !type.startsWith("image/")) return null;
-    return { type, bytes: Buffer.from(await res.arrayBuffer()) };
+    const lm = Date.parse(res.headers.get("last-modified") ?? "");
+    return { type, bytes: Buffer.from(await res.arrayBuffer()), modified: Number.isFinite(lm) ? lm : null };
   } catch {
     return null;
   }
@@ -68,7 +71,7 @@ export async function refreshWeeklyRain(): Promise<{ saved: boolean; reason?: st
   }
   for (const [key, m] of maps) {
     if (!m) continue;
-    await c.replaceOne({ _id: `map:${key}` }, { _id: `map:${key}`, fetchedAt: now, type: m.type, data: new Binary(m.bytes) } as MapDoc, { upsert: true });
+    await c.replaceOne({ _id: `map:${key}` }, { _id: `map:${key}`, fetchedAt: now, type: m.type, data: new Binary(m.bytes), imdModified: m.modified } as MapDoc, { upsert: true });
     n++;
   }
   const total = 1 + Object.keys(IMD_MAPS).length;
@@ -91,6 +94,12 @@ export async function getWeeklyBelt(): Promise<{ fetchedAt: number; data: Cotton
     doc = await c.findOne({ _id: "belt" });
   }
   return doc ? { fetchedAt: doc.fetchedAt, data: doc.data } : null;
+}
+
+/** when IMD last updated each stored map (null where unknown) */
+export async function getMapDates(): Promise<Record<string, number | null>> {
+  const docs = await (await coll<MapDoc>()).find({ _id: { $regex: /^map:/ } } as never, { projection: { data: 0 } }).toArray();
+  return Object.fromEntries(docs.map((d) => [d._id.slice(4), d.imdModified ?? null]));
 }
 
 export async function getWeeklyMap(key: string): Promise<{ fetchedAt: number; type: string; bytes: Uint8Array } | null> {

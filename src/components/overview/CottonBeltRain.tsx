@@ -28,6 +28,10 @@ function rainCell(mm: number | null) {
   if (mm < 25) return { bg: "#3b82f6", fg: "#fff" };
   return { bg: "#1d4ed8", fg: "#fff" };
 }
+/** a map IMD hasn't updated for this long is out of date (IMD stops some maps after the monsoon) */
+const STALE_MS = 10 * 86400000;
+const fmtDay = (t: number) => new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+
 const totalTone = (mm: number | null) => (mm == null ? "text-ink-faint" : mm >= 25 ? "text-[#1d4ed8]" : mm >= 5 ? "text-ink" : "text-[#b45309]");
 const fmtMm = (mm: number | null) => (mm == null ? "—" : mm < 0.5 ? "0" : mm < 10 ? mm.toFixed(1) : Math.round(mm).toString());
 
@@ -47,6 +51,10 @@ export function CottonBeltRain() {
       .then((d) => {
         setData(d);
         setStamp((s) => s ?? d.fetchedAt);
+        // open on a map IMD is still updating (the state-wise one stops after the monsoon)
+        const md = d.mapDates ?? {};
+        const isOld = (k: string) => md[k] != null && Date.now() - (md[k] as number) > STALE_MS;
+        if (isOld("states")) setMap((m) => (m === "states" ? "india" : m));
       })
       .catch(() => setErr(true));
   }, []);
@@ -71,6 +79,11 @@ export function CottonBeltRain() {
   }
 
   const src = `/api/weather/imd-map?map=${map}${stamp ? `&v=${stamp}` : ""}`;
+  const mapDate = data?.mapDates?.[map] ?? null;
+  const stale = (k: string) => {
+    const t = data?.mapDates?.[k];
+    return t != null && Date.now() - t > STALE_MS;
+  };
   const updated = data?.fetchedAt
     ? `Updated ${new Date(data.fetchedAt).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short" })} · renews every Friday`
     : "Renews every Friday";
@@ -94,12 +107,21 @@ export function CottonBeltRain() {
       <Card>
         <CardHeader
           title="Weekly rainfall map · IMD"
-          sub={`${map === "states" ? "State-wise" : "District-wise"} rainfall in the latest IMD week (Thu–Wed) · % departure from normal`}
+          sub={`${map === "states" ? "State-wise" : "District-wise"} rainfall in the IMD week (Thu–Wed) · % departure from normal${mapDate ? ` · IMD map updated ${fmtDay(mapDate)}` : ""}`}
           right={refreshBtn}
         />
         <div className="print-hide mb-2 flex justify-end">
-          <Tabs options={MAPS.map((m) => ({ value: m.value, label: m.label }))} value={map} onChange={setMap} />
+          <Tabs
+            options={MAPS.map((m) => ({ value: m.value, label: stale(m.value) ? `${m.label} (old)` : m.label }))}
+            value={map}
+            onChange={setMap}
+          />
         </div>
+        {stale(map) && mapDate ? (
+          <p className="mb-2 rounded-lg bg-amber-50 px-3 py-1.5 text-[11.5px] text-amber-800 dark:bg-amber-500/10 dark:text-amber-200">
+            IMD hasn&apos;t updated this map since {fmtDay(mapDate)} (it stops after the monsoon season) — the district maps are current.
+          </p>
+        ) : null}
         {mapFailed === src ? (
           <div className="flex h-72 flex-col items-center justify-center gap-3 text-center">
             <p className="text-[12px] text-ink-faint">The IMD map server isn&apos;t responding right now.</p>

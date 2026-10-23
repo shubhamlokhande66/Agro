@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { readSession } from "@/lib/server/session";
-import { getWeeklyBelt } from "@/lib/server/weeklyRain";
+import { getMapDates, getWeeklyBelt } from "@/lib/server/weeklyRain";
 
 export const dynamic = "force-dynamic";
 export const maxDuration = 60;
@@ -10,5 +10,7 @@ export async function GET() {
   if (!(await readSession())) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   const snap = await getWeeklyBelt().catch(() => null);
   if (!snap) return NextResponse.json({ error: "Weather sources unavailable" }, { status: 502 });
-  return NextResponse.json({ ...snap.data, fetchedAt: snap.fetchedAt }, { headers: { "cache-control": "no-store" } });
+  // when IMD last updated each map, so the card can skip maps IMD has stopped updating
+  const mapDates = await getMapDates().catch(() => ({}));
+  return NextResponse.json({ ...snap.data, fetchedAt: snap.fetchedAt, mapDates }, { headers: { "cache-control": "no-store" } });
 }

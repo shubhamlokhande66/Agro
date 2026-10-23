@@ -1,6 +1,6 @@
 /**
  * Rainfall over India's cotton belt, state by state:
- *  - last 7 days: NASA POWER daily precipitation (PRECTOTCORR, mm/day; public domain). POWER runs
+ *  - last 7 days: NASA POWER precipitation (PRECTOTCORR, hourly mm summed per day; public domain). POWER runs
  *    ~2–3 days behind, so "last 7 days" is the latest 7 days it has published.
  *  - next 7 days: MET Norway locationforecast (free, needs an identifying User-Agent).
  * Each state is the average of a few cotton districts' points.
@@ -27,23 +27,44 @@ export type BeltState = {
   pastTotal: number | null;
   nextTotal: number | null;
 };
-export type CottonBelt = { fetchedAt: number; pastDays: string[]; forecastDays: string[]; states: BeltState[] };
+export type CottonBelt = {
+  fetchedAt: number;
+  pastDays: string[];
+  forecastDays: string[];
+  states: BeltState[];
+  /** when IMD last updated each weekly map (added by the API from the stored maps) */
+  mapDates?: Record<string, number | null>;
+};
 
 const UA = "AgrolytixCottonDashboard/1.0 (research dashboard; contact via agrolytix)";
 const ymd = (d: Date) => d.toISOString().slice(0, 10);
 /** IST calendar date of a UTC instant */
 const istDate = (ms: number) => ymd(new Date(ms + 5.5 * 3600000));
 
+/**
+ * Daily rainfall (mm) from NASA POWER's hourly product, summed per local day. POWER's daily
+ * product came back 24× too high in Oct 2026 (API v2.10.1 — every value an exact multiple of
+ * 0.24), while its hourly mm/hour values add up correctly, so the hours are summed here.
+ * A day counts only when most of its hours are published (the latest days lag).
+ */
 async function pastRain(lat: number, lon: number, start: string, end: string): Promise<Record<string, number>> {
   const url =
-    `https://power.larc.nasa.gov/api/temporal/daily/point?parameters=PRECTOTCORR&community=AG` +
+    `https://power.larc.nasa.gov/api/temporal/hourly/point?parameters=PRECTOTCORR&community=AG&time-standard=LST` +
     `&latitude=${lat}&longitude=${lon}&start=${start.replace(/-/g, "")}&end=${end.replace(/-/g, "")}&format=JSON`;
-  const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(30000) });
+  const res = await fetch(url, { cache: "no-store", signal: AbortSignal.timeout(45000) });
   if (!res.ok) throw new Error(`NASA POWER ${res.status}`);
   const j = await res.json();
   const raw: Record<string, number> = j?.properties?.parameter?.PRECTOTCORR ?? {};
+  const sum: Record<string, number> = {};
+  const hours: Record<string, number> = {};
+  for (const [k, v] of Object.entries(raw)) {
+    if (typeof v !== "number" || v < 0) continue; // -999 = not published yet
+    const day = `${k.slice(0, 4)}-${k.slice(4, 6)}-${k.slice(6, 8)}`;
+    sum[day] = (sum[day] ?? 0) + v;
+    hours[day] = (hours[day] ?? 0) + 1;
+  }
   const out: Record<string, number> = {};
-  for (const [k, v] of Object.entries(raw)) if (typeof v === "number" && v > -900) out[`${k.slice(0, 4)}-${k.slice(4, 6)}-${k.slice(6, 8)}`] = v;
+  for (const [day, mm] of Object.entries(sum)) if (hours[day] >= 20) out[day] = Math.round(mm * 10) / 10;
   return out;
 }
 
