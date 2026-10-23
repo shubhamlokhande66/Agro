@@ -100,15 +100,12 @@ export function FieldPulseSection() {
     if (report) setHidden(fieldPulseHidden(report.id));
   }, [report]);
   if (!report) return null;
-  const hide = (code: string) => {
-    const next = [...new Set([...hidden, code])];
+  // the picker stores the states left OUT (so a state added to next week's report starts ticked)
+  const setOut = (next: string[]) => {
     setHidden(next);
     saveHidden(report.id, next);
   };
-  const showAll = () => {
-    setHidden([]);
-    saveHidden(report.id, []);
-  };
+  const toggle = (code: string) => setOut(hidden.includes(code) ? hidden.filter((c) => c !== code) : [...hidden, code]);
   const w = reportWeek(report.date);
   // states in order of production share (as on the Field Pulse page)
   const season = [...DP_SEASONS].reverse().find((s) => (dpValue("prod", s, "ALL_INDIA") ?? 0) > 0);
@@ -117,10 +114,10 @@ export function FieldPulseSection() {
   const states = [...GROUND_STATES]
     .sort((a, b) => share(b.code) - share(a.code))
     .map((s) => ({ ...s, r: byState.get(s.code) }))
-    // states without photographs are left out; so are the ones hidden with the Hide button
+    // states without photographs are left out
     .filter((x): x is typeof x & { r: StateReport } => !!x.r && hasContent(x.r) && x.r.photos.length > 0);
+  // only the states ticked in the picker are shown — and so only they go into the PDF
   const shown = states.filter((x) => !hidden.includes(x.code));
-  const hiddenLabels = states.filter((x) => hidden.includes(x.code)).map((x) => x.label);
   const takeaways = report.summary
     .split("\n")
     .map((l) => l.replace(/^[\s•\-*]+/, "").trim())
@@ -145,29 +142,58 @@ export function FieldPulseSection() {
         )}
       </Card>
 
-      {/* one card per state, so the PDF breaks pages between states, never through a photo */}
-      {hiddenLabels.length ? (
-        <div className="print-hide flex flex-wrap items-center justify-between gap-2 rounded-lg border border-dashed border-line px-3 py-2 text-[11.5px] text-ink-faint">
-          <span>Hidden from the report: {hiddenLabels.join(", ")}</span>
-          <button type="button" onClick={showAll} className="focusable font-semibold text-accent hover:underline">
-            Show all
-          </button>
+      {/* which states go into the PDF report — dashboard-only, never printed */}
+      {states.length ? (
+        <div className="print-hide panel px-4 py-3">
+          <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+            <span className="text-[12.5px] font-semibold text-ink">
+              States in the PDF report{" "}
+              <span className="font-normal text-ink-faint">
+                · {shown.length} of {states.length} selected — only these states and their photos go into the report
+              </span>
+            </span>
+            <span className="flex gap-3 text-[11.5px] font-semibold">
+              <button type="button" onClick={() => setOut([])} className="focusable text-accent hover:underline">
+                All
+              </button>
+              <button type="button" onClick={() => setOut(states.map((x) => x.code))} className="focusable text-accent hover:underline">
+                None
+              </button>
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-1.5">
+            {states.map((x) => {
+              const on = !hidden.includes(x.code);
+              return (
+                <button
+                  key={x.code}
+                  type="button"
+                  onClick={() => toggle(x.code)}
+                  aria-pressed={on}
+                  className={
+                    "focusable flex items-center gap-1.5 rounded-lg border px-2.5 py-1 text-[12px] font-semibold transition-colors " +
+                    (on ? "border-accent bg-accent/10 text-ink" : "border-line text-ink-faint hover:border-accent/60")
+                  }
+                >
+                  <span className={"grid h-3.5 w-3.5 place-items-center rounded border text-[9px] " + (on ? "border-accent bg-accent text-accent-contrast" : "border-line")}>
+                    {on ? "✓" : ""}
+                  </span>
+                  {x.label}
+                  <span className="font-normal text-ink-faint">· {x.r.photos.length} photos</span>
+                </button>
+              );
+            })}
+          </div>
         </div>
       ) : null}
+
+      {/* one card per state, so the PDF breaks pages between states, never through a photo */}
 
       {shown.map((x) => (
         <section key={x.code} className="panel p-4 sm:p-5">
           <div className="mb-3 flex flex-wrap items-start justify-between gap-2">
             <h3 className="text-[14.5px] font-semibold tracking-tight text-ink">{x.label}</h3>
             <div className="flex flex-wrap items-center gap-1.5">
-              <button
-                type="button"
-                onClick={() => hide(x.code)}
-                title="Leave this state out of the Overview and the PDF report"
-                className="focusable print-hide rounded-lg border border-line px-2 py-0.5 text-[11px] font-semibold text-ink-soft hover:bg-surface-2"
-              >
-                Hide
-              </button>
               {x.r.stage ? <StatusChip label="Stage" value={x.r.stage} tone="flat" /> : null}
               {x.r.condition ? <StatusChip label="Crop" value={x.r.condition} tone={toneOf(CONDITIONS, x.r.condition)} /> : null}
               {x.r.rainfall ? <StatusChip label="Rain" value={x.r.rainfall} tone={toneOf(RAINFALL, x.r.rainfall)} /> : null}
