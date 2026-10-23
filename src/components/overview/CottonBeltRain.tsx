@@ -31,6 +31,16 @@ function rainCell(mm: number | null) {
 /** a map IMD hasn't updated for this long is out of date (IMD stops some maps after the monsoon) */
 const STALE_MS = 10 * 86400000;
 const fmtDay = (t: number) => new Date(t).toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" });
+/** IMD's weekly maps cover Thursday–Wednesday and are published on the Wednesday: the week of a
+ *  map published at `t` is the 7 days ending on the Wednesday on or before it (India time) */
+function imdWeek(t: number): string {
+  const ist = new Date(t + 5.5 * 3600000);
+  const back = (ist.getUTCDay() - 3 + 7) % 7; // days since Wednesday
+  const end = new Date(Date.UTC(ist.getUTCFullYear(), ist.getUTCMonth(), ist.getUTCDate() - back));
+  const start = new Date(end.getTime() - 6 * 86400000);
+  const f = (d: Date) => d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: "UTC" });
+  return `${f(start)} – ${f(end)}`;
+}
 
 const totalTone = (mm: number | null) => (mm == null ? "text-ink-faint" : mm >= 25 ? "text-[#1d4ed8]" : mm >= 5 ? "text-ink" : "text-[#b45309]");
 const fmtMm = (mm: number | null) => (mm == null ? "—" : mm < 0.5 ? "0" : mm < 10 ? mm.toFixed(1) : Math.round(mm).toString());
@@ -107,7 +117,7 @@ export function CottonBeltRain() {
       <Card>
         <CardHeader
           title="Weekly rainfall map · IMD"
-          sub={`${map === "states" ? "State-wise" : "District-wise"} rainfall in the IMD week (Thu–Wed) · % departure from normal${mapDate ? ` · IMD map updated ${fmtDay(mapDate)}` : ""}`}
+          sub={`${map === "states" ? "State-wise" : "District-wise"} rainfall · ${mapDate ? `week ${imdWeek(mapDate)}` : "latest IMD week (Thu–Wed)"} · % departure from normal`}
           right={refreshBtn}
         />
         <div className="print-hide mb-2 flex justify-end">
