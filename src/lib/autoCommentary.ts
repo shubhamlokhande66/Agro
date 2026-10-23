@@ -14,6 +14,7 @@ import { COT_WEEKS, cotNet, cotNetChg } from "@/data/cftc";
 import { ES_YEARS } from "@/data/exportSales";
 import { monthlyBasis } from "@/lib/basis";
 import { benchmarkRows } from "@/lib/benchmarks";
+import { readBenchHidden } from "@/components/overview/ReportExtras";
 import { priceTableRows } from "@/components/overview/PriceTable";
 import type { CottonBelt } from "@/lib/server/cottonBelt";
 
@@ -346,9 +347,12 @@ function benchmarksCommentary(): string | null {
   const { sa, sb, rows } = benchmarkRows();
   const ours = rows[0];
   if (ours.b == null) return null;
-  const others = rows.filter((r) => r.kind !== "ours" && r.kind !== "avg" && r.b != null);
-  const avg = rows.find((r) => r.kind === "avg");
-  const usda = rows.find((r) => r.kind === "usda");
+  // only the sources ticked for the report (Overview → Production Benchmarks); the average is of the ticked trade houses
+  const hidden = readBenchHidden();
+  const others = rows.filter((r) => r.kind !== "ours" && r.kind !== "avg" && r.b != null && !hidden.includes(r.source));
+  const tradeB = others.filter((r) => r.kind === "trade").map((r) => r.b!);
+  const avg = tradeB.length > 1 && !hidden.includes("Trade average") ? { b: tradeB.reduce((x, y) => x + y, 0) / tradeB.length } : null;
+  const usda = others.find((r) => r.kind === "usda");
   const diff = (v: number) => `${v - ours.b! >= 0 ? "+" : "−"}${n1(Math.abs(v - ours.b!))}`;
   let text = `Agrolytix estimates India's ${sb} crop at ${n1(ours.b)} lakh bales${ours.a != null ? ` (${sa}: ${n1(ours.a)}, ${pct(pctOf(ours.b, ours.a)!)})` : ""}.`;
   if (usda?.b != null) text += ` USDA is at ${n1(usda.b)} lakh bales (${diff(usda.b)} vs ours).`;
